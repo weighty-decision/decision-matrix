@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
     kotlin("jvm") version "2.2.0"
+    kotlin("plugin.serialization") version "2.2.10"
     application
 }
 
@@ -54,11 +55,11 @@ dependencies {
     implementation(platform("org.http4k:http4k-bom:6.15.1.0"))
     implementation("org.http4k:http4k-client-okhttp")
     implementation("org.http4k:http4k-core")
-    implementation("org.http4k:http4k-format-kotlinx-serialization")
     implementation("org.http4k:http4k-ops-opentelemetry")
     implementation("org.http4k:http4k-ops-resilience4j")
     implementation("org.http4k:http4k-server-undertow")
     implementation("org.http4k:http4k-web-htmx")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
     testImplementation("org.http4k:http4k-testing-approval")
     testImplementation("org.http4k:http4k-testing-hamkrest")
     testImplementation("org.http4k:http4k-testing-kotest")
