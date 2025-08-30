@@ -1,7 +1,3 @@
-import org.gradle.api.JavaVersion.VERSION_21
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
-
 plugins {
     kotlin("jvm") version libs.versions.kotlin.core
     kotlin("plugin.serialization") version libs.versions.kotlin.core
@@ -44,6 +40,8 @@ dependencies {
     implementation(platform(libs.http4k.bom))
     implementation(libs.bundles.http4k)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.jdbi.core)
+    implementation(libs.sqlite.jdbc)
     testImplementation(libs.bundles.testing)
     testImplementation(libs.bundles.http4k.testing)
 }

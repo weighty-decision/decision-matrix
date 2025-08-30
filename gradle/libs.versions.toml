@@ -1,11 +1,14 @@
 [versions]
+jdbi = "3.45.1"
 jupiter = "5.13.2"
 kotlin-core = "2.2.0"
 http4k = "6.15.1.0"
 kotlinx-serialization-json = "1.9.0"
 kotest = "5.9.1"
+sqlite-jdbc = "3.44.1.0"
 
 [libraries]
+jdbi-core = { module = "org.jdbi:jdbi3-core", version.ref = "jdbi" }
 http4k-bom = { module = "org.http4k:http4k-bom", version.ref = "http4k" }
 http4k-client-okhttp = { module = "org.http4k:http4k-client-okhttp" }
 http4k-core = { module = "org.http4k:http4k-core" }
@@ -24,6 +27,7 @@ kotest-assertions-json = { module = "io.kotest:kotest-assertions-json", version.
 kotest-extensions = { module = "io.kotest:kotest-extensions", version.ref = "kotest" }
 kotest-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 kotest-property = { module = "io.kotest:kotest-property-jvm", version.ref = "kotest" }
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
 
 [bundles]
 testing = [
