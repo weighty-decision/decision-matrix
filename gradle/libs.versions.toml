@@ -1,0 +1,55 @@
+[versions]
+jupiter = "5.13.2"
+kotlin-core = "2.2.0"
+http4k = "6.15.1.0"
+kotlinx-serialization-json = "1.9.0"
+kotest = "5.9.1"
+
+[libraries]
+http4k-bom = { module = "org.http4k:http4k-bom", version.ref = "http4k" }
+http4k-client-okhttp = { module = "org.http4k:http4k-client-okhttp" }
+http4k-core = { module = "org.http4k:http4k-core" }
+http4k-ops-opentelemetry = { module = "org.http4k:http4k-ops-opentelemetry" }
+http4k-ops-resilience4j = { module = "org.http4k:http4k-ops-resilience4j" }
+http4k-server-undertow = { module = "org.http4k:http4k-server-undertow" }
+http4k-web-htmx = { module = "org.http4k:http4k-web-htmx" }
+http4k-testing-approval = { module = "org.http4k:http4k-testing-approval" }
+http4k-testing-hamkrest = { module = "org.http4k:http4k-testing-hamkrest" }
+http4k-testing-kotest = { module = "org.http4k:http4k-testing-kotest" }
+jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jupiter" }
+jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jupiter" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotest-assertions-json = { module = "io.kotest:kotest-assertions-json", version.ref = "kotest" }
+kotest-extensions = { module = "io.kotest:kotest-extensions", version.ref = "kotest" }
+kotest-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
+kotest-property = { module = "io.kotest:kotest-property-jvm", version.ref = "kotest" }
+
+[bundles]
+testing = [
+    "jupiter-api",
+    "jupiter-engine",
+    "kotest-assertions-core",
+    "kotest-assertions-json",
+    "kotest-extensions",
+    "kotest-junit5",
+    "kotest-property",
+]
+
+http4k = [
+    "http4k-core",
+    "http4k-client-okhttp",
+    "http4k-ops-opentelemetry",
+    "http4k-ops-resilience4j",
+    "http4k-server-undertow",
+    "http4k-web-htmx"
+]
+
+http4k-testing = [
+    "http4k-testing-approval",
+    "http4k-testing-hamkrest",
+    "http4k-testing-kotest",
+]
+
+[plugins]
+serialization = { id = "plugin.serialization", version.ref = "kotlin-core" }
