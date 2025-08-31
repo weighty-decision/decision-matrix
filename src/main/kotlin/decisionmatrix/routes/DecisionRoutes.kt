@@ -2,8 +2,12 @@ package decisionmatrix.routes
 
 import decisionmatrix.Decision
 import decisionmatrix.db.DecisionRepository
-import kotlinx.serialization.json.Json
-import org.http4k.core.*
+import decisionmatrix.decisionRoutes
+import decisionmatrix.json
+import org.http4k.core.Method
+import org.http4k.core.Request
+import org.http4k.core.Response
+import org.http4k.core.Status
 import org.http4k.routing.RoutingHttpHandler
 import org.http4k.routing.bind
 import org.http4k.routing.path
@@ -11,14 +15,12 @@ import org.http4k.routing.routes
 
 class DecisionRoutes(private val decisionRepository: DecisionRepository) {
 
-    private val json = Json { ignoreUnknownKeys = true }
-
     val routes: RoutingHttpHandler = routes(
-        "/decisions" bind Method.POST to ::createDecision,
-        "/decisions/{id}" bind Method.GET to ::getDecision
+        "/decisions" bind Method.POST to decisionRoutes::createDecision,
+        "/decisions/{id}" bind Method.GET to decisionRoutes::getDecision
     )
 
-    private fun createDecision(request: Request): Response {
+    fun createDecision(request: Request): Response {
         return try {
             val decision = json.decodeFromString<Decision>(request.bodyString())
             val createdDecision = decisionRepository.insert(decision)
@@ -30,10 +32,10 @@ class DecisionRoutes(private val decisionRepository: DecisionRepository) {
         }
     }
 
-    private fun getDecision(request: Request): Response {
+    fun getDecision(request: Request): Response {
         return try {
-            val id = request.path("id")?.toLong() 
-                ?: return Response(Status.BAD_REQUEST).body("Invalid ID")
+            val id = request.path("id")?.toLong()
+                ?: return Response(Status.BAD_REQUEST).body("Missing ID")
 
             val decision = decisionRepository.findById(id)
             if (decision != null) {

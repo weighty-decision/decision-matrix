@@ -1,0 +1,46 @@
+### Create a new decision
+POST http://localhost:9000/decisions
+Content-Type: application/json
+
+{
+  "name": "Choose a Programming Language",
+  "criteria": [
+    {
+      "decisionId": 0,
+      "name": "Learning Curve",
+      "weight": 8
+    },
+    {
+      "decisionId": 0,
+      "name": "Performance",
+      "weight": 7
+    },
+    {
+      "decisionId": 0,
+      "name": "Community Support",
+      "weight": 9
+    }
+  ],
+  "options": [
+    {
+      "decisionId": 0,
+      "name": "Kotlin"
+    },
+    {
+      "decisionId": 0,
+      "name": "Python"
+    },
+    {
+      "decisionId": 0,
+      "name": "JavaScript"
+    }
+  ]
+}
+
+### Get a decision by ID (replace {id} with actual ID from create response)
+GET http://localhost:9000/decisions/1
+Accept: application/json
+
+### Health check endpoint
+GET http://localhost:9000/ping
+

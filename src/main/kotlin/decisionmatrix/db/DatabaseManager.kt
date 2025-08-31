@@ -6,6 +6,7 @@ import kotlin.io.path.createTempFile
 
 fun createTestJdbi(): Jdbi {
     val tempDbFile = createTempFile("decision_matrix", ".db").toFile().apply {
+        println("Using database at $absolutePath")
         deleteOnExit()
     }
     val jdbi = Jdbi.create("jdbc:sqlite:${tempDbFile.absolutePath}")
