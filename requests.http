@@ -3,41 +3,50 @@ POST http://localhost:9000/decisions
 Content-Type: application/json
 
 {
-  "name": "Choose a Programming Language",
-  "criteria": [
-    {
-      "decisionId": 0,
-      "name": "Learning Curve",
-      "weight": 8
-    },
-    {
-      "decisionId": 0,
-      "name": "Performance",
-      "weight": 7
-    },
-    {
-      "decisionId": 0,
-      "name": "Community Support",
-      "weight": 9
-    }
-  ],
-  "options": [
-    {
-      "decisionId": 0,
-      "name": "Kotlin"
-    },
-    {
-      "decisionId": 0,
-      "name": "Python"
-    },
-    {
-      "decisionId": 0,
-      "name": "JavaScript"
-    }
-  ]
+  "name": "Choose a Programming Language"
 }
 
-### Get a decision by ID (replace {id} with actual ID from create response)
+### Add an option to a decision
+POST http://localhost:9000/decisions/1/options/
+Content-Type: application/json
+
+{
+  "name": "Kotlin"
+}
+
+### Add a criteria to a decision
+POST http://localhost:9000/decisions/1/criteria/
+Content-Type: application/json
+
+{
+  "name": "Learning Curve",
+  "weight": 8
+}
+
+### Update a single option for a decision
+PUT http://localhost:9000/decisions/1/options/1
+Content-Type: application/json
+
+{
+  "name": "Python (updated)"
+}
+
+### Update a single criteria for a decision
+PUT http://localhost:9000/decisions/1/criteria/1
+Content-Type: application/json
+
+{
+  "name": "Community Support (updated)",
+  "weight": 9
+}
+
+### Delete a single option for a decision
+DELETE http://localhost:9000/decisions/1/options/1
+
+### Delete a single criteria for a decision
+DELETE http://localhost:9000/decisions/1/criteria/1
+
+### Get a decision by ID
 GET http://localhost:9000/decisions/1
 Accept: application/json
 

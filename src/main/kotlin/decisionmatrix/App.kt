@@ -2,6 +2,8 @@ package decisionmatrix
 
 import decisionmatrix.db.*
 import decisionmatrix.routes.DecisionRoutes
+import decisionmatrix.routes.CriteriaRoutes
+import decisionmatrix.routes.OptionRoutes
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Response
@@ -26,12 +28,16 @@ val criteriaRepository = CriteriaRepositoryImpl(jdbi)
 val optionScoreRepository = OptionScoreRepositoryImpl(jdbi)
 
 val decisionRoutes = DecisionRoutes(decisionRepository)
+val criteriaRoutes = CriteriaRoutes(criteriaRepository)
+val optionRoutes = OptionRoutes(optionRepository)
 
 val app: RoutingHttpHandler = routes(
     "/ping" bind GET to {
         Response(OK).body("pong")
     },
-    decisionRoutes.routes
+    decisionRoutes.routes,
+    criteriaRoutes.routes,
+    optionRoutes.routes
 )
 
 fun main() {

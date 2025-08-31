@@ -7,6 +7,8 @@ import java.sql.ResultSet
 interface OptionRepository {
     fun insert(option: Option): Option = throw NotImplementedError("not implemented")
     fun findById(id: Long): Option? = throw NotImplementedError("not implemented")
+    fun update(id: Long, decisionId: Long, name: String): Option? = throw NotImplementedError("not implemented")
+    fun delete(id: Long, decisionId: Long): Boolean = throw NotImplementedError("not implemented")
 }
 
 class OptionRepositoryImpl(private val jdbi: Jdbi) : OptionRepository {
@@ -39,6 +41,40 @@ class OptionRepositoryImpl(private val jdbi: Jdbi) : OptionRepository {
                 .map { rs, _ -> mapOption(rs) }
                 .findOne()
                 .orElse(null)
+        }
+    }
+
+    override fun update(id: Long, decisionId: Long, name: String): Option? {
+        return jdbi.withHandle<Option?, Exception> { handle ->
+            handle.createQuery(
+                """
+                UPDATE options
+                SET name = :name
+                WHERE id = :id AND decision_id = :decisionId
+                RETURNING *
+                """.trimIndent()
+            )
+                .bind("id", id)
+                .bind("decisionId", decisionId)
+                .bind("name", name)
+                .map { rs, _ -> mapOption(rs) }
+                .findOne()
+                .orElse(null)
+        }
+    }
+
+    override fun delete(id: Long, decisionId: Long): Boolean {
+        return jdbi.withHandle<Boolean, Exception> { handle ->
+            val updated = handle.createUpdate(
+                """
+                DELETE FROM options
+                WHERE id = :id AND decision_id = :decisionId
+                """.trimIndent()
+            )
+                .bind("id", id)
+                .bind("decisionId", decisionId)
+                .execute()
+            updated > 0
         }
     }
 }
