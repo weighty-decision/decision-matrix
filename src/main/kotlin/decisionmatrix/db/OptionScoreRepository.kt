@@ -41,12 +41,12 @@ class OptionScoreRepositoryImpl(private val jdbi: Jdbi) : OptionScoreRepository 
                 .orElse(null)
         }
     }
+}
 
-    private fun mapOptionScore(rs: ResultSet): OptionScore {
-        return OptionScore(
-            id = rs.getLong("id"),
-            optionId = rs.getLong("option_id"),
-            score = rs.getInt("score"),
-        )
-    }
+private fun mapOptionScore(rs: ResultSet): OptionScore {
+    return OptionScore(
+        id = rs.getLong("id"),
+        optionId = rs.getLong("option_id"),
+        score = rs.getInt("score"),
+    )
 }

@@ -43,12 +43,13 @@ class CriteriaRepositoryImpl(private val jdbi: Jdbi) : CriteriaRepository {
         }
     }
 
-    private fun mapCriteria(rs: ResultSet): Criteria {
-        return Criteria(
-            id = rs.getLong("id"),
-            decisionId = rs.getLong("decision_id"),
-            name = rs.getString("name"),
-            weight = rs.getInt("weight"),
-        )
-    }
+}
+
+fun mapCriteria(rs: ResultSet): Criteria {
+    return Criteria(
+        id = rs.getLong("id"),
+        decisionId = rs.getLong("decision_id"),
+        name = rs.getString("name"),
+        weight = rs.getInt("weight"),
+    )
 }

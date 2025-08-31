@@ -40,11 +40,12 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
                 .orElse(null)
         }
     }
-
-    private fun mapDecision(rs: ResultSet): Decision {
-        return Decision(
-            id = rs.getLong("id"),
-            name = rs.getString("name"),
-        )
-    }
 }
+
+fun mapDecision(rs: ResultSet): Decision {
+    return Decision(
+        id = rs.getLong("id"),
+        name = rs.getString("name"),
+    )
+}
+

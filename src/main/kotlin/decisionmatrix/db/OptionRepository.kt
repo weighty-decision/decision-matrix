@@ -41,12 +41,12 @@ class OptionRepositoryImpl(private val jdbi: Jdbi) : OptionRepository {
                 .orElse(null)
         }
     }
+}
 
-    private fun mapOption(rs: ResultSet): Option {
-        return Option(
-            id = rs.getLong("id"),
-            decisionId = rs.getLong("decision_id"),
-            name = rs.getString("name"),
-        )
-    }
+private fun mapOption(rs: ResultSet): Option {
+    return Option(
+        id = rs.getLong("id"),
+        decisionId = rs.getLong("decision_id"),
+        name = rs.getString("name"),
+    )
 }
