@@ -3,8 +3,8 @@ package decisionmatrix.db
 import decisionmatrix.Decision
 import decisionmatrix.Option
 import decisionmatrix.OptionScore
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
 
 class OptionScoreRepositoryTest {
@@ -25,8 +25,7 @@ class OptionScoreRepositoryTest {
         val optionScore = optionScoreRepository.insert(OptionScore(optionId = option.id, score = 9))
         requireNotNull(optionScore.id)
         val found = optionScoreRepository.findById(optionScore.id)
-
-        assertNotNull(found)
-        assertEquals(OptionScore(id = optionScore.id, optionId = option.id, score = 9), found)
+        found shouldNotBe null
+        found shouldBe OptionScore(id = optionScore.id, optionId = option.id, score = 9)
     }
 }

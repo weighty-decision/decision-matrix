@@ -3,9 +3,9 @@ package decisionmatrix.db
 import decisionmatrix.Criteria
 import decisionmatrix.Decision
 import decisionmatrix.Option
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertTrue
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.booleans.shouldBeTrue
 import org.junit.jupiter.api.Test
 
 class DecisionRepositoryTest {
@@ -19,11 +19,8 @@ class DecisionRepositoryTest {
         requireNotNull(inserted.id)
         val found = decisionRepository.findById(inserted.id)
 
-        assertNotNull(found)
-        assertEquals(
-            Decision(id = inserted.id, name = "My decision", criteria = emptyList(), options = emptyList()),
-            found
-        )
+        found shouldNotBe null
+        found shouldBe Decision(id = inserted.id, name = "My decision", criteria = emptyList(), options = emptyList())
     }
 
     @Test
@@ -45,21 +42,19 @@ class DecisionRepositoryTest {
         val insertedOption2 = optionRepository.insert(Option(decisionId = insertedDecision.id, name = "Toyota Camry"))
 
         // Retrieve the fully hydrated decision
-        val found = decisionRepository.findById(insertedDecision.id)
-
-        assertNotNull(found)
-        assertEquals("Choose a car", found!!.name)
-        assertEquals(insertedDecision.id, found.id)
+        val found = requireNotNull(decisionRepository.findById(insertedDecision.id))
+        found.name shouldBe "Choose a car"
+        found.id shouldBe insertedDecision.id
 
         // Verify criteria are fully hydrated
-        assertEquals(2, found.criteria.size)
-        assertTrue(found.criteria.any { it.id == insertedCriteria1.id && it.name == "Cost" && it.weight == 3 && it.decisionId == insertedDecision.id })
-        assertTrue(found.criteria.any { it.id == insertedCriteria2.id && it.name == "Reliability" && it.weight == 5 && it.decisionId == insertedDecision.id })
+        found.criteria.size shouldBe 2
+        found.criteria.any { it.id == insertedCriteria1.id && it.name == "Cost" && it.weight == 3 && it.decisionId == insertedDecision.id }.shouldBeTrue()
+        found.criteria.any { it.id == insertedCriteria2.id && it.name == "Reliability" && it.weight == 5 && it.decisionId == insertedDecision.id }.shouldBeTrue()
 
         // Verify options are fully hydrated
-        assertEquals(2, found.options.size)
-        assertTrue(found.options.any { it.id == insertedOption1.id && it.name == "Honda Civic" && it.decisionId == insertedDecision.id })
-        assertTrue(found.options.any { it.id == insertedOption2.id && it.name == "Toyota Camry" && it.decisionId == insertedDecision.id })
+        found.options.size shouldBe 2
+        found.options.any { it.id == insertedOption1.id && it.name == "Honda Civic" && it.decisionId == insertedDecision.id }.shouldBeTrue()
+        found.options.any { it.id == insertedOption2.id && it.name == "Toyota Camry" && it.decisionId == insertedDecision.id }.shouldBeTrue()
     }
 
     @Test
@@ -75,15 +70,14 @@ class DecisionRepositoryTest {
         val insertedCriteria = criteriaRepository.insert(Criteria(decisionId = insertedDecision.id, name = "Budget", weight = 4))
 
         // Retrieve the decision
-        val found = decisionRepository.findById(insertedDecision.id)
+        val found = requireNotNull(decisionRepository.findById(insertedDecision.id))
 
-        assertNotNull(found)
-        assertEquals("Criteria only decision", found!!.name)
-        assertEquals(1, found.criteria.size)
-        assertEquals(insertedCriteria.id, found.criteria[0].id)
-        assertEquals("Budget", found.criteria[0].name)
-        assertEquals(4, found.criteria[0].weight)
-        assertEquals(0, found.options.size)
+        found.name shouldBe "Criteria only decision"
+        found.criteria.size shouldBe 1
+        found.criteria[0].id shouldBe insertedCriteria.id
+        found.criteria[0].name shouldBe "Budget"
+        found.criteria[0].weight shouldBe 4
+        found.options.size shouldBe 0
     }
 
     @Test
@@ -99,13 +93,12 @@ class DecisionRepositoryTest {
         val insertedOption = optionRepository.insert(Option(decisionId = insertedDecision.id, name = "Option A"))
 
         // Retrieve the decision
-        val found = decisionRepository.findById(insertedDecision.id)
+        val found = requireNotNull(decisionRepository.findById(insertedDecision.id))
 
-        assertNotNull(found)
-        assertEquals("Options only decision", found!!.name)
-        assertEquals(0, found.criteria.size)
-        assertEquals(1, found.options.size)
-        assertEquals(insertedOption.id, found.options[0].id)
-        assertEquals("Option A", found.options[0].name)
+        found.name shouldBe "Options only decision"
+        found.criteria.size shouldBe 0
+        found.options.size shouldBe 1
+        found.options[0].id shouldBe insertedOption.id
+        found.options[0].name shouldBe "Option A"
     }
 }
