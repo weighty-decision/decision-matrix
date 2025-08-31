@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 data class Decision(
     val id: Long? = null,
     val name: String,
-    val criteria: List<Criteria>,
-    val options: List<Option>,
+    val criteria: List<Criteria> = emptyList(),
+    val options: List<Option> = emptyList(),
 )
 
 @Serializable

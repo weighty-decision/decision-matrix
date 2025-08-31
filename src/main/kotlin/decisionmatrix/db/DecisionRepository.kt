@@ -45,8 +45,6 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
         return Decision(
             id = rs.getLong("id"),
             name = rs.getString("name"),
-            criteria = emptyList(),
-            options = emptyList(),
         )
     }
 }
