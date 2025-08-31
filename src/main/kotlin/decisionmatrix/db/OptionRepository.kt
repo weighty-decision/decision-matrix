@@ -4,9 +4,13 @@ import decisionmatrix.Option
 import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 
-class OptionRepository(private val jdbi: Jdbi) {
+interface OptionRepository {
+    fun insert(option: Option): Option = throw NotImplementedError("not implemented")
+    fun findById(id: Long): Option? = throw NotImplementedError("not implemented")
+}
 
-    fun insert(option: Option): Option {
+class OptionRepositoryImpl(private val jdbi: Jdbi) : OptionRepository {
+    override fun insert(option: Option): Option {
         return jdbi.withHandle<Option, Exception> { handle ->
             handle.createQuery(
                 """
@@ -22,7 +26,7 @@ class OptionRepository(private val jdbi: Jdbi) {
         }
     }
 
-    fun findById(id: Long): Option? {
+    override fun findById(id: Long): Option? {
         return jdbi.withHandle<Option?, Exception> { handle ->
             handle.createQuery(
                 """

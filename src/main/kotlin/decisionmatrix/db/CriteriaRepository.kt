@@ -4,9 +4,13 @@ import decisionmatrix.Criteria
 import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 
-class CriteriaRepository(private val jdbi: Jdbi) {
+interface CriteriaRepository {
+    fun insert(criteria: Criteria): Criteria = throw NotImplementedError("not implemented")
+    fun findById(id: Long): Criteria? = throw NotImplementedError("not implemented")
+}
 
-    fun insert(criteria: Criteria): Criteria {
+class CriteriaRepositoryImpl(private val jdbi: Jdbi) : CriteriaRepository {
+    override fun insert(criteria: Criteria): Criteria {
         return jdbi.withHandle<Criteria, Exception> { handle ->
             handle.createQuery(
                 """
@@ -23,7 +27,7 @@ class CriteriaRepository(private val jdbi: Jdbi) {
         }
     }
 
-    fun findById(id: Long): Criteria? {
+    override fun findById(id: Long): Criteria? {
         return jdbi.withHandle<Criteria?, Exception> { handle ->
             handle.createQuery(
                 """

@@ -18,7 +18,7 @@ class OptionRepositoryTest {
         )
         requireNotNull(decision.id)
 
-        val optionRepository = OptionRepository(jdbi)
+        val optionRepository = OptionRepositoryImpl(jdbi)
         val option = optionRepository.insert(Option(decisionId = decision.id, name = "Option A"))
         requireNotNull(option.id)
         val found = optionRepository.findById(option.id)

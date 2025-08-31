@@ -16,7 +16,7 @@ class CriteriaRepositoryTest {
         val decision = decisionRepository.insert(Decision(name = "My decision", criteria = emptyList(), options = emptyList()))
         requireNotNull(decision.id)
 
-        val criteriaRepository = CriteriaRepository(jdbi)
+        val criteriaRepository = CriteriaRepositoryImpl(jdbi)
         val criteria = criteriaRepository.insert(Criteria(decisionId = decision.id, name = "Cost", weight = 5))
         requireNotNull(criteria.id)
 
