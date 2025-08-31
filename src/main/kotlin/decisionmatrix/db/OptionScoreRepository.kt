@@ -6,12 +6,12 @@ import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 
 interface OptionScoreRepository {
-    fun insert(score: OptionScoreInput): OptionScore = throw NotImplementedError()
+    fun insert(optionId: Long, score: OptionScoreInput): OptionScore = throw NotImplementedError()
     fun findById(id: Long): OptionScore? = throw NotImplementedError()
 }
 
 class OptionScoreRepositoryImpl(private val jdbi: Jdbi) : OptionScoreRepository {
-    override fun insert(score: OptionScoreInput): OptionScore {
+    override fun insert(optionId: Long, score: OptionScoreInput): OptionScore {
         return jdbi.withHandle<OptionScore, Exception> { handle ->
             handle.createQuery(
                 """
@@ -20,7 +20,7 @@ class OptionScoreRepositoryImpl(private val jdbi: Jdbi) : OptionScoreRepository 
                 RETURNING *
                 """.trimIndent()
             )
-                .bind("optionId", score.optionId)
+                .bind("optionId", optionId)
                 .bind("score", score.score)
                 .map { rs, _ -> mapOptionScore(rs) }
                 .one()

@@ -17,7 +17,6 @@ data class Decision(
 
 @Serializable
 data class CriteriaInput(
-    val decisionId: Long,
     val name: String,
     val weight: Int
 )
@@ -32,7 +31,6 @@ data class Criteria(
 
 @Serializable
 data class OptionInput(
-    val decisionId: Long,
     val name: String
 )
 
@@ -45,7 +43,6 @@ data class Option(
 
 @Serializable
 data class OptionScoreInput(
-    val optionId: Long,
     val score: Int,
 )
 

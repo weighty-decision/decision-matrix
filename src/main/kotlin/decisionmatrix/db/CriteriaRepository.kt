@@ -6,14 +6,14 @@ import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 
 interface CriteriaRepository {
-    fun insert(criteria: CriteriaInput): Criteria = throw NotImplementedError()
+    fun insert(decisionId: Long, criteria: CriteriaInput): Criteria = throw NotImplementedError()
     fun findById(id: Long): Criteria? = throw NotImplementedError()
-    fun update(id: Long, decisionId: Long, name: String, weight: Int): Criteria? = throw NotImplementedError()
-    fun delete(id: Long, decisionId: Long): Boolean = throw NotImplementedError()
+    fun update(id: Long, name: String, weight: Int): Criteria? = throw NotImplementedError()
+    fun delete(id: Long): Boolean = throw NotImplementedError()
 }
 
 class CriteriaRepositoryImpl(private val jdbi: Jdbi) : CriteriaRepository {
-    override fun insert(criteria: CriteriaInput): Criteria {
+    override fun insert(decisionId: Long, criteria: CriteriaInput): Criteria {
         return jdbi.withHandle<Criteria, Exception> { handle ->
             handle.createQuery(
                 """
@@ -22,7 +22,7 @@ class CriteriaRepositoryImpl(private val jdbi: Jdbi) : CriteriaRepository {
                 RETURNING *
                 """.trimIndent()
             )
-                .bind("decisionId", criteria.decisionId)
+                .bind("decisionId", decisionId)
                 .bind("name", criteria.name)
                 .bind("weight", criteria.weight)
                 .map { rs, _ -> mapCriteria(rs) }
@@ -46,18 +46,18 @@ class CriteriaRepositoryImpl(private val jdbi: Jdbi) : CriteriaRepository {
         }
     }
 
-    override fun update(id: Long, decisionId: Long, name: String, weight: Int): Criteria? {
+    // todo update to accept an object not individual params
+    override fun update(id: Long, name: String, weight: Int): Criteria? {
         return jdbi.withHandle<Criteria?, Exception> { handle ->
             handle.createQuery(
                 """
                 UPDATE criteria
                 SET name = :name, weight = :weight
-                WHERE id = :id AND decision_id = :decisionId
+                WHERE id = :id
                 RETURNING *
                 """.trimIndent()
             )
                 .bind("id", id)
-                .bind("decisionId", decisionId)
                 .bind("name", name)
                 .bind("weight", weight)
                 .map { rs, _ -> mapCriteria(rs) }
@@ -66,16 +66,15 @@ class CriteriaRepositoryImpl(private val jdbi: Jdbi) : CriteriaRepository {
         }
     }
 
-    override fun delete(id: Long, decisionId: Long): Boolean {
+    override fun delete(id: Long): Boolean {
         return jdbi.withHandle<Boolean, Exception> { handle ->
             val updated = handle.createUpdate(
                 """
                 DELETE FROM criteria
-                WHERE id = :id AND decision_id = :decisionId
+                WHERE id = :id
                 """.trimIndent()
             )
                 .bind("id", id)
-                .bind("decisionId", decisionId)
                 .execute()
             updated > 0
         }

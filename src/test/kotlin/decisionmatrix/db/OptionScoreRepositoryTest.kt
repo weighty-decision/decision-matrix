@@ -18,10 +18,10 @@ class OptionScoreRepositoryTest {
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
 
         val optionRepository = OptionRepositoryImpl(jdbi)
-        val option = optionRepository.insert(OptionInput(decisionId = decision.id, name = "Option A"))
+        val option = optionRepository.insert(decisionId = decision.id, OptionInput(name = "Option A"))
 
         val optionScoreRepository = OptionScoreRepositoryImpl(jdbi)
-        val optionScore = optionScoreRepository.insert(OptionScoreInput(optionId = option.id, score = 9))
+        val optionScore = optionScoreRepository.insert(optionId = option.id, OptionScoreInput(score = 9))
         val found = optionScoreRepository.findById(optionScore.id)
         found shouldNotBe null
         found shouldBe OptionScore(id = optionScore.id, optionId = option.id, score = 9)

@@ -6,14 +6,14 @@ import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 
 interface OptionRepository {
-    fun insert(option: OptionInput): Option = throw NotImplementedError()
+    fun insert(decisionId: Long, option: OptionInput): Option = throw NotImplementedError()
     fun findById(id: Long): Option? = throw NotImplementedError()
-    fun update(id: Long, decisionId: Long, name: String): Option? = throw NotImplementedError()
-    fun delete(id: Long, decisionId: Long): Boolean = throw NotImplementedError()
+    fun update(id: Long, name: String): Option? = throw NotImplementedError()
+    fun delete(id: Long): Boolean = throw NotImplementedError()
 }
 
 class OptionRepositoryImpl(private val jdbi: Jdbi) : OptionRepository {
-    override fun insert(option: OptionInput): Option {
+    override fun insert(decisionId: Long, option: OptionInput): Option {
         return jdbi.withHandle<Option, Exception> { handle ->
             handle.createQuery(
                 """
@@ -22,7 +22,7 @@ class OptionRepositoryImpl(private val jdbi: Jdbi) : OptionRepository {
                 RETURNING *
                 """.trimIndent()
             )
-                .bind("decisionId", option.decisionId)
+                .bind("decisionId", decisionId)
                 .bind("name", option.name)
                 .map { rs, _ -> mapOption(rs) }
                 .one()
@@ -46,18 +46,17 @@ class OptionRepositoryImpl(private val jdbi: Jdbi) : OptionRepository {
     }
 
     // todo swap out individual args with an object input
-    override fun update(id: Long, decisionId: Long, name: String): Option? {
+    override fun update(id: Long, name: String): Option? {
         return jdbi.withHandle<Option?, Exception> { handle ->
             handle.createQuery(
                 """
                 UPDATE options
                 SET name = :name
-                WHERE id = :id AND decision_id = :decisionId
+                WHERE id = :id
                 RETURNING *
                 """.trimIndent()
             )
                 .bind("id", id)
-                .bind("decisionId", decisionId)
                 .bind("name", name)
                 .map { rs, _ -> mapOption(rs) }
                 .findOne()
@@ -66,16 +65,15 @@ class OptionRepositoryImpl(private val jdbi: Jdbi) : OptionRepository {
     }
 
     // todo only need the id input, not the decisionId
-    override fun delete(id: Long, decisionId: Long): Boolean {
+    override fun delete(id: Long): Boolean {
         return jdbi.withHandle<Boolean, Exception> { handle ->
             val updated = handle.createUpdate(
                 """
                 DELETE FROM options
-                WHERE id = :id AND decision_id = :decisionId
+                WHERE id = :id
                 """.trimIndent()
             )
                 .bind("id", id)
-                .bind("decisionId", decisionId)
                 .execute()
             updated > 0
         }

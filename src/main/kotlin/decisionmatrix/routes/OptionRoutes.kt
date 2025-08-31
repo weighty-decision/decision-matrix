@@ -26,11 +26,9 @@ class OptionRoutes(
         return try {
             val decisionId = request.path("decisionId")?.toLong()
                 ?: return Response(Status.BAD_REQUEST).body("Missing decisionId")
-            val body = json.decodeFromString<OptionInput>(request.bodyString())
-            val created = optionRepository.insert(
-                OptionInput(decisionId = decisionId, name = body.name)
-            )
-            val responseBody = json.encodeToString(created)
+            val optionInput = json.decodeFromString<OptionInput>(request.bodyString())
+            val option = optionRepository.insert(decisionId = decisionId, option = optionInput)
+            val responseBody = json.encodeToString(option)
             Response(Status.CREATED).body(responseBody)
                 .header("Content-Type", "application/json")
         } catch (e: Exception) {
@@ -40,13 +38,12 @@ class OptionRoutes(
 
     fun updateOption(request: Request): Response {
         return try {
-            val decisionId = request.path("decisionId")?.toLong()
-                ?: return Response(Status.BAD_REQUEST).body("Missing decisionId")
+            request.path("decisionId")?.toLong() ?: return Response(Status.BAD_REQUEST).body("Missing decisionId")
             val optionId = request.path("optionId")?.toLong()
                 ?: return Response(Status.BAD_REQUEST).body("Missing optionId")
 
-            val body = json.decodeFromString<OptionInput>(request.bodyString())
-            val updated = optionRepository.update(optionId, decisionId, body.name)
+            val optionInput = json.decodeFromString<OptionInput>(request.bodyString())
+            val updated = optionRepository.update(optionId, optionInput.name)
             if (updated != null) {
                 val responseBody = json.encodeToString(updated)
                 Response(Status.OK).body(responseBody)
@@ -61,12 +58,11 @@ class OptionRoutes(
 
     fun deleteOption(request: Request): Response {
         return try {
-            val decisionId = request.path("decisionId")?.toLong()
-                ?: return Response(Status.BAD_REQUEST).body("Missing decisionId")
+            request.path("decisionId")?.toLong() ?: return Response(Status.BAD_REQUEST).body("Missing decisionId")
             val optionId = request.path("optionId")?.toLong()
                 ?: return Response(Status.BAD_REQUEST).body("Missing optionId")
 
-            val deleted = optionRepository.delete(optionId, decisionId)
+            val deleted = optionRepository.delete(optionId)
             if (deleted) {
                 Response(Status.NO_CONTENT)
             } else {

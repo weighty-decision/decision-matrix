@@ -24,9 +24,10 @@ class CriteriaRoutes(private val criteriaRepository: CriteriaRepository) {
         return try {
             val decisionId = request.path("decisionId")?.toLong()
                 ?: return Response(Status.BAD_REQUEST).body("Missing decisionId")
-            val body = json.decodeFromString<CriteriaInput>(request.bodyString())
+            val criteriaInput = json.decodeFromString<CriteriaInput>(request.bodyString())
             val created = criteriaRepository.insert(
-                CriteriaInput(decisionId = decisionId, name = body.name, weight = body.weight)
+                decisionId = decisionId,
+                criteria = criteriaInput
             )
             val responseBody = json.encodeToString(created)
             Response(Status.CREATED).body(responseBody)
@@ -38,13 +39,12 @@ class CriteriaRoutes(private val criteriaRepository: CriteriaRepository) {
 
     fun updateCriteria(request: Request): Response {
         return try {
-            val decisionId = request.path("decisionId")?.toLong()
-                ?: return Response(Status.BAD_REQUEST).body("Missing decisionId")
+            request.path("decisionId")?.toLong() ?: return Response(Status.BAD_REQUEST).body("Missing decisionId")
             val criteriaId = request.path("criteriaId")?.toLong()
                 ?: return Response(Status.BAD_REQUEST).body("Missing criteriaId")
 
-            val body = json.decodeFromString<CriteriaInput>(request.bodyString())
-            val updated = criteriaRepository.update(criteriaId, decisionId, body.name, body.weight)
+            val criteriaInput = json.decodeFromString<CriteriaInput>(request.bodyString())
+            val updated = criteriaRepository.update(criteriaId, criteriaInput.name, criteriaInput.weight)
             if (updated != null) {
                 val responseBody = json.encodeToString(updated)
                 Response(Status.OK).body(responseBody)
@@ -59,12 +59,11 @@ class CriteriaRoutes(private val criteriaRepository: CriteriaRepository) {
 
     fun deleteCriteria(request: Request): Response {
         return try {
-            val decisionId = request.path("decisionId")?.toLong()
-                ?: return Response(Status.BAD_REQUEST).body("Missing decisionId")
+            request.path("decisionId")?.toLong() ?: return Response(Status.BAD_REQUEST).body("Missing decisionId")
             val criteriaId = request.path("criteriaId")?.toLong()
                 ?: return Response(Status.BAD_REQUEST).body("Missing criteriaId")
 
-            val deleted = criteriaRepository.delete(criteriaId, decisionId)
+            val deleted = criteriaRepository.delete(criteriaId)
             if (deleted) {
                 Response(Status.NO_CONTENT)
             } else {

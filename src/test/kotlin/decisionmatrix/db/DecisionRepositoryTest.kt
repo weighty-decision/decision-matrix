@@ -1,9 +1,9 @@
 package decisionmatrix.db
 
 import decisionmatrix.CriteriaInput
+import decisionmatrix.Decision
 import decisionmatrix.DecisionInput
 import decisionmatrix.OptionInput
-import decisionmatrix.Decision
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -41,19 +41,12 @@ class DecisionRepositoryTest {
         )
 
         // Insert criteria for the decision
-        val insertedCriteria1 = criteriaRepository.insert(CriteriaInput(decisionId = insertedDecision.id, name = "Cost", weight = 3))
-        val insertedCriteria2 =
-            criteriaRepository.insert(CriteriaInput(decisionId = insertedDecision.id, name = "Reliability", weight = 5))
+        val insertedCriteria1 = criteriaRepository.insert(decisionId = insertedDecision.id, CriteriaInput(name = "Cost", weight = 3))
+        val insertedCriteria2 = criteriaRepository.insert(decisionId = insertedDecision.id, CriteriaInput(name = "Reliability", weight = 5))
 
         // Insert options for the decision
-        val insertedOption1 = optionRepository.insert(
-            OptionInput(
-                decisionId = insertedDecision.id,
-                name = "Honda Civic"
-            )
-        )
-        val insertedOption2 =
-            optionRepository.insert(OptionInput(decisionId = insertedDecision.id, name = "Toyota Camry"))
+        val insertedOption1 = optionRepository.insert(decisionId = insertedDecision.id, OptionInput(name = "Honda Civic"))
+        val insertedOption2 = optionRepository.insert(decisionId = insertedDecision.id, OptionInput(name = "Toyota Camry"))
 
         // Retrieve the fully hydrated decision
         val found = requireNotNull(decisionRepository.findById(insertedDecision.id))
@@ -81,15 +74,10 @@ class DecisionRepositoryTest {
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
 
         // Insert a decision
-        val insertedDecision = decisionRepository.insert(
-            DecisionInput(
-                name = "Criteria only decision",
-            )
-        )
+        val insertedDecision = decisionRepository.insert(DecisionInput(name = "Criteria only decision"))
 
         // Insert only criteria
-        val insertedCriteria =
-            criteriaRepository.insert(CriteriaInput(decisionId = insertedDecision.id, name = "Budget", weight = 4))
+        val insertedCriteria = criteriaRepository.insert(decisionId = insertedDecision.id, CriteriaInput(name = "Budget", weight = 4))
 
         // Retrieve the decision
         val found = requireNotNull(decisionRepository.findById(insertedDecision.id))
@@ -108,14 +96,10 @@ class DecisionRepositoryTest {
         val optionRepository = OptionRepositoryImpl(jdbi)
 
         // Insert a decision
-        val insertedDecision = decisionRepository.insert(
-            DecisionInput(
-                name = "Options only decision",
-            )
-        )
+        val insertedDecision = decisionRepository.insert(DecisionInput(name = "Options only decision"))
 
         // Insert only options
-        val insertedOption = optionRepository.insert(OptionInput(decisionId = insertedDecision.id, name = "Option A"))
+        val insertedOption = optionRepository.insert(decisionId = insertedDecision.id, OptionInput(name = "Option A"))
 
         // Retrieve the decision
         val found = requireNotNull(decisionRepository.findById(insertedDecision.id))

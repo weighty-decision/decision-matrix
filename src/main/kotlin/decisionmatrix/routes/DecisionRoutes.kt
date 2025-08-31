@@ -21,9 +21,9 @@ class DecisionRoutes(private val decisionRepository: DecisionRepository) {
 
     fun createDecision(request: Request): Response {
         return try {
-            val decision = json.decodeFromString<DecisionInput>(request.bodyString())
-            val createdDecision = decisionRepository.insert(decision)
-            val responseBody = json.encodeToString(createdDecision)
+            val decisionInput = json.decodeFromString<DecisionInput>(request.bodyString())
+            val decision = decisionRepository.insert(decisionInput)
+            val responseBody = json.encodeToString(decision)
             Response(Status.CREATED).body(responseBody)
                 .header("Content-Type", "application/json")
         } catch (e: Exception) {
