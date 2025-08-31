@@ -6,14 +6,6 @@ import java.sql.ResultSet
 
 class OptionRepository(private val jdbi: Jdbi) {
 
-    private fun mapOption(rs: ResultSet): Option {
-        return Option(
-            id = rs.getLong("id"),
-            decisionId = rs.getLong("decision_id"),
-            name = rs.getString("name"),
-        )
-    }
-
     fun insert(option: Option): Option {
         return jdbi.withHandle<Option, Exception> { handle ->
             handle.createQuery(
@@ -44,5 +36,13 @@ class OptionRepository(private val jdbi: Jdbi) {
                 .findOne()
                 .orElse(null)
         }
+    }
+
+    private fun mapOption(rs: ResultSet): Option {
+        return Option(
+            id = rs.getLong("id"),
+            decisionId = rs.getLong("decision_id"),
+            name = rs.getString("name"),
+        )
     }
 }

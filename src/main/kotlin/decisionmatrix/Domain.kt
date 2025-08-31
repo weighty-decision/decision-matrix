@@ -1,5 +1,8 @@
 package decisionmatrix
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Decision(
     val id: Long? = null,
     val name: String,
@@ -7,6 +10,7 @@ data class Decision(
     val options: List<Option>,
 )
 
+@Serializable
 data class Criteria(
     val id: Long? = null,
     val decisionId: Long,
@@ -14,12 +18,14 @@ data class Criteria(
     val weight: Int,
 )
 
+@Serializable
 data class Option(
     val id: Long? = null,
     val decisionId: Long,
     val name: String,
 )
 
+@Serializable
 data class OptionScore(
     val id: Long? = null,
     val optionId: Long,

@@ -11,10 +11,10 @@ class DecisionRepositoryTest {
 
     @Test
     fun insert_and_findById() {
-        val repo = DecisionRepository(jdbi)
-        val inserted = repo.insert(Decision(name = "My decision", criteria = emptyList(), options = emptyList()))
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val inserted = decisionRepository.insert(Decision(name = "My decision", criteria = emptyList(), options = emptyList()))
         requireNotNull(inserted.id)
-        val found = repo.findById(inserted.id)
+        val found = decisionRepository.findById(inserted.id)
 
         assertNotNull(found)
         assertEquals(

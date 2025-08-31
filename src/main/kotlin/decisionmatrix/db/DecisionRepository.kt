@@ -4,18 +4,13 @@ import decisionmatrix.Decision
 import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 
-class DecisionRepository(private val jdbi: Jdbi) {
+interface DecisionRepository {
+    fun insert(decision: Decision): Decision = throw NotImplementedError("not implemented")
+    fun findById(id: Long): Decision? = throw NotImplementedError("not implemented")
+}
 
-    private fun mapDecision(rs: ResultSet): Decision {
-        return Decision(
-            id = rs.getLong("id"),
-            name = rs.getString("name"),
-            criteria = emptyList(),
-            options = emptyList(),
-        )
-    }
-
-    fun insert(decision: Decision): Decision {
+class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
+    override fun insert(decision: Decision): Decision {
         return jdbi.withHandle<Decision, Exception> { handle ->
             handle.createQuery(
                 """
@@ -30,7 +25,7 @@ class DecisionRepository(private val jdbi: Jdbi) {
         }
     }
 
-    fun findById(id: Long): Decision? {
+    override fun findById(id: Long): Decision? {
         return jdbi.withHandle<Decision?, Exception> { handle ->
             handle.createQuery(
                 """
@@ -44,5 +39,14 @@ class DecisionRepository(private val jdbi: Jdbi) {
                 .findOne()
                 .orElse(null)
         }
+    }
+
+    private fun mapDecision(rs: ResultSet): Decision {
+        return Decision(
+            id = rs.getLong("id"),
+            name = rs.getString("name"),
+            criteria = emptyList(),
+            options = emptyList(),
+        )
     }
 }

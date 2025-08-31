@@ -6,15 +6,6 @@ import java.sql.ResultSet
 
 class CriteriaRepository(private val jdbi: Jdbi) {
 
-    private fun mapCriteria(rs: ResultSet): Criteria {
-        return Criteria(
-            id = rs.getLong("id"),
-            decisionId = rs.getLong("decision_id"),
-            name = rs.getString("name"),
-            weight = rs.getInt("weight"),
-        )
-    }
-
     fun insert(criteria: Criteria): Criteria {
         return jdbi.withHandle<Criteria, Exception> { handle ->
             handle.createQuery(
@@ -46,5 +37,14 @@ class CriteriaRepository(private val jdbi: Jdbi) {
                 .findOne()
                 .orElse(null)
         }
+    }
+
+    private fun mapCriteria(rs: ResultSet): Criteria {
+        return Criteria(
+            id = rs.getLong("id"),
+            decisionId = rs.getLong("decision_id"),
+            name = rs.getString("name"),
+            weight = rs.getInt("weight"),
+        )
     }
 }

@@ -12,7 +12,7 @@ class OptionRepositoryTest {
 
     @Test
     fun insert_and_findById() {
-        val decisionRepository = DecisionRepository(jdbi)
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(
             Decision(name = "My decision", criteria = emptyList(), options = emptyList())
         )
