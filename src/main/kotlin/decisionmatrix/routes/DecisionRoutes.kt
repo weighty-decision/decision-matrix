@@ -23,7 +23,7 @@ class DecisionRoutes(private val decisionRepository: DecisionRepository) {
         return try {
             val decision = json.decodeFromString<Decision>(request.bodyString())
             val createdDecision = decisionRepository.insert(decision)
-            val responseBody = json.encodeToString(Decision.serializer(), createdDecision)
+            val responseBody = json.encodeToString(createdDecision)
             Response(Status.CREATED).body(responseBody)
                 .header("Content-Type", "application/json")
         } catch (e: Exception) {
@@ -38,7 +38,7 @@ class DecisionRoutes(private val decisionRepository: DecisionRepository) {
 
             val decision = decisionRepository.findById(id)
             if (decision != null) {
-                val responseBody = json.encodeToString(Decision.serializer(), decision)
+                val responseBody = json.encodeToString(decision)
                 Response(Status.OK).body(responseBody)
                     .header("Content-Type", "application/json")
             } else {
