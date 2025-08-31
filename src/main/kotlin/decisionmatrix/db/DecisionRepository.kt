@@ -2,20 +2,30 @@ package decisionmatrix.db
 
 import decisionmatrix.Decision
 import org.jdbi.v3.core.Jdbi
+import java.sql.ResultSet
 
 class DecisionRepository(private val jdbi: Jdbi) {
 
-    fun insert(decision: Decision): Long {
-        return jdbi.withHandle<Long, Exception> { handle ->
-            handle.createUpdate(
+    private fun mapDecision(rs: ResultSet): Decision {
+        return Decision(
+            id = rs.getLong("id"),
+            name = rs.getString("name"),
+            criteria = emptyList(),
+            options = emptyList(),
+        )
+    }
+
+    fun insert(decision: Decision): Decision {
+        return jdbi.withHandle<Decision, Exception> { handle ->
+            handle.createQuery(
                 """
                 INSERT INTO decisions (name) 
                 VALUES (:name)
+                RETURNING *
                 """.trimIndent()
             )
                 .bind("name", decision.name)
-                .executeAndReturnGeneratedKeys("id")
-                .mapTo(Long::class.javaObjectType)
+                .map { rs, _ -> mapDecision(rs) }
                 .one()
         }
     }
@@ -30,14 +40,7 @@ class DecisionRepository(private val jdbi: Jdbi) {
                 """.trimIndent()
             )
                 .bind("id", id)
-                .map { rs, _ ->
-                    Decision(
-                        id = rs.getLong("id"),
-                        name = rs.getString("name"),
-                        criteria = emptyList(),
-                        options = emptyList(),
-                    )
-                }
+                .map { rs, _ -> mapDecision(rs) }
                 .findOne()
                 .orElse(null)
         }

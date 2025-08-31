@@ -2,22 +2,32 @@ package decisionmatrix.db
 
 import decisionmatrix.Criteria
 import org.jdbi.v3.core.Jdbi
+import java.sql.ResultSet
 
 class CriteriaRepository(private val jdbi: Jdbi) {
 
-    fun insert(criteria: Criteria): Long {
-        return jdbi.withHandle<Long, Exception> { handle ->
-            handle.createUpdate(
+    private fun mapCriteria(rs: ResultSet): Criteria {
+        return Criteria(
+            id = rs.getLong("id"),
+            decisionId = rs.getLong("decision_id"),
+            name = rs.getString("name"),
+            weight = rs.getInt("weight"),
+        )
+    }
+
+    fun insert(criteria: Criteria): Criteria {
+        return jdbi.withHandle<Criteria, Exception> { handle ->
+            handle.createQuery(
                 """
                 INSERT INTO criteria (decision_id, name, weight) 
                 VALUES (:decisionId, :name, :weight)
+                RETURNING *
                 """.trimIndent()
             )
                 .bind("decisionId", criteria.decisionId)
                 .bind("name", criteria.name)
                 .bind("weight", criteria.weight)
-                .executeAndReturnGeneratedKeys("id")
-                .mapTo(Long::class.javaObjectType)
+                .map { rs, _ -> mapCriteria(rs) }
                 .one()
         }
     }
@@ -32,14 +42,7 @@ class CriteriaRepository(private val jdbi: Jdbi) {
                 """.trimIndent()
             )
                 .bind("id", id)
-                .map { rs, _ ->
-                    Criteria(
-                        id = rs.getLong("id"),
-                        decisionId = rs.getLong("decision_id"),
-                        name = rs.getString("name"),
-                        weight = rs.getInt("weight"),
-                    )
-                }
+                .map { rs, _ -> mapCriteria(rs) }
                 .findOne()
                 .orElse(null)
         }

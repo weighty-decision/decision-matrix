@@ -2,21 +2,30 @@ package decisionmatrix.db
 
 import decisionmatrix.OptionScore
 import org.jdbi.v3.core.Jdbi
+import java.sql.ResultSet
 
 class OptionScoreRepository(private val jdbi: Jdbi) {
 
-    fun insert(score: OptionScore): Long {
-        return jdbi.withHandle<Long, Exception> { handle ->
-            handle.createUpdate(
+    private fun mapOptionScore(rs: ResultSet): OptionScore {
+        return OptionScore(
+            id = rs.getLong("id"),
+            optionId = rs.getLong("option_id"),
+            score = rs.getInt("score"),
+        )
+    }
+
+    fun insert(score: OptionScore): OptionScore {
+        return jdbi.withHandle<OptionScore, Exception> { handle ->
+            handle.createQuery(
                 """
                 INSERT INTO option_scores (option_id, score) 
                 VALUES (:optionId, :score)
+                RETURNING *
                 """.trimIndent()
             )
                 .bind("optionId", score.optionId)
                 .bind("score", score.score)
-                .executeAndReturnGeneratedKeys("id")
-                .mapTo(Long::class.javaObjectType)
+                .map { rs, _ -> mapOptionScore(rs) }
                 .one()
         }
     }
@@ -31,13 +40,7 @@ class OptionScoreRepository(private val jdbi: Jdbi) {
                 """.trimIndent()
             )
                 .bind("id", id)
-                .map { rs, _ ->
-                    OptionScore(
-                        id = rs.getLong("id"),
-                        optionId = rs.getLong("option_id"),
-                        score = rs.getInt("score"),
-                    )
-                }
+                .map { rs, _ -> mapOptionScore(rs) }
                 .findOne()
                 .orElse(null)
         }
