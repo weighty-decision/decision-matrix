@@ -16,7 +16,9 @@ class DecisionRoutes(private val decisionRepository: DecisionRepository) {
 
     val routes: RoutingHttpHandler = routes(
         "/decisions" bind Method.POST to ::createDecision,
-        "/decisions/{id}" bind Method.GET to ::getDecision
+        "/decisions/{id}" bind Method.GET to ::getDecision,
+        "/decisions/{id}" bind Method.PUT to ::updateDecision,
+        "/decisions/{id}" bind Method.DELETE to ::deleteDecision
     )
 
     fun createDecision(request: Request): Response {
@@ -41,6 +43,41 @@ class DecisionRoutes(private val decisionRepository: DecisionRepository) {
                 val responseBody = json.encodeToString(decision)
                 Response(Status.OK).body(responseBody)
                     .header("Content-Type", "application/json")
+            } else {
+                Response(Status.NOT_FOUND).body("Decision not found")
+            }
+        } catch (e: Exception) {
+            Response(Status.BAD_REQUEST).body("Invalid request: ${e.message}")
+        }
+    }
+
+    fun updateDecision(request: Request): Response {
+        return try {
+            val id = request.path("id")?.toLong()
+                ?: return Response(Status.BAD_REQUEST).body("Missing ID")
+
+            val decisionInput = json.decodeFromString<DecisionInput>(request.bodyString())
+            val updated = decisionRepository.update(id, decisionInput.name)
+            if (updated != null) {
+                val responseBody = json.encodeToString(updated)
+                Response(Status.OK).body(responseBody)
+                    .header("Content-Type", "application/json")
+            } else {
+                Response(Status.NOT_FOUND).body("Decision not found")
+            }
+        } catch (e: Exception) {
+            Response(Status.BAD_REQUEST).body("Invalid request: ${e.message}")
+        }
+    }
+
+    fun deleteDecision(request: Request): Response {
+        return try {
+            val id = request.path("id")?.toLong()
+                ?: return Response(Status.BAD_REQUEST).body("Missing ID")
+
+            val deleted = decisionRepository.delete(id)
+            if (deleted) {
+                Response(Status.NO_CONTENT)
             } else {
                 Response(Status.NOT_FOUND).body("Decision not found")
             }

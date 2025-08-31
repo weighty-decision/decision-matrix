@@ -8,6 +8,8 @@ import java.sql.ResultSet
 interface OptionScoreRepository {
     fun insert(optionId: Long, score: OptionScoreInput): OptionScore = throw NotImplementedError()
     fun findById(id: Long): OptionScore? = throw NotImplementedError()
+    fun update(id: Long, score: Int): OptionScore? = throw NotImplementedError()
+    fun delete(id: Long): Boolean = throw NotImplementedError()
 }
 
 class OptionScoreRepositoryImpl(private val jdbi: Jdbi) : OptionScoreRepository {
@@ -40,6 +42,38 @@ class OptionScoreRepositoryImpl(private val jdbi: Jdbi) : OptionScoreRepository 
                 .map { rs, _ -> mapOptionScore(rs) }
                 .findOne()
                 .orElse(null)
+        }
+    }
+
+    override fun update(id: Long, score: Int): OptionScore? {
+        return jdbi.withHandle<OptionScore?, Exception> { handle ->
+            handle.createQuery(
+                """
+                UPDATE option_scores
+                SET score = :score
+                WHERE id = :id
+                RETURNING *
+                """.trimIndent()
+            )
+                .bind("id", id)
+                .bind("score", score)
+                .map { rs, _ -> mapOptionScore(rs) }
+                .findOne()
+                .orElse(null)
+        }
+    }
+
+    override fun delete(id: Long): Boolean {
+        return jdbi.withHandle<Boolean, Exception> { handle ->
+            val updated = handle.createUpdate(
+                """
+                DELETE FROM option_scores
+                WHERE id = :id
+                """.trimIndent()
+            )
+                .bind("id", id)
+                .execute()
+            updated > 0
         }
     }
 }

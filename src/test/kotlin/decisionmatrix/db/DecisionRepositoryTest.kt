@@ -110,4 +110,50 @@ class DecisionRepositoryTest {
         found.options[0].id shouldBe insertedOption.id
         found.options[0].name shouldBe "Option A"
     }
+
+    @Test
+    fun update_existing_decision() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val inserted = decisionRepository.insert(DecisionInput(name = "Original decision"))
+
+        val updated = requireNotNull(decisionRepository.update(inserted.id, "Updated decision"))
+        updated.name shouldBe "Updated decision"
+        updated.id shouldBe inserted.id
+
+        // Verify the update persisted
+        val found = requireNotNull(decisionRepository.findById(inserted.id))
+        found.name shouldBe "Updated decision"
+    }
+
+    @Test
+    fun update_nonexistent_decision_returns_null() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+
+        val updated = decisionRepository.update(999L, "This should not work")
+
+        updated shouldBe null
+    }
+
+    @Test
+    fun delete_existing_decision() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val inserted = decisionRepository.insert(DecisionInput(name = "Decision to delete"))
+
+        val deleted = decisionRepository.delete(inserted.id)
+
+        deleted.shouldBeTrue()
+
+        // Verify the decision is deleted
+        val found = decisionRepository.findById(inserted.id)
+        found shouldBe null
+    }
+
+    @Test
+    fun delete_nonexistent_decision_returns_false() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+
+        val deleted = decisionRepository.delete(999L)
+
+        deleted shouldBe false
+    }
 }

@@ -10,6 +10,8 @@ import java.sql.ResultSet
 interface DecisionRepository {
     fun insert(decision: DecisionInput): Decision = throw NotImplementedError()
     fun findById(id: Long): Decision? = throw NotImplementedError()
+    fun update(id: Long, name: String): Decision? = throw NotImplementedError()
+    fun delete(id: Long): Boolean = throw NotImplementedError()
 }
 
 class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
@@ -55,6 +57,38 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
             }
 
             mapDecisionWithRelations(rows)
+        }
+    }
+
+    override fun update(id: Long, name: String): Decision? {
+        return jdbi.withHandle<Decision?, Exception> { handle ->
+            handle.createQuery(
+                """
+                UPDATE decisions
+                SET name = :name
+                WHERE id = :id
+                RETURNING *
+                """.trimIndent()
+            )
+                .bind("id", id)
+                .bind("name", name)
+                .map { rs, _ -> mapDecision(rs) }
+                .findOne()
+                .orElse(null)
+        }
+    }
+
+    override fun delete(id: Long): Boolean {
+        return jdbi.withHandle<Boolean, Exception> { handle ->
+            val updated = handle.createUpdate(
+                """
+                DELETE FROM decisions
+                WHERE id = :id
+                """.trimIndent()
+            )
+                .bind("id", id)
+                .execute()
+            updated > 0
         }
     }
 }

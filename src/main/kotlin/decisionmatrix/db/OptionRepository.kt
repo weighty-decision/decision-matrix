@@ -64,7 +64,6 @@ class OptionRepositoryImpl(private val jdbi: Jdbi) : OptionRepository {
         }
     }
 
-    // todo only need the id input, not the decisionId
     override fun delete(id: Long): Boolean {
         return jdbi.withHandle<Boolean, Exception> { handle ->
             val updated = handle.createUpdate(
