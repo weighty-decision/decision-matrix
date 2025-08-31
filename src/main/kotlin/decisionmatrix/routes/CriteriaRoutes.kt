@@ -1,9 +1,8 @@
 package decisionmatrix.routes
 
-import decisionmatrix.Criteria
-import decisionmatrix.json
+import decisionmatrix.CriteriaInput
 import decisionmatrix.db.CriteriaRepository
-import kotlinx.serialization.Serializable
+import decisionmatrix.json
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -25,9 +24,9 @@ class CriteriaRoutes(private val criteriaRepository: CriteriaRepository) {
         return try {
             val decisionId = request.path("decisionId")?.toLong()
                 ?: return Response(Status.BAD_REQUEST).body("Missing decisionId")
-            val body = json.decodeFromString<CreateCriteriaRequest>(request.bodyString())
+            val body = json.decodeFromString<CriteriaInput>(request.bodyString())
             val created = criteriaRepository.insert(
-                Criteria(decisionId = decisionId, name = body.name, weight = body.weight)
+                CriteriaInput(decisionId = decisionId, name = body.name, weight = body.weight)
             )
             val responseBody = json.encodeToString(created)
             Response(Status.CREATED).body(responseBody)
@@ -44,7 +43,7 @@ class CriteriaRoutes(private val criteriaRepository: CriteriaRepository) {
             val criteriaId = request.path("criteriaId")?.toLong()
                 ?: return Response(Status.BAD_REQUEST).body("Missing criteriaId")
 
-            val body = json.decodeFromString<UpdateCriteriaRequest>(request.bodyString())
+            val body = json.decodeFromString<CriteriaInput>(request.bodyString())
             val updated = criteriaRepository.update(criteriaId, decisionId, body.name, body.weight)
             if (updated != null) {
                 val responseBody = json.encodeToString(updated)
@@ -77,8 +76,3 @@ class CriteriaRoutes(private val criteriaRepository: CriteriaRepository) {
     }
 }
 
-@Serializable
-data class CreateCriteriaRequest(val name: String, val weight: Int)
-
-@Serializable
-data class UpdateCriteriaRequest(val name: String, val weight: Int)

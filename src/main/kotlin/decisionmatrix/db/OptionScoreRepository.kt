@@ -1,16 +1,17 @@
 package decisionmatrix.db
 
+import decisionmatrix.OptionScoreInput
 import decisionmatrix.OptionScore
 import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 
 interface OptionScoreRepository {
-    fun insert(score: OptionScore): OptionScore = throw NotImplementedError("not implemented")
-    fun findById(id: Long): OptionScore? = throw NotImplementedError("not implemented")
+    fun insert(score: OptionScoreInput): OptionScore = throw NotImplementedError()
+    fun findById(id: Long): OptionScore? = throw NotImplementedError()
 }
 
 class OptionScoreRepositoryImpl(private val jdbi: Jdbi) : OptionScoreRepository {
-    override fun insert(score: OptionScore): OptionScore {
+    override fun insert(score: OptionScoreInput): OptionScore {
         return jdbi.withHandle<OptionScore, Exception> { handle ->
             handle.createQuery(
                 """

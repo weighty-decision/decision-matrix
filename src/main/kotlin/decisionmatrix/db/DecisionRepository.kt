@@ -1,5 +1,6 @@
 package decisionmatrix.db
 
+import decisionmatrix.DecisionInput
 import decisionmatrix.Criteria
 import decisionmatrix.Decision
 import decisionmatrix.Option
@@ -7,12 +8,12 @@ import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 
 interface DecisionRepository {
-    fun insert(decision: Decision): Decision = throw NotImplementedError("not implemented")
-    fun findById(id: Long): Decision? = throw NotImplementedError("not implemented")
+    fun insert(decision: DecisionInput): Decision = throw NotImplementedError()
+    fun findById(id: Long): Decision? = throw NotImplementedError()
 }
 
 class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
-    override fun insert(decision: Decision): Decision {
+    override fun insert(decision: DecisionInput): Decision {
         return jdbi.withHandle<Decision, Exception> { handle ->
             handle.createQuery(
                 """

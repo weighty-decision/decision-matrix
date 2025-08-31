@@ -1,9 +1,8 @@
 package decisionmatrix.routes
 
-import decisionmatrix.Option
-import decisionmatrix.json
+import decisionmatrix.OptionInput
 import decisionmatrix.db.OptionRepository
-import kotlinx.serialization.Serializable
+import decisionmatrix.json
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -13,7 +12,9 @@ import org.http4k.routing.bind
 import org.http4k.routing.path
 import org.http4k.routing.routes
 
-class OptionRoutes(private val optionRepository: OptionRepository) {
+class OptionRoutes(
+    private val optionRepository: OptionRepository
+) {
 
     val routes: RoutingHttpHandler = routes(
         "/decisions/{decisionId}/options/" bind Method.POST to ::createOption,
@@ -25,9 +26,9 @@ class OptionRoutes(private val optionRepository: OptionRepository) {
         return try {
             val decisionId = request.path("decisionId")?.toLong()
                 ?: return Response(Status.BAD_REQUEST).body("Missing decisionId")
-            val body = json.decodeFromString<CreateOptionRequest>(request.bodyString())
+            val body = json.decodeFromString<OptionInput>(request.bodyString())
             val created = optionRepository.insert(
-                Option(decisionId = decisionId, name = body.name)
+                OptionInput(decisionId = decisionId, name = body.name)
             )
             val responseBody = json.encodeToString(created)
             Response(Status.CREATED).body(responseBody)
@@ -44,7 +45,7 @@ class OptionRoutes(private val optionRepository: OptionRepository) {
             val optionId = request.path("optionId")?.toLong()
                 ?: return Response(Status.BAD_REQUEST).body("Missing optionId")
 
-            val body = json.decodeFromString<UpdateOptionRequest>(request.bodyString())
+            val body = json.decodeFromString<OptionInput>(request.bodyString())
             val updated = optionRepository.update(optionId, decisionId, body.name)
             if (updated != null) {
                 val responseBody = json.encodeToString(updated)
@@ -77,8 +78,3 @@ class OptionRoutes(private val optionRepository: OptionRepository) {
     }
 }
 
-@Serializable
-data class CreateOptionRequest(val name: String)
-
-@Serializable
-data class UpdateOptionRequest(val name: String)

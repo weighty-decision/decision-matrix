@@ -1,6 +1,7 @@
 package decisionmatrix.db
 
-import decisionmatrix.Decision
+import decisionmatrix.DecisionInput
+import decisionmatrix.OptionInput
 import decisionmatrix.Option
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -13,14 +14,10 @@ class OptionRepositoryTest {
     @Test
     fun insert_and_findById() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
-        val decision = decisionRepository.insert(
-            Decision(name = "My decision", criteria = emptyList(), options = emptyList())
-        )
-        requireNotNull(decision.id)
+        val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
 
         val optionRepository = OptionRepositoryImpl(jdbi)
-        val option = optionRepository.insert(Option(decisionId = decision.id, name = "Option A"))
-        requireNotNull(option.id)
+        val option = optionRepository.insert(OptionInput(decisionId = decision.id, name = "Option A"))
         val found = optionRepository.findById(option.id)
         found shouldNotBe null
         found shouldBe Option(id = option.id, decisionId = decision.id, name = "Option A")

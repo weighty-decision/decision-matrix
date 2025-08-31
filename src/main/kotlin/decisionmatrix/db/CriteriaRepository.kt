@@ -1,18 +1,19 @@
 package decisionmatrix.db
 
+import decisionmatrix.CriteriaInput
 import decisionmatrix.Criteria
 import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 
 interface CriteriaRepository {
-    fun insert(criteria: Criteria): Criteria = throw NotImplementedError("not implemented")
-    fun findById(id: Long): Criteria? = throw NotImplementedError("not implemented")
-    fun update(id: Long, decisionId: Long, name: String, weight: Int): Criteria? = throw NotImplementedError("not implemented")
-    fun delete(id: Long, decisionId: Long): Boolean = throw NotImplementedError("not implemented")
+    fun insert(criteria: CriteriaInput): Criteria = throw NotImplementedError()
+    fun findById(id: Long): Criteria? = throw NotImplementedError()
+    fun update(id: Long, decisionId: Long, name: String, weight: Int): Criteria? = throw NotImplementedError()
+    fun delete(id: Long, decisionId: Long): Boolean = throw NotImplementedError()
 }
 
 class CriteriaRepositoryImpl(private val jdbi: Jdbi) : CriteriaRepository {
-    override fun insert(criteria: Criteria): Criteria {
+    override fun insert(criteria: CriteriaInput): Criteria {
         return jdbi.withHandle<Criteria, Exception> { handle ->
             handle.createQuery(
                 """
