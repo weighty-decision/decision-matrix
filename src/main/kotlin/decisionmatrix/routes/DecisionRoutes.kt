@@ -2,7 +2,6 @@ package decisionmatrix.routes
 
 import decisionmatrix.Decision
 import decisionmatrix.db.DecisionRepository
-import decisionmatrix.decisionRoutes
 import decisionmatrix.json
 import org.http4k.core.Method
 import org.http4k.core.Request
@@ -16,8 +15,8 @@ import org.http4k.routing.routes
 class DecisionRoutes(private val decisionRepository: DecisionRepository) {
 
     val routes: RoutingHttpHandler = routes(
-        "/decisions" bind Method.POST to decisionRoutes::createDecision,
-        "/decisions/{id}" bind Method.GET to decisionRoutes::getDecision
+        "/decisions" bind Method.POST to ::createDecision,
+        "/decisions/{id}" bind Method.GET to ::getDecision
     )
 
     fun createDecision(request: Request): Response {
