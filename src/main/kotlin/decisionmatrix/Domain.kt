@@ -42,13 +42,15 @@ data class Option(
 )
 
 @Serializable
-data class OptionScoreInput(
+data class OptionCriteriaScoreInput(
     val score: Int,
 )
 
 @Serializable
-data class OptionScore(
+data class OptionCriteriaScore(
     val id: Long,
     val optionId: Long,
+    val criteriaId: Long,
+    val scoredBy: String,
     val score: Int,
 )

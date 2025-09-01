@@ -24,7 +24,7 @@ val jdbi = loadDatabase()
 val decisionRepository = DecisionRepositoryImpl(jdbi)
 val optionRepository = OptionRepositoryImpl(jdbi)
 val criteriaRepository = CriteriaRepositoryImpl(jdbi)
-val optionScoreRepository = OptionScoreRepositoryImpl(jdbi)
+val optionCriteriaScoreRepository = OptionCriteriaScoreRepositoryImpl(jdbi)
 
 val decisionRoutes = DecisionRoutes(decisionRepository)
 val criteriaRoutes = CriteriaRoutes(criteriaRepository)

@@ -1,55 +1,57 @@
 package decisionmatrix.db
 
-import decisionmatrix.OptionScoreInput
-import decisionmatrix.OptionScore
+import decisionmatrix.OptionCriteriaScore
+import decisionmatrix.OptionCriteriaScoreInput
 import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 
-interface OptionScoreRepository {
-    fun insert(optionId: Long, score: OptionScoreInput): OptionScore = throw NotImplementedError()
-    fun findById(id: Long): OptionScore? = throw NotImplementedError()
-    fun update(id: Long, score: Int): OptionScore? = throw NotImplementedError()
+interface OptionCriteriaScoreRepository {
+    fun insert(optionId: Long, criteriaId: Long, scoredBy: String, score: OptionCriteriaScoreInput): OptionCriteriaScore = throw NotImplementedError()
+    fun findById(id: Long): OptionCriteriaScore? = throw NotImplementedError()
+    fun update(id: Long, score: Int): OptionCriteriaScore? = throw NotImplementedError()
     fun delete(id: Long): Boolean = throw NotImplementedError()
 }
 
-class OptionScoreRepositoryImpl(private val jdbi: Jdbi) : OptionScoreRepository {
-    override fun insert(optionId: Long, score: OptionScoreInput): OptionScore {
-        return jdbi.withHandle<OptionScore, Exception> { handle ->
+class OptionCriteriaScoreRepositoryImpl(private val jdbi: Jdbi) : OptionCriteriaScoreRepository {
+    override fun insert(optionId: Long, criteriaId: Long, scoredBy: String, score: OptionCriteriaScoreInput): OptionCriteriaScore {
+        return jdbi.withHandle<OptionCriteriaScore, Exception> { handle ->
             handle.createQuery(
                 """
-                INSERT INTO option_scores (option_id, score) 
-                VALUES (:optionId, :score)
+                INSERT INTO option_criteria_scores (option_id, criteria_id, scored_by, score) 
+                VALUES (:optionId, :criteriaId, :scoredBy, :score)
                 RETURNING *
                 """.trimIndent()
             )
                 .bind("optionId", optionId)
+                .bind("criteriaId", criteriaId)
+                .bind("scoredBy", scoredBy)
                 .bind("score", score.score)
-                .map { rs, _ -> mapOptionScore(rs) }
+                .map { rs, _ -> mapOptionCriteriaScore(rs) }
                 .one()
         }
     }
 
-    override fun findById(id: Long): OptionScore? {
-        return jdbi.withHandle<OptionScore?, Exception> { handle ->
+    override fun findById(id: Long): OptionCriteriaScore? {
+        return jdbi.withHandle<OptionCriteriaScore?, Exception> { handle ->
             handle.createQuery(
                 """
-                SELECT id, option_id, score
-                FROM option_scores
+                SELECT id, option_id, criteria_id, scored_by, score
+                FROM option_criteria_scores
                 WHERE id = :id
                 """.trimIndent()
             )
                 .bind("id", id)
-                .map { rs, _ -> mapOptionScore(rs) }
+                .map { rs, _ -> mapOptionCriteriaScore(rs) }
                 .findOne()
                 .orElse(null)
         }
     }
 
-    override fun update(id: Long, score: Int): OptionScore? {
-        return jdbi.withHandle<OptionScore?, Exception> { handle ->
+    override fun update(id: Long, score: Int): OptionCriteriaScore? {
+        return jdbi.withHandle<OptionCriteriaScore?, Exception> { handle ->
             handle.createQuery(
                 """
-                UPDATE option_scores
+                UPDATE option_criteria_scores
                 SET score = :score
                 WHERE id = :id
                 RETURNING *
@@ -57,7 +59,7 @@ class OptionScoreRepositoryImpl(private val jdbi: Jdbi) : OptionScoreRepository 
             )
                 .bind("id", id)
                 .bind("score", score)
-                .map { rs, _ -> mapOptionScore(rs) }
+                .map { rs, _ -> mapOptionCriteriaScore(rs) }
                 .findOne()
                 .orElse(null)
         }
@@ -67,7 +69,7 @@ class OptionScoreRepositoryImpl(private val jdbi: Jdbi) : OptionScoreRepository 
         return jdbi.withHandle<Boolean, Exception> { handle ->
             val updated = handle.createUpdate(
                 """
-                DELETE FROM option_scores
+                DELETE FROM option_criteria_scores
                 WHERE id = :id
                 """.trimIndent()
             )
@@ -78,10 +80,12 @@ class OptionScoreRepositoryImpl(private val jdbi: Jdbi) : OptionScoreRepository 
     }
 }
 
-private fun mapOptionScore(rs: ResultSet): OptionScore {
-    return OptionScore(
+private fun mapOptionCriteriaScore(rs: ResultSet): OptionCriteriaScore {
+    return OptionCriteriaScore(
         id = rs.getLong("id"),
         optionId = rs.getLong("option_id"),
+        criteriaId = rs.getLong("criteria_id"),
+        scoredBy = rs.getString("scored_by"),
         score = rs.getInt("score"),
     )
 }

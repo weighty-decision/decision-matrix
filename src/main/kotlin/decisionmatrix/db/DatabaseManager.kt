@@ -67,11 +67,14 @@ fun createSchema(jdbi: Jdbi) {
         )
         handle.execute(
             """
-                CREATE TABLE IF NOT EXISTS option_scores (
+                CREATE TABLE IF NOT EXISTS option_criteria_scores (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     option_id INTEGER NOT NULL,
+                    criteria_id INTEGER NOT NULL,
                     score INTEGER NOT NULL,
+                    scored_by TEXT NOT NULL,
                     FOREIGN KEY(option_id) REFERENCES options(id)
+                    FOREIGN KEY(criteria_id) REFERENCES criteria(id)
                 )
                 """.trimIndent()
         )
