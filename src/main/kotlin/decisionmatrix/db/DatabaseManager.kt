@@ -1,11 +1,12 @@
 package decisionmatrix.db
 
 import org.jdbi.v3.core.Jdbi
-import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.createTempFile
 
-fun loadDatabase(databasePath: File = File("/tmp/decision_matrix.sqlite")): Jdbi {
-    val jdbi = Jdbi.create("jdbc:sqlite:${databasePath.path}")
+fun loadDatabase(databasePath: Path = Paths.get(System.getProperty("user.home"), "decision_matrix.sqlite")): Jdbi {
+    val jdbi = Jdbi.create("jdbc:sqlite:$databasePath")
     jdbi.useHandle<Exception> { it.execute("PRAGMA foreign_keys = ON") }
     if (!schemaExists(jdbi)) {
         createSchema(jdbi)

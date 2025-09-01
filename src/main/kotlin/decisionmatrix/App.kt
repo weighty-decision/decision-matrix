@@ -1,23 +1,22 @@
 package decisionmatrix
 
 import decisionmatrix.db.*
-import decisionmatrix.routes.DecisionRoutes
 import decisionmatrix.routes.CriteriaRoutes
-import decisionmatrix.routes.OptionRoutes
+import decisionmatrix.routes.DecisionRoutes
 import decisionmatrix.routes.DecisionUiRoutes
+import decisionmatrix.routes.OptionRoutes
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.then
 import org.http4k.filter.DebuggingFilters.PrintRequest
-import org.http4k.routing.ResourceLoader
-import org.http4k.routing.RoutingHttpHandler
-import org.http4k.routing.bind
-import org.http4k.routing.routes
-import org.http4k.routing.static
+import org.http4k.routing.*
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
+import org.slf4j.LoggerFactory
+
+private val log = LoggerFactory.getLogger("DecisionMatrix")
 
 val jdbi = loadDatabase()
 
@@ -59,5 +58,5 @@ fun main() {
 
     val server = app.asServer(Undertow(9000)).start()
 
-    println("Server started on " + server.port())
+    log.info("Server started. UI available at http://localhost:${server.port()}")
 }

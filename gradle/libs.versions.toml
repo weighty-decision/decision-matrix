@@ -7,6 +7,8 @@ kotlinx-html = "0.11.0"
 kotlinx-serialization-json = "1.9.0"
 kotest = "5.9.1"
 sqlite-jdbc = "3.44.1.0"
+slf4j = "2.0.16"
+logback = "1.5.12"
 
 [libraries]
 jdbi-core = { module = "org.jdbi:jdbi3-core", version.ref = "jdbi" }
@@ -30,6 +32,8 @@ kotest-extensions = { module = "io.kotest:kotest-extensions", version.ref = "kot
 kotest-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 kotest-property = { module = "io.kotest:kotest-property-jvm", version.ref = "kotest" }
 sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 [bundles]
 testing = [
@@ -55,6 +59,11 @@ http4k-testing = [
     "http4k-testing-approval",
     "http4k-testing-hamkrest",
     "http4k-testing-kotest",
+]
+
+logging = [
+    "slf4j-api",
+    "logback-classic",
 ]
 
 [plugins]
