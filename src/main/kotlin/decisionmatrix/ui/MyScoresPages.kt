@@ -1,13 +1,13 @@
 package decisionmatrix.ui
 
 import decisionmatrix.Decision
-import decisionmatrix.OptionCriteriaScore
+import decisionmatrix.UserScore
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
 
 object MyScoresPages {
 
-    fun myScoresPage(decision: Decision, userId: String, scores: List<OptionCriteriaScore>): String = page("${decision.name} · My scores") {
+    fun myScoresPage(decision: Decision, userId: String, scores: List<UserScore>): String = page("${decision.name} · My scores") {
         section(classes = "card") {
             h1 { +"My scores for '${decision.name}'" }
 

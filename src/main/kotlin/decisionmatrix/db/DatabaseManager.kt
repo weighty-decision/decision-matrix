@@ -67,7 +67,7 @@ fun createSchema(jdbi: Jdbi) {
         )
         handle.execute(
             """
-                CREATE TABLE IF NOT EXISTS option_criteria_scores (
+                CREATE TABLE IF NOT EXISTS user_scores (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     decision_id INTEGER NOT NULL,
                     option_id INTEGER NOT NULL,

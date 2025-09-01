@@ -3,11 +3,11 @@ package decisionmatrix.routes
 import decisionmatrix.CriteriaInput
 import decisionmatrix.DecisionInput
 import decisionmatrix.OptionInput
-import decisionmatrix.OptionCriteriaScoreInput
+import decisionmatrix.UserScoreInput
 import decisionmatrix.db.CriteriaRepository
 import decisionmatrix.db.DecisionRepository
 import decisionmatrix.db.OptionRepository
-import decisionmatrix.db.OptionCriteriaScoreRepository
+import decisionmatrix.db.UserScoreRepository
 import decisionmatrix.ui.DecisionPages
 import decisionmatrix.ui.MyScoresPages
 import decisionmatrix.ui.CalculateScoresPages
@@ -26,7 +26,7 @@ class DecisionUiRoutes(
     private val decisionRepository: DecisionRepository,
     private val optionRepository: OptionRepository,
     private val criteriaRepository: CriteriaRepository,
-    private val optionCriteriaScoreRepository: OptionCriteriaScoreRepository
+    private val userScoreRepository: UserScoreRepository
 ) {
 
     val routes: RoutingHttpHandler = routes(
@@ -181,7 +181,7 @@ class DecisionUiRoutes(
         if (userId.isBlank()) return Response(Status.BAD_REQUEST).body("Missing required query param 'userid'")
 
         val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
-        val userScores = optionCriteriaScoreRepository.findAllByDecisionId(decisionId)
+        val userScores = userScoreRepository.findAllByDecisionId(decisionId)
             .filter { it.scoredBy == userId }
 
         return htmlResponse(MyScoresPages.myScoresPage(decision, userId, userScores))
@@ -197,7 +197,7 @@ class DecisionUiRoutes(
             ?: return Response(Status.BAD_REQUEST).body("Missing userid")
 
         // Save action: insert/update any provided numeric scores; delete existing scores if a blank was submitted.
-        val existingForUser = optionCriteriaScoreRepository.findAllByDecisionId(decisionId)
+        val existingForUser = userScoreRepository.findAllByDecisionId(decisionId)
             .filter { it.scoredBy == userId }
         val existingMap = existingForUser.associateBy { it.optionId to it.criteriaId }
 
@@ -210,22 +210,22 @@ class DecisionUiRoutes(
                 val existing = existingMap[opt.id to c.id]
                 if (raw.isNullOrBlank()) {
                     if (existing != null) {
-                        optionCriteriaScoreRepository.delete(existing.id)
+                        userScoreRepository.delete(existing.id)
                     }
                     continue
                 }
 
                 val value = raw.toIntOrNull() ?: continue
                 if (existing == null) {
-                    optionCriteriaScoreRepository.insert(
+                    userScoreRepository.insert(
                         decisionId = decisionId,
                         optionId = opt.id,
                         criteriaId = c.id,
                         scoredBy = userId,
-                        score = OptionCriteriaScoreInput(score = value)
+                        score = UserScoreInput(score = value)
                     )
                 } else if (existing.score != value) {
-                    optionCriteriaScoreRepository.update(existing.id, value)
+                    userScoreRepository.update(existing.id, value)
                 }
             }
         }
@@ -238,7 +238,7 @@ class DecisionUiRoutes(
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
         val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
 
-        val scores = optionCriteriaScoreRepository.findAllByDecisionId(decisionId)
+        val scores = userScoreRepository.findAllByDecisionId(decisionId)
 
         return htmlResponse(CalculateScoresPages.calculateScoresPage(decision, scores))
     }

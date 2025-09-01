@@ -16,10 +16,10 @@ data class Decision(
     val criteria: List<Criteria> = emptyList(),
     val options: List<Option> = emptyList(),
 ) {
-    fun calculateOptionScores(optionCriteriaScores: List<OptionCriteriaScore>): Map<Option, BigDecimal> {
+    fun calculateOptionScores(userScores: List<UserScore>): Map<Option, BigDecimal> {
         require(options.isNotEmpty()) { "Missing required options" }
         require(criteria.isNotEmpty()) { "Missing required criteria" }
-        require(optionCriteriaScores.isNotEmpty()) { "Missing required scores" }
+        require(userScores.isNotEmpty()) { "Missing required scores" }
 
         val result = LinkedHashMap<Option, BigDecimal>()
 
@@ -27,7 +27,7 @@ data class Decision(
             var optionTotal = BigDecimal.ZERO
 
             for (criterion in criteria) {
-                val scores = optionCriteriaScores.filter { it.optionId == option.id && it.criteriaId == criterion.id }
+                val scores = userScores.filter { it.optionId == option.id && it.criteriaId == criterion.id }
 
                 if (scores.isNotEmpty()) {
                     val sum = scores.fold(BigDecimal.ZERO) { acc, s -> acc + BigDecimal(s.score) }
@@ -71,12 +71,12 @@ data class Option(
 )
 
 @Serializable
-data class OptionCriteriaScoreInput(
+data class UserScoreInput(
     val score: Int,
 )
 
 @Serializable
-data class OptionCriteriaScore(
+data class UserScore(
     val id: Long,
     val decisionId: Long,
     val optionId: Long,

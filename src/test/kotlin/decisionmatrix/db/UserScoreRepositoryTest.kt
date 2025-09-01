@@ -2,15 +2,15 @@ package decisionmatrix.db
 
 import decisionmatrix.CriteriaInput
 import decisionmatrix.DecisionInput
-import decisionmatrix.OptionCriteriaScore
-import decisionmatrix.OptionCriteriaScoreInput
+import decisionmatrix.UserScore
+import decisionmatrix.UserScoreInput
 import decisionmatrix.OptionInput
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
 
-class OptionCriteriaScoreRepositoryTest {
+class UserScoreRepositoryTest {
 
     @Test fun `insert and findById`() {
         val jdbi = createTempDatabase()
@@ -24,17 +24,17 @@ class OptionCriteriaScoreRepositoryTest {
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
         val criteria = criteriaRepository.insert(decisionId = decision.id, CriteriaInput(name = "Cost", weight = 5))
 
-        val optionCriteriaScoreRepository = OptionCriteriaScoreRepositoryImpl(jdbi)
-        val optionScore = optionCriteriaScoreRepository.insert(
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+        val optionScore = userScoreRepository.insert(
             decisionId = decision.id,
             optionId = option.id,
             criteriaId = criteria.id,
             scoredBy = "joe",
-            score = OptionCriteriaScoreInput(score = 9)
+            score = UserScoreInput(score = 9)
         )
-        val found = optionCriteriaScoreRepository.findById(optionScore.id)
+        val found = userScoreRepository.findById(optionScore.id)
         found shouldNotBe null
-        found shouldBe OptionCriteriaScore(id = optionScore.id, decisionId = decision.id, optionId = option.id, criteriaId = criteria.id, scoredBy = "joe", score = 9)
+        found shouldBe UserScore(id = optionScore.id, decisionId = decision.id, optionId = option.id, criteriaId = criteria.id, scoredBy = "joe", score = 9)
     }
 
     @Test fun `update existing option score`() {
@@ -49,16 +49,16 @@ class OptionCriteriaScoreRepositoryTest {
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
         val criteria = criteriaRepository.insert(decisionId = decision.id, CriteriaInput(name = "Cost", weight = 5))
 
-        val optionCriteriaScoreRepository = OptionCriteriaScoreRepositoryImpl(jdbi)
-        val inserted = optionCriteriaScoreRepository.insert(
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+        val inserted = userScoreRepository.insert(
             decisionId = decision.id,
             optionId = option.id,
             criteriaId = criteria.id,
             scoredBy = "joe",
-            score = OptionCriteriaScoreInput(score = 9)
+            score = UserScoreInput(score = 9)
         )
 
-        val updated = requireNotNull(optionCriteriaScoreRepository.update(inserted.id, 8))
+        val updated = requireNotNull(userScoreRepository.update(inserted.id, 8))
         updated.score shouldBe 8
         updated.id shouldBe inserted.id
         updated.decisionId shouldBe decision.id
@@ -67,15 +67,15 @@ class OptionCriteriaScoreRepositoryTest {
         updated.scoredBy shouldBe "joe"
 
         // Verify the update persisted
-        val found = requireNotNull(optionCriteriaScoreRepository.findById(inserted.id))
+        val found = requireNotNull(userScoreRepository.findById(inserted.id))
         found.score shouldBe 8
     }
 
     @Test fun `update nonexistent option score returns null`() {
         val jdbi = createTempDatabase()
-        val optionScoreRepository = OptionCriteriaScoreRepositoryImpl(jdbi)
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
-        val updated = optionScoreRepository.update(999L, 10)
+        val updated = userScoreRepository.update(999L, 10)
 
         updated shouldBe null
     }
@@ -92,29 +92,29 @@ class OptionCriteriaScoreRepositoryTest {
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
         val criteria = criteriaRepository.insert(decisionId = decision.id, CriteriaInput(name = "Cost", weight = 5))
 
-        val optionCriteriaScoreRepository = OptionCriteriaScoreRepositoryImpl(jdbi)
-        val inserted = optionCriteriaScoreRepository.insert(
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+        val inserted = userScoreRepository.insert(
             decisionId = decision.id,
             optionId = option.id,
             criteriaId = criteria.id,
             scoredBy = "joe",
-            score = OptionCriteriaScoreInput(score = 9)
+            score = UserScoreInput(score = 9)
         )
 
-        val deleted = optionCriteriaScoreRepository.delete(inserted.id)
+        val deleted = userScoreRepository.delete(inserted.id)
 
         deleted.shouldBeTrue()
 
         // Verify the option score is deleted
-        val found = optionCriteriaScoreRepository.findById(inserted.id)
+        val found = userScoreRepository.findById(inserted.id)
         found shouldBe null
     }
 
     @Test fun `delete nonexistent option score returns false`() {
         val jdbi = createTempDatabase()
-        val optionScoreRepository = OptionCriteriaScoreRepositoryImpl(jdbi)
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
-        val deleted = optionScoreRepository.delete(999L)
+        val deleted = userScoreRepository.delete(999L)
 
         deleted shouldBe false
     }
@@ -136,37 +136,37 @@ class OptionCriteriaScoreRepositoryTest {
         val criteria2 = criteriaRepository.insert(decisionId = decision1.id, CriteriaInput(name = "Quality", weight = 8))
         val criteria3 = criteriaRepository.insert(decisionId = decision2.id, CriteriaInput(name = "Speed", weight = 3))
 
-        val optionCriteriaScoreRepository = OptionCriteriaScoreRepositoryImpl(jdbi)
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
         // Insert scores for decision1
-        val score1 = optionCriteriaScoreRepository.insert(
+        val score1 = userScoreRepository.insert(
             decisionId = decision1.id,
             optionId = option1.id,
             criteriaId = criteria1.id,
             scoredBy = "alice",
-            score = OptionCriteriaScoreInput(score = 7)
+            score = UserScoreInput(score = 7)
         )
-        val score2 = optionCriteriaScoreRepository.insert(
+        val score2 = userScoreRepository.insert(
             decisionId = decision1.id,
             optionId = option2.id,
             criteriaId = criteria2.id,
             scoredBy = "bob",
-            score = OptionCriteriaScoreInput(score = 9)
+            score = UserScoreInput(score = 9)
         )
 
         // Insert score for decision2 (should not be returned)
-        optionCriteriaScoreRepository.insert(
+        userScoreRepository.insert(
             decisionId = decision2.id,
             optionId = option3.id,
             criteriaId = criteria3.id,
             scoredBy = "charlie",
-            score = OptionCriteriaScoreInput(score = 6)
+            score = UserScoreInput(score = 6)
         )
 
-        val scoresForDecision1 = optionCriteriaScoreRepository.findAllByDecisionId(decision1.id)
+        val scoresForDecision1 = userScoreRepository.findAllByDecisionId(decision1.id)
 
         scoresForDecision1.size shouldBe 2
-        scoresForDecision1[0] shouldBe OptionCriteriaScore(
+        scoresForDecision1[0] shouldBe UserScore(
             id = score1.id,
             decisionId = decision1.id,
             optionId = option1.id,
@@ -174,7 +174,7 @@ class OptionCriteriaScoreRepositoryTest {
             scoredBy = "alice",
             score = 7
         )
-        scoresForDecision1[1] shouldBe OptionCriteriaScore(
+        scoresForDecision1[1] shouldBe UserScore(
             id = score2.id,
             decisionId = decision1.id,
             optionId = option2.id,
@@ -184,7 +184,7 @@ class OptionCriteriaScoreRepositoryTest {
         )
 
         // Verify decision2 has its own score
-        val scoresForDecision2 = optionCriteriaScoreRepository.findAllByDecisionId(decision2.id)
+        val scoresForDecision2 = userScoreRepository.findAllByDecisionId(decision2.id)
         scoresForDecision2.size shouldBe 1
         scoresForDecision2[0].decisionId shouldBe decision2.id
     }
@@ -195,8 +195,8 @@ class OptionCriteriaScoreRepositoryTest {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
 
-        val optionCriteriaScoreRepository = OptionCriteriaScoreRepositoryImpl(jdbi)
-        val scores = optionCriteriaScoreRepository.findAllByDecisionId(decision.id)
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+        val scores = userScoreRepository.findAllByDecisionId(decision.id)
 
         scores shouldBe emptyList()
     }

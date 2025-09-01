@@ -1,14 +1,14 @@
 package decisionmatrix.ui
 
 import decisionmatrix.Decision
-import decisionmatrix.OptionCriteriaScore
+import decisionmatrix.UserScore
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
 import java.math.RoundingMode
 
 object CalculateScoresPages {
 
-    fun calculateScoresPage(decision: Decision, scores: List<OptionCriteriaScore>): String = page("${decision.name} · Calculated scores") {
+    fun calculateScoresPage(decision: Decision, scores: List<UserScore>): String = page("${decision.name} · Calculated scores") {
         section(classes = "card") {
             h1 { +"Calculated scores for '${decision.name}'" }
 

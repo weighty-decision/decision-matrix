@@ -18,7 +18,7 @@ class ScoreCalculationTest {
             options = listOf(option)
         )
         val scores = listOf(
-            OptionCriteriaScore(
+            UserScore(
                 id = 1L,
                 decisionId = 1L,
                 optionId = 1L,
@@ -49,10 +49,10 @@ class ScoreCalculationTest {
             options = options
         )
         val scores = listOf(
-            OptionCriteriaScore(1L, 1L, 1L, 1L, "user1", 4), // Option A, Cost: 4
-            OptionCriteriaScore(2L, 1L, 1L, 2L, "user1", 5), // Option A, Quality: 5
-            OptionCriteriaScore(3L, 1L, 2L, 1L, "user1", 3), // Option B, Cost: 3
-            OptionCriteriaScore(4L, 1L, 2L, 2L, "user1", 4)  // Option B, Quality: 4
+            UserScore(1L, 1L, 1L, 1L, "user1", 4), // Option A, Cost: 4
+            UserScore(2L, 1L, 1L, 2L, "user1", 5), // Option A, Quality: 5
+            UserScore(3L, 1L, 2L, 1L, "user1", 3), // Option B, Cost: 3
+            UserScore(4L, 1L, 2L, 2L, "user1", 4)  // Option B, Quality: 4
         )
 
         val result = decision.calculateOptionScores(scores)
@@ -71,9 +71,9 @@ class ScoreCalculationTest {
             options = listOf(option)
         )
         val scores = listOf(
-            OptionCriteriaScore(1L, 1L, 1L, 1L, "user1", 3),
-            OptionCriteriaScore(2L, 1L, 1L, 1L, "user2", 5),
-            OptionCriteriaScore(3L, 1L, 1L, 1L, "user3", 4)
+            UserScore(1L, 1L, 1L, 1L, "user1", 3),
+            UserScore(2L, 1L, 1L, 1L, "user2", 5),
+            UserScore(3L, 1L, 1L, 1L, "user3", 4)
         )
 
         val result = decision.calculateOptionScores(scores)
@@ -92,8 +92,8 @@ class ScoreCalculationTest {
             options = listOf(option)
         )
         val scores = listOf(
-            OptionCriteriaScore(1L, 1L, 1L, 1L, "user1", 1),
-            OptionCriteriaScore(2L, 1L, 1L, 1L, "user2", 2)
+            UserScore(1L, 1L, 1L, 1L, "user1", 1),
+            UserScore(2L, 1L, 1L, 1L, "user2", 2)
         )
 
         val result = decision.calculateOptionScores(scores)
@@ -112,7 +112,7 @@ class ScoreCalculationTest {
             options = listOf(option)
         )
         val scores = listOf(
-            OptionCriteriaScore(1L, 1L, 1L, 1L, "user1", 5)
+            UserScore(1L, 1L, 1L, 1L, "user1", 5)
         )
 
         val result = decision.calculateOptionScores(scores)
@@ -133,7 +133,7 @@ class ScoreCalculationTest {
             options = listOf(option)
         )
         val scores = listOf(
-            OptionCriteriaScore(1L, 1L, 1L, 1L, "user1", 4) // Only Cost score, no Quality score
+            UserScore(1L, 1L, 1L, 1L, "user1", 4) // Only Cost score, no Quality score
         )
 
         val result = decision.calculateOptionScores(scores)
@@ -155,7 +155,7 @@ class ScoreCalculationTest {
             options = options
         )
         val scores = listOf(
-            OptionCriteriaScore(1L, 1L, 1L, 1L, "user1", 4) // Only for Option A
+            UserScore(1L, 1L, 1L, 1L, "user1", 4) // Only for Option A
         )
 
         val result = decision.calculateOptionScores(scores)
@@ -173,7 +173,7 @@ class ScoreCalculationTest {
             options = emptyList()
         )
         val scores = listOf(
-            OptionCriteriaScore(1L, 1L, 1L, 1L, "user1", 4)
+            UserScore(1L, 1L, 1L, 1L, "user1", 4)
         )
 
         // When & Then
@@ -192,7 +192,7 @@ class ScoreCalculationTest {
             options = listOf(option)
         )
         val scores = listOf(
-            OptionCriteriaScore(1L, 1L, 1L, 1L, "user1", 4)
+            UserScore(1L, 1L, 1L, 1L, "user1", 4)
         )
 
         val exception = shouldThrow<IllegalArgumentException> {
@@ -232,9 +232,9 @@ class ScoreCalculationTest {
             options = options
         )
         val scores = listOf(
-            OptionCriteriaScore(1L, 1L, 3L, 1L, "user1", 3),
-            OptionCriteriaScore(2L, 1L, 1L, 1L, "user1", 1),
-            OptionCriteriaScore(3L, 1L, 2L, 1L, "user1", 2)
+            UserScore(1L, 1L, 3L, 1L, "user1", 3),
+            UserScore(2L, 1L, 1L, 1L, "user1", 1),
+            UserScore(3L, 1L, 2L, 1L, "user1", 2)
         )
 
         val result = decision.calculateOptionScores(scores)

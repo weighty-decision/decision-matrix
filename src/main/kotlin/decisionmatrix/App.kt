@@ -24,7 +24,7 @@ val jdbi = loadDatabase()
 val decisionRepository = DecisionRepositoryImpl(jdbi)
 val optionRepository = OptionRepositoryImpl(jdbi)
 val criteriaRepository = CriteriaRepositoryImpl(jdbi)
-val optionCriteriaScoreRepository = OptionCriteriaScoreRepositoryImpl(jdbi)
+val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
 val decisionRoutes = DecisionRoutes(decisionRepository)
 val criteriaRoutes = CriteriaRoutes(criteriaRepository)
@@ -33,7 +33,7 @@ val decisionUiRoutes = DecisionUiRoutes(
     decisionRepository = decisionRepository,
     optionRepository = optionRepository,
     criteriaRepository = criteriaRepository,
-    optionCriteriaScoreRepository = optionCriteriaScoreRepository
+    userScoreRepository = userScoreRepository
 )
 
 val app: RoutingHttpHandler = routes(
