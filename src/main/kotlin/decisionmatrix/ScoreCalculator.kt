@@ -1,0 +1,51 @@
+package decisionmatrix
+
+import java.math.BigDecimal
+import java.math.RoundingMode
+
+
+/**
+ * Represents the calculated scores for a single decision.
+ */
+data class ScoreReport(
+    val optionScores: List<CriteriaOptionScore>,
+    val totalScores: Map<Option, BigDecimal>,
+)
+
+/**
+ * Represents the calculated score for a single criteria and option combination.
+ */
+data class CriteriaOptionScore(
+    val criteriaName: String,
+    val criteriaWeight: Int,
+    val optionName: String,
+    val optionScore: BigDecimal,
+)
+
+
+fun Decision.calculateOptionScores(userScores: List<UserScore>): Map<Option, BigDecimal> {
+        require(options.isNotEmpty()) { "Missing required options" }
+        require(criteria.isNotEmpty()) { "Missing required criteria" }
+        require(userScores.isNotEmpty()) { "Missing required scores" }
+
+        val result = LinkedHashMap<Option, BigDecimal>()
+
+        for (option in options) {
+            var optionTotal = BigDecimal.ZERO
+
+            for (criterion in criteria) {
+                val scores = userScores.filter { it.optionId == option.id && it.criteriaId == criterion.id }
+
+                if (scores.isNotEmpty()) {
+                    val sum = scores.fold(BigDecimal.ZERO) { acc, s -> acc + BigDecimal(s.score) }
+                    val average = sum.divide(BigDecimal(scores.size), 2, RoundingMode.HALF_UP)
+                    val weighted = average.multiply(BigDecimal(criterion.weight))
+                    optionTotal = optionTotal.add(weighted)
+                }
+            }
+
+            result[option] = optionTotal
+        }
+
+        return result
+    }

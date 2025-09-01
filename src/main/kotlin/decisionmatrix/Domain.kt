@@ -1,8 +1,6 @@
 package decisionmatrix
 
 import kotlinx.serialization.Serializable
-import java.math.BigDecimal
-import java.math.RoundingMode
 
 @Serializable
 data class DecisionInput(
@@ -15,34 +13,7 @@ data class Decision(
     val name: String,
     val criteria: List<Criteria> = emptyList(),
     val options: List<Option> = emptyList(),
-) {
-    fun calculateOptionScores(userScores: List<UserScore>): Map<Option, BigDecimal> {
-        require(options.isNotEmpty()) { "Missing required options" }
-        require(criteria.isNotEmpty()) { "Missing required criteria" }
-        require(userScores.isNotEmpty()) { "Missing required scores" }
-
-        val result = LinkedHashMap<Option, BigDecimal>()
-
-        for (option in options) {
-            var optionTotal = BigDecimal.ZERO
-
-            for (criterion in criteria) {
-                val scores = userScores.filter { it.optionId == option.id && it.criteriaId == criterion.id }
-
-                if (scores.isNotEmpty()) {
-                    val sum = scores.fold(BigDecimal.ZERO) { acc, s -> acc + BigDecimal(s.score) }
-                    val average = sum.divide(BigDecimal(scores.size), 2, RoundingMode.HALF_UP)
-                    val weighted = average.multiply(BigDecimal(criterion.weight))
-                    optionTotal = optionTotal.add(weighted)
-                }
-            }
-
-            result[option] = optionTotal
-        }
-
-        return result
-    }
-}
+)
 
 @Serializable
 data class CriteriaInput(
