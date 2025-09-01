@@ -28,3 +28,5 @@ replay_pid*
 
 .gradle
 build
+
+/.claude/settings.local.json

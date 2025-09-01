@@ -30,7 +30,7 @@ class ScoreCalculationTest {
 
         val result = decision.calculateOptionScores(scores)
 
-        result[option] shouldBe BigDecimal(15).setScale(2, RoundingMode.HALF_UP)
+        result.totalScores[option] shouldBe BigDecimal(15).setScale(2, RoundingMode.HALF_UP)
     }
 
     @Test fun `calculateOptionScores should calculate correct weighted scores for multiple options and criteria`() {
@@ -57,8 +57,8 @@ class ScoreCalculationTest {
 
         val result = decision.calculateOptionScores(scores)
 
-        result[options[0]] shouldBe BigDecimal(22).setScale(2, RoundingMode.HALF_UP)
-        result[options[1]] shouldBe BigDecimal(17).setScale(2, RoundingMode.HALF_UP)
+        result.totalScores[options[0]] shouldBe BigDecimal(22).setScale(2, RoundingMode.HALF_UP)
+        result.totalScores[options[1]] shouldBe BigDecimal(17).setScale(2, RoundingMode.HALF_UP)
     }
 
     @Test fun `calculateOptionScores should average multiple scores for same option-criterion combination`() {
@@ -79,7 +79,7 @@ class ScoreCalculationTest {
         val result = decision.calculateOptionScores(scores)
 
         // Average: (3 + 5 + 4) / 3 = 4, Weighted: 4 * 2 = 8
-        result[option] shouldBe BigDecimal(8).setScale(2, RoundingMode.HALF_UP)
+        result.totalScores[option] shouldBe BigDecimal(8).setScale(2, RoundingMode.HALF_UP)
     }
 
     @Test fun `calculateOptionScores should handle decimal averages with proper rounding`() {
@@ -99,7 +99,7 @@ class ScoreCalculationTest {
         val result = decision.calculateOptionScores(scores)
 
         // Average: (1 + 2) / 2 = 1.5, Weighted: 1.5 * 3 = 4.5
-        result[option] shouldBe BigDecimal("4.50")
+        result.totalScores[option] shouldBe BigDecimal("4.50")
     }
 
     @Test fun `calculateOptionScores should handle zero weight criteria`() {
@@ -117,7 +117,7 @@ class ScoreCalculationTest {
 
         val result = decision.calculateOptionScores(scores)
 
-        result[option] shouldBe BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)
+        result.totalScores[option] shouldBe BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)
     }
 
     @Test fun `calculateOptionScores should handle missing scores for some option-criterion combinations`() {
@@ -139,7 +139,7 @@ class ScoreCalculationTest {
         val result = decision.calculateOptionScores(scores)
 
         // Only Cost contributes: 4 * 3 = 12, Quality contributes 0 (no scores)
-        result[option] shouldBe BigDecimal(12).setScale(2, RoundingMode.HALF_UP)
+        result.totalScores[option] shouldBe BigDecimal(12).setScale(2, RoundingMode.HALF_UP)
     }
 
     @Test fun `calculateOptionScores should return zero for options with no scores`() {
@@ -160,8 +160,8 @@ class ScoreCalculationTest {
 
         val result = decision.calculateOptionScores(scores)
 
-        result[options[0]] shouldBe BigDecimal(12).setScale(2, RoundingMode.HALF_UP)
-        result[options[1]] shouldBe BigDecimal.ZERO
+        result.totalScores[options[0]] shouldBe BigDecimal(12).setScale(2, RoundingMode.HALF_UP)
+        result.totalScores[options[1]] shouldBe BigDecimal.ZERO
     }
 
     @Test fun `calculateOptionScores should throw exception when options are empty`() {
@@ -239,6 +239,6 @@ class ScoreCalculationTest {
 
         val result = decision.calculateOptionScores(scores)
 
-        result.keys.toList() shouldBe options
+        result.totalScores.keys.toList() shouldBe options
     }
 }

@@ -2,6 +2,7 @@ package decisionmatrix.ui
 
 import decisionmatrix.Decision
 import decisionmatrix.UserScore
+import decisionmatrix.calculateOptionScores
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
 import java.math.RoundingMode
@@ -18,7 +19,7 @@ object CalculateScoresPages {
                 p { +"No scores yet. Ask participants to submit their scores." }
             } else {
                 val results = decision.calculateOptionScores(scores)
-                    .entries.sortedByDescending { it.value }
+                    .totalScores.entries.sortedByDescending { it.value }
 
                 table {
                     thead {
