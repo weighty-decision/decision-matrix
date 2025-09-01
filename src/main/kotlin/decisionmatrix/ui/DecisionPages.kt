@@ -174,13 +174,12 @@ object DecisionPages {
                 attributes["hx-swap"] = "outerHTML"
                 textInput {
                     name = "name"
-                    placeholder = "New criterion"
+                    placeholder = "New criteria"
                     required = true
                 }
                 numberInput {
                     name = "weight"
                     placeholder = "Weight"
-                    value = "1"
                     min = "1"
                     max = "10"
                 }

@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 
 class DecisionRepositoryTest {
 
-    val jdbi = createTestJdbi()
+    val jdbi = createTempDatabase()
 
     @Test
     fun insert_and_findById() {

@@ -1,10 +1,28 @@
 package decisionmatrix.db
 
 import org.jdbi.v3.core.Jdbi
+import java.io.File
 import kotlin.io.path.createTempFile
 
+fun loadDatabase(databasePath: File = File("/tmp/decision_matrix.sqlite")): Jdbi {
+    val jdbi = Jdbi.create("jdbc:sqlite:${databasePath.path}")
+    jdbi.useHandle<Exception> { it.execute("PRAGMA foreign_keys = ON") }
+    if (!schemaExists(jdbi)) {
+        createSchema(jdbi)
+    }
+    return jdbi
+}
 
-fun createTestJdbi(): Jdbi {
+private fun schemaExists(jdbi: Jdbi): Boolean {
+    return jdbi.withHandle<Boolean, Exception> { handle ->
+        handle.createQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='decisions'")
+            .mapTo(String::class.java)
+            .findFirst()
+            .isPresent
+    }
+}
+
+fun createTempDatabase(): Jdbi {
     val tempDbFile = createTempFile("decision_matrix", ".db").toFile().apply {
         println("Using database at $absolutePath")
         deleteOnExit()

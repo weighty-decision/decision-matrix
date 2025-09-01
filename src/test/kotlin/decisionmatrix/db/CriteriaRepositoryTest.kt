@@ -3,7 +3,6 @@ package decisionmatrix.db
 import decisionmatrix.Criteria
 import decisionmatrix.CriteriaInput
 import decisionmatrix.DecisionInput
-import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -11,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 class CriteriaRepositoryTest {
 
-    val jdbi = createTestJdbi()
+    val jdbi = createTempDatabase()
 
     @Test
     fun insert_and_findById() {

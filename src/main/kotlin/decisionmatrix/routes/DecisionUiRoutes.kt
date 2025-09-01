@@ -19,9 +19,9 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
 class DecisionUiRoutes(
-    private val decisions: DecisionRepository,
-    private val options: OptionRepository,
-    private val criteria: CriteriaRepository
+    private val decisionRepository: DecisionRepository,
+    private val optionRepository: OptionRepository,
+    private val criteriaRepository: CriteriaRepository
 ) {
 
     val routes: RoutingHttpHandler = routes(
@@ -52,13 +52,13 @@ class DecisionUiRoutes(
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Name is required")
-        val created = decisions.insert(DecisionInput(name = name))
+        val created = decisionRepository.insert(DecisionInput(name = name))
         return Response(Status.SEE_OTHER).header("Location", "/ui/decisions/${created.id}/edit")
     }
 
     private fun editDecision(request: Request): Response {
         val id = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
-        val decision = decisions.findById(id) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+        val decision = decisionRepository.findById(id) ?: return Response(Status.NOT_FOUND).body("Decision not found")
         return htmlResponse(DecisionPages.editPage(decision))
     }
 
@@ -67,7 +67,7 @@ class DecisionUiRoutes(
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Name is required")
-        val updated = decisions.update(id, name) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+        val updated = decisionRepository.update(id, name) ?: return Response(Status.NOT_FOUND).body("Decision not found")
 
         return if (isHx(request)) {
             htmlResponse(DecisionPages.nameFragment(updated))
@@ -81,10 +81,10 @@ class DecisionUiRoutes(
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Option name is required")
-        options.insert(decisionId, OptionInput(name))
+        optionRepository.insert(decisionId, OptionInput(name))
 
         return if (isHx(request)) {
-            val decision = decisions.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+            val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.optionsFragment(decision))
         } else {
             Response(Status.SEE_OTHER).header("Location", "/ui/decisions/$decisionId/edit")
@@ -97,10 +97,10 @@ class DecisionUiRoutes(
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Option name is required")
-        val updated = options.update(optionId, name) ?: return Response(Status.NOT_FOUND).body("Option not found")
+        val updated = optionRepository.update(optionId, name) ?: return Response(Status.NOT_FOUND).body("Option not found")
 
         return if (isHx(request)) {
-            val decision = decisions.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+            val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.optionsFragment(decision))
         } else {
             Response(Status.SEE_OTHER).header("Location", "/ui/decisions/$decisionId/edit")
@@ -110,10 +110,10 @@ class DecisionUiRoutes(
     private fun deleteOption(request: Request): Response {
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
         val optionId = request.path("optionId")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing optionId")
-        options.delete(optionId)
+        optionRepository.delete(optionId)
 
         return if (isHx(request)) {
-            val decision = decisions.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+            val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.optionsFragment(decision))
         } else {
             Response(Status.SEE_OTHER).header("Location", "/ui/decisions/$decisionId/edit")
@@ -126,10 +126,10 @@ class DecisionUiRoutes(
         val name = form["name"]?.trim().orEmpty()
         val weight = form["weight"]?.toIntOrNull() ?: 1
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Criteria name is required")
-        criteria.insert(decisionId, CriteriaInput(name = name, weight = weight))
+        criteriaRepository.insert(decisionId, CriteriaInput(name = name, weight = weight))
 
         return if (isHx(request)) {
-            val decision = decisions.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+            val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.criteriaFragment(decision))
         } else {
             Response(Status.SEE_OTHER).header("Location", "/ui/decisions/$decisionId/edit")
@@ -143,10 +143,10 @@ class DecisionUiRoutes(
         val name = form["name"]?.trim().orEmpty()
         val weight = form["weight"]?.toIntOrNull() ?: 1
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Criteria name is required")
-        val updated = criteria.update(criteriaId, name, weight) ?: return Response(Status.NOT_FOUND).body("Criteria not found")
+        val updated = criteriaRepository.update(criteriaId, name, weight) ?: return Response(Status.NOT_FOUND).body("Criteria not found")
 
         return if (isHx(request)) {
-            val decision = decisions.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+            val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.criteriaFragment(decision))
         } else {
             Response(Status.SEE_OTHER).header("Location", "/ui/decisions/$decisionId/edit")
@@ -156,10 +156,10 @@ class DecisionUiRoutes(
     private fun deleteCriteria(request: Request): Response {
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
         val criteriaId = request.path("criteriaId")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing criteriaId")
-        criteria.delete(criteriaId)
+        criteriaRepository.delete(criteriaId)
 
         return if (isHx(request)) {
-            val decision = decisions.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+            val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.criteriaFragment(decision))
         } else {
             Response(Status.SEE_OTHER).header("Location", "/ui/decisions/$decisionId/edit")

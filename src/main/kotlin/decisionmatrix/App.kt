@@ -11,9 +11,6 @@ import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.then
 import org.http4k.filter.DebuggingFilters.PrintRequest
-import org.http4k.filter.OpenTelemetryMetrics
-import org.http4k.filter.OpenTelemetryTracing
-import org.http4k.filter.ServerFilters
 import org.http4k.routing.ResourceLoader
 import org.http4k.routing.RoutingHttpHandler
 import org.http4k.routing.bind
@@ -22,8 +19,7 @@ import org.http4k.routing.static
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
 
-// todo create or use an existing database based on configuration
-val jdbi = createTestJdbi()
+val jdbi = loadDatabase()
 
 val decisionRepository = DecisionRepositoryImpl(jdbi)
 val optionRepository = OptionRepositoryImpl(jdbi)
@@ -33,7 +29,11 @@ val optionScoreRepository = OptionScoreRepositoryImpl(jdbi)
 val decisionRoutes = DecisionRoutes(decisionRepository)
 val criteriaRoutes = CriteriaRoutes(criteriaRepository)
 val optionRoutes = OptionRoutes(optionRepository)
-val decisionUiRoutes = DecisionUiRoutes(decisionRepository, optionRepository, criteriaRepository)
+val decisionUiRoutes = DecisionUiRoutes(
+    decisionRepository = decisionRepository,
+    optionRepository = optionRepository,
+    criteriaRepository = criteriaRepository
+)
 
 val app: RoutingHttpHandler = routes(
     "/ping" bind GET to {

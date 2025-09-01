@@ -13,7 +13,7 @@ class OptionScoreRepositoryTest {
 
     @Test
     fun insert_and_findById() {
-        val jdbi = createTestJdbi()
+        val jdbi = createTempDatabase()
 
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
@@ -30,7 +30,7 @@ class OptionScoreRepositoryTest {
 
     @Test
     fun update_existing_option_score() {
-        val jdbi = createTestJdbi()
+        val jdbi = createTempDatabase()
 
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
@@ -53,7 +53,7 @@ class OptionScoreRepositoryTest {
 
     @Test
     fun update_nonexistent_option_score_returns_null() {
-        val jdbi = createTestJdbi()
+        val jdbi = createTempDatabase()
         val optionScoreRepository = OptionScoreRepositoryImpl(jdbi)
 
         val updated = optionScoreRepository.update(999L, 10)
@@ -63,7 +63,7 @@ class OptionScoreRepositoryTest {
 
     @Test
     fun delete_existing_option_score() {
-        val jdbi = createTestJdbi()
+        val jdbi = createTempDatabase()
 
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
@@ -85,7 +85,7 @@ class OptionScoreRepositoryTest {
 
     @Test
     fun delete_nonexistent_option_score_returns_false() {
-        val jdbi = createTestJdbi()
+        val jdbi = createTempDatabase()
         val optionScoreRepository = OptionScoreRepositoryImpl(jdbi)
 
         val deleted = optionScoreRepository.delete(999L)
