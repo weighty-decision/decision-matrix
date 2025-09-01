@@ -18,21 +18,37 @@ object CalculateScoresPages {
             } else if (scores.isEmpty()) {
                 p { +"No scores yet. Ask participants to submit their scores." }
             } else {
-                val results = decision.calculateOptionScores(scores)
-                    .totalScores.entries.sortedByDescending { it.value }
+                val scoreReport = decision.calculateOptionScores(scores)
 
                 table {
                     thead {
                         tr {
-                            th { +"Option" }
-                            th { +"Score" }
+                            th { +"Criteria" }
+                            decision.options.forEach { option ->
+                                th { +option.name }
+                            }
                         }
                     }
                     tbody {
-                        results.forEach { (opt, score) ->
+                        // Create rows for each criterion
+                        decision.criteria.forEach { criterion ->
                             tr {
-                                td { +opt.name }
-                                td { +score.setScale(2, RoundingMode.HALF_UP).toPlainString() }
+                                td { +"${criterion.name} (×${criterion.weight})" }
+                                decision.options.forEach { option ->
+                                    val score = scoreReport.optionScores.find { 
+                                        it.criteriaName == criterion.name && it.optionName == option.name 
+                                    }?.optionScore ?: java.math.BigDecimal.ZERO
+                                    td { +score.setScale(2, RoundingMode.HALF_UP).toPlainString() }
+                                }
+                            }
+                        }
+                        
+                        // Add total row
+                        tr(classes = "total-row") {
+                            td { +"Total" }
+                            decision.options.forEach { option ->
+                                val totalScore = scoreReport.totalScores[option] ?: java.math.BigDecimal.ZERO
+                                td { +totalScore.setScale(2, RoundingMode.HALF_UP).toPlainString() }
                             }
                         }
                     }
