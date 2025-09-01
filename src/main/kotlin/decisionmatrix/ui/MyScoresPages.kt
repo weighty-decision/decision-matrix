@@ -68,10 +68,17 @@ object MyScoresPages {
                             type = ButtonType.submit
                             +"Save scores"
                         }
-                        a(classes = "btn") {
-                            href = "/ui/decisions/${decision.id}/calculate-scores"
-                            +"View calculated scores"
-                        }
+                    }
+                }
+            }
+        }
+        section(classes = "card") {
+            h2 { +"Next steps" }
+            ul {
+                li {
+                    a(classes = "btn") {
+                        href = "/ui/decisions/${decision.id}/calculate-scores"
+                        +"View calculated scores"
                     }
                 }
             }
