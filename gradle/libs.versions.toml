@@ -3,6 +3,7 @@ jdbi = "3.45.1"
 jupiter = "5.13.2"
 kotlin-core = "2.2.0"
 http4k = "6.15.1.0"
+kotlinx-html = "0.11.0"
 kotlinx-serialization-json = "1.9.0"
 kotest = "5.9.1"
 sqlite-jdbc = "3.44.1.0"
@@ -21,6 +22,7 @@ http4k-testing-hamkrest = { module = "org.http4k:http4k-testing-hamkrest" }
 http4k-testing-kotest = { module = "org.http4k:http4k-testing-kotest" }
 jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jupiter" }
 jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jupiter" }
+kotlinx-html = { module = "org.jetbrains.kotlinx:kotlinx-html-jvm", version.ref = "kotlinx-html" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotest-assertions-json = { module = "io.kotest:kotest-assertions-json", version.ref = "kotest" }

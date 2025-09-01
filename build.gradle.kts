@@ -39,6 +39,7 @@ dependencies {
 
     implementation(platform(libs.http4k.bom))
     implementation(libs.bundles.http4k)
+    implementation(libs.kotlinx.html)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.jdbi.core)
     implementation(libs.sqlite.jdbc)

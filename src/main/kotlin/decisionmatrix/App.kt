@@ -4,6 +4,7 @@ import decisionmatrix.db.*
 import decisionmatrix.routes.DecisionRoutes
 import decisionmatrix.routes.CriteriaRoutes
 import decisionmatrix.routes.OptionRoutes
+import decisionmatrix.routes.DecisionUiRoutes
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Response
@@ -13,9 +14,11 @@ import org.http4k.filter.DebuggingFilters.PrintRequest
 import org.http4k.filter.OpenTelemetryMetrics
 import org.http4k.filter.OpenTelemetryTracing
 import org.http4k.filter.ServerFilters
+import org.http4k.routing.ResourceLoader
 import org.http4k.routing.RoutingHttpHandler
 import org.http4k.routing.bind
 import org.http4k.routing.routes
+import org.http4k.routing.static
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
 
@@ -30,14 +33,20 @@ val optionScoreRepository = OptionScoreRepositoryImpl(jdbi)
 val decisionRoutes = DecisionRoutes(decisionRepository)
 val criteriaRoutes = CriteriaRoutes(criteriaRepository)
 val optionRoutes = OptionRoutes(optionRepository)
+val decisionUiRoutes = DecisionUiRoutes(decisionRepository, optionRepository, criteriaRepository)
 
 val app: RoutingHttpHandler = routes(
     "/ping" bind GET to {
         Response(OK).body("pong")
     },
+    // static assets
+    "/assets" bind static(ResourceLoader.Classpath("public")),
+    // API routes
     decisionRoutes.routes,
     criteriaRoutes.routes,
-    optionRoutes.routes
+    optionRoutes.routes,
+    // UI routes
+    decisionUiRoutes.routes
 )
 
 fun main() {
