@@ -12,8 +12,7 @@ class OptionRepositoryTest {
 
     val jdbi = createTempDatabase()
 
-    @Test
-    fun insert_and_findById() {
+    @Test fun `insert and findById`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
 
@@ -24,8 +23,7 @@ class OptionRepositoryTest {
         found shouldBe Option(id = option.id, decisionId = decision.id, name = "Option A")
     }
 
-    @Test
-    fun update_existing_option() {
+    @Test fun `update existing option`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
 
@@ -42,8 +40,7 @@ class OptionRepositoryTest {
         found.name shouldBe "Updated Option A"
     }
 
-    @Test
-    fun update_nonexistent_option_returns_null() {
+    @Test fun `update nonexistent option returns null`() {
         val optionRepository = OptionRepositoryImpl(jdbi)
 
         val updated = optionRepository.update(999L, "This should not work")
@@ -51,8 +48,7 @@ class OptionRepositoryTest {
         updated shouldBe null
     }
 
-    @Test
-    fun delete_existing_option() {
+    @Test fun `delete existing option`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
 
@@ -68,8 +64,7 @@ class OptionRepositoryTest {
         found shouldBe null
     }
 
-    @Test
-    fun delete_nonexistent_option_returns_false() {
+    @Test fun `delete nonexistent option returns false`() {
         val optionRepository = OptionRepositoryImpl(jdbi)
 
         val deleted = optionRepository.delete(999L)

@@ -36,8 +36,7 @@ class DecisionRoutesTest {
         }
     }
 
-    @Test
-    fun `update decision - success`() {
+    @Test fun `update decision - success`() {
         val repo = FakeDecisionRepository()
         val routes = DecisionRoutes(repo).routes
         val created = repo.insert(DecisionInput(name = "Original"))
@@ -54,8 +53,7 @@ class DecisionRoutesTest {
         updated.name shouldBe "Updated"
     }
 
-    @Test
-    fun `update decision - not found`() {
+    @Test fun `update decision - not found`() {
         val repo = FakeDecisionRepository()
         val routes = DecisionRoutes(repo).routes
 
@@ -65,8 +63,7 @@ class DecisionRoutesTest {
         response.status shouldBe Status.NOT_FOUND
     }
 
-    @Test
-    fun `delete decision - success`() {
+    @Test fun `delete decision - success`() {
         val repo = FakeDecisionRepository()
         val routes = DecisionRoutes(repo).routes
         val created = repo.insert(DecisionInput(name = "ToDelete"))
@@ -78,8 +75,7 @@ class DecisionRoutesTest {
         after shouldBe null
     }
 
-    @Test
-    fun `delete decision - not found`() {
+    @Test fun `delete decision - not found`() {
         val repo = FakeDecisionRepository()
         val routes = DecisionRoutes(repo).routes
 

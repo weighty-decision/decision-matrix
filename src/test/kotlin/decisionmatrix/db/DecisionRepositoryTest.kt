@@ -13,8 +13,7 @@ class DecisionRepositoryTest {
 
     val jdbi = createTempDatabase()
 
-    @Test
-    fun insert_and_findById() {
+    @Test fun `insert and findById`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val inserted = decisionRepository.insert(
             DecisionInput(
@@ -27,8 +26,7 @@ class DecisionRepositoryTest {
         found shouldBe Decision(id = inserted.id, name = "My decision", criteria = emptyList(), options = emptyList())
     }
 
-    @Test
-    fun findById_fully_hydrates_decision_with_criteria_and_options() {
+    @Test fun `findById fully hydrates decision with criteria and options`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
         val optionRepository = OptionRepositoryImpl(jdbi)
@@ -68,8 +66,7 @@ class DecisionRepositoryTest {
             .shouldBeTrue()
     }
 
-    @Test
-    fun findById_returns_decision_with_only_criteria_when_no_options_exist() {
+    @Test fun `findById returns decision with only criteria when no options exist`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
 
@@ -90,8 +87,7 @@ class DecisionRepositoryTest {
         found.options.size shouldBe 0
     }
 
-    @Test
-    fun findById_returns_decision_with_only_options_when_no_criteria_exist() {
+    @Test fun `findById returns decision with only options when no criteria exist`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val optionRepository = OptionRepositoryImpl(jdbi)
 
@@ -111,8 +107,7 @@ class DecisionRepositoryTest {
         found.options[0].name shouldBe "Option A"
     }
 
-    @Test
-    fun update_existing_decision() {
+    @Test fun `update existing decision`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val inserted = decisionRepository.insert(DecisionInput(name = "Original decision"))
 
@@ -125,8 +120,7 @@ class DecisionRepositoryTest {
         found.name shouldBe "Updated decision"
     }
 
-    @Test
-    fun update_nonexistent_decision_returns_null() {
+    @Test fun `update nonexistent decision returns null`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
 
         val updated = decisionRepository.update(999L, "This should not work")
@@ -134,8 +128,7 @@ class DecisionRepositoryTest {
         updated shouldBe null
     }
 
-    @Test
-    fun delete_existing_decision() {
+    @Test fun `delete existing decision`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val inserted = decisionRepository.insert(DecisionInput(name = "Decision to delete"))
 
@@ -148,8 +141,7 @@ class DecisionRepositoryTest {
         found shouldBe null
     }
 
-    @Test
-    fun delete_nonexistent_decision_returns_false() {
+    @Test fun `delete nonexistent decision returns false`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
 
         val deleted = decisionRepository.delete(999L)

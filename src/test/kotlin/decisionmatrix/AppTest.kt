@@ -9,8 +9,7 @@ import org.junit.jupiter.api.Test
 
 class AppTest {
 
-    @Test
-    fun `Ping test`() {
+    @Test fun `Ping test`() {
         app(Request(GET, "/ping")) shouldBe Response(OK).body("pong")
     }
 

@@ -12,8 +12,7 @@ class CriteriaRepositoryTest {
 
     val jdbi = createTempDatabase()
 
-    @Test
-    fun insert_and_findById() {
+    @Test fun `insert and findById`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
 
@@ -24,8 +23,7 @@ class CriteriaRepositoryTest {
         found shouldBe Criteria(id = criteria.id, decisionId = decision.id, name = "Cost", weight = 5)
     }
 
-    @Test
-    fun update_existing_criteria() {
+    @Test fun `update existing criteria`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
 
@@ -44,8 +42,7 @@ class CriteriaRepositoryTest {
         found.weight shouldBe 7
     }
 
-    @Test
-    fun update_nonexistent_criteria_returns_null() {
+    @Test fun `update nonexistent criteria returns null`() {
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
 
         val updated = criteriaRepository.update(999L, "This should not work", 1)
@@ -53,8 +50,7 @@ class CriteriaRepositoryTest {
         updated shouldBe null
     }
 
-    @Test
-    fun delete_existing_criteria() {
+    @Test fun `delete existing criteria`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
 
@@ -70,8 +66,7 @@ class CriteriaRepositoryTest {
         found shouldBe null
     }
 
-    @Test
-    fun delete_nonexistent_criteria_returns_false() {
+    @Test fun `delete nonexistent criteria returns false`() {
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
 
         val deleted = criteriaRepository.delete(999L)

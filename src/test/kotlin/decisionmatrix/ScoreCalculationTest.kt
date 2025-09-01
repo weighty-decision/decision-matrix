@@ -8,8 +8,7 @@ import java.math.RoundingMode
 
 class ScoreCalculationTest {
 
-    @Test
-    fun `calculateOptionScores should calculate correct weighted scores for single option and criterion`() {
+    @Test fun `calculateOptionScores should calculate correct weighted scores for single option and criterion`() {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
         val decision = Decision(
@@ -34,8 +33,7 @@ class ScoreCalculationTest {
         result[option] shouldBe BigDecimal(15).setScale(2, RoundingMode.HALF_UP)
     }
 
-    @Test
-    fun `calculateOptionScores should calculate correct weighted scores for multiple options and criteria`() {
+    @Test fun `calculateOptionScores should calculate correct weighted scores for multiple options and criteria`() {
         val criteria = listOf(
             Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3),
             Criteria(id = 2L, decisionId = 1L, name = "Quality", weight = 2)
@@ -63,8 +61,7 @@ class ScoreCalculationTest {
         result[options[1]] shouldBe BigDecimal(17).setScale(2, RoundingMode.HALF_UP)
     }
 
-    @Test
-    fun `calculateOptionScores should average multiple scores for same option-criterion combination`() {
+    @Test fun `calculateOptionScores should average multiple scores for same option-criterion combination`() {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 2)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
         val decision = Decision(
@@ -85,8 +82,7 @@ class ScoreCalculationTest {
         result[option] shouldBe BigDecimal(8).setScale(2, RoundingMode.HALF_UP)
     }
 
-    @Test
-    fun `calculateOptionScores should handle decimal averages with proper rounding`() {
+    @Test fun `calculateOptionScores should handle decimal averages with proper rounding`() {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
         val decision = Decision(
@@ -106,8 +102,7 @@ class ScoreCalculationTest {
         result[option] shouldBe BigDecimal("4.50")
     }
 
-    @Test
-    fun `calculateOptionScores should handle zero weight criteria`() {
+    @Test fun `calculateOptionScores should handle zero weight criteria`() {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 0)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
         val decision = Decision(
@@ -125,8 +120,7 @@ class ScoreCalculationTest {
         result[option] shouldBe BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)
     }
 
-    @Test
-    fun `calculateOptionScores should handle missing scores for some option-criterion combinations`() {
+    @Test fun `calculateOptionScores should handle missing scores for some option-criterion combinations`() {
         val criteria = listOf(
             Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3),
             Criteria(id = 2L, decisionId = 1L, name = "Quality", weight = 2)
@@ -148,8 +142,7 @@ class ScoreCalculationTest {
         result[option] shouldBe BigDecimal(12).setScale(2, RoundingMode.HALF_UP)
     }
 
-    @Test
-    fun `calculateOptionScores should return zero for options with no scores`() {
+    @Test fun `calculateOptionScores should return zero for options with no scores`() {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3)
         val options = listOf(
             Option(id = 1L, decisionId = 1L, name = "Option A"),
@@ -171,8 +164,7 @@ class ScoreCalculationTest {
         result[options[1]] shouldBe BigDecimal.ZERO
     }
 
-    @Test
-    fun `calculateOptionScores should throw exception when options are empty`() {
+    @Test fun `calculateOptionScores should throw exception when options are empty`() {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3)
         val decision = Decision(
             id = 1L,
@@ -191,8 +183,7 @@ class ScoreCalculationTest {
         exception.message shouldBe "Missing required options"
     }
 
-    @Test
-    fun `calculateOptionScores should throw exception when criteria are empty`() {
+    @Test fun `calculateOptionScores should throw exception when criteria are empty`() {
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
         val decision = Decision(
             id = 1L,
@@ -210,8 +201,7 @@ class ScoreCalculationTest {
         exception.message shouldBe "Missing required criteria"
     }
 
-    @Test
-    fun `calculateOptionScores should throw exception when scores are empty`() {
+    @Test fun `calculateOptionScores should throw exception when scores are empty`() {
         // Given
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
@@ -228,8 +218,7 @@ class ScoreCalculationTest {
         exception.message shouldBe "Missing required scores"
     }
 
-    @Test
-    fun `calculateOptionScores should maintain option order in result map`() {
+    @Test fun `calculateOptionScores should maintain option order in result map`() {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 1)
         val options = listOf(
             Option(id = 3L, decisionId = 1L, name = "Option C"),
