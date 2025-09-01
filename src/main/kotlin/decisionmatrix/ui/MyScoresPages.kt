@@ -35,18 +35,18 @@ object MyScoresPages {
                         thead {
                             tr {
                                 th { }
-                                decision.criteria.forEach { c ->
+                                decision.options.forEach { opt ->
                                     th {
-                                        +c.name
+                                        +opt.name
                                     }
                                 }
                             }
                         }
                         tbody {
-                            decision.options.forEach { opt ->
+                            decision.criteria.forEach { c ->
                                 tr {
-                                    th { +opt.name }
-                                    decision.criteria.forEach { c ->
+                                    th { +c.name }
+                                    decision.options.forEach { opt ->
                                         val existing = scoreMap[opt.id to c.id]
                                         td {
                                             numberInput {
