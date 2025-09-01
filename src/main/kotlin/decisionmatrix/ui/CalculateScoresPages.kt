@@ -40,7 +40,7 @@ object CalculateScoresPages {
 
             div(classes = "actions") {
                 a(classes = "btn") {
-                    href = "/ui/decisions/${decision.id}/edit"
+                    href = "/decisions/${decision.id}/edit"
                     +"Back to edit"
                 }
             }

@@ -31,28 +31,28 @@ class DecisionUiRoutes(
 
     val routes: RoutingHttpHandler = routes(
         "/" bind Method.GET to ::home,
-        "/ui/decisions/new" bind Method.GET to ::newDecisionForm,
-        "/ui/decisions" bind Method.POST to ::createDecision,
-        "/ui/decisions/{id}/edit" bind Method.GET to ::editDecision,
+        "/decisions/new" bind Method.GET to ::newDecisionForm,
+        "/decisions" bind Method.POST to ::createDecision,
+        "/decisions/{id}/edit" bind Method.GET to ::editDecision,
 
         // htmx-backed POST endpoints (using POST for simplicity)
-        "/ui/decisions/{id}/name" bind Method.POST to ::updateDecisionName,
+        "/decisions/{id}/name" bind Method.POST to ::updateDecisionName,
 
-        "/ui/decisions/{id}/options" bind Method.POST to ::createOption,
-        "/ui/decisions/{id}/options/{optionId}/update" bind Method.POST to ::updateOption,
-        "/ui/decisions/{id}/options/{optionId}/delete" bind Method.POST to ::deleteOption,
+        "/decisions/{id}/options" bind Method.POST to ::createOption,
+        "/decisions/{id}/options/{optionId}/update" bind Method.POST to ::updateOption,
+        "/decisions/{id}/options/{optionId}/delete" bind Method.POST to ::deleteOption,
 
-        "/ui/decisions/{id}/criteria" bind Method.POST to ::createCriteria,
-        "/ui/decisions/{id}/criteria/{criteriaId}/update" bind Method.POST to ::updateCriteria,
-        "/ui/decisions/{id}/criteria/{criteriaId}/delete" bind Method.POST to ::deleteCriteria,
+        "/decisions/{id}/criteria" bind Method.POST to ::createCriteria,
+        "/decisions/{id}/criteria/{criteriaId}/update" bind Method.POST to ::updateCriteria,
+        "/decisions/{id}/criteria/{criteriaId}/delete" bind Method.POST to ::deleteCriteria,
 
-        "/ui/decisions/{id}/my-scores" bind Method.GET to ::viewMyScores,
-        "/ui/decisions/{id}/my-scores" bind Method.POST to ::submitMyScores,
-        "/ui/decisions/{id}/calculate-scores" bind Method.GET to ::calculateScores
+        "/decisions/{id}/my-scores" bind Method.GET to ::viewMyScores,
+        "/decisions/{id}/my-scores" bind Method.POST to ::submitMyScores,
+        "/decisions/{id}/calculate-scores" bind Method.GET to ::calculateScores
     )
 
     private fun home(@Suppress("UNUSED_PARAMETER") request: Request): Response =
-        Response(Status.SEE_OTHER).header("Location", "/ui/decisions/new")
+        Response(Status.SEE_OTHER).header("Location", "/decisions/new")
 
     private fun newDecisionForm(@Suppress("UNUSED_PARAMETER") request: Request): Response =
         htmlResponse(DecisionPages.createPage())
@@ -62,7 +62,7 @@ class DecisionUiRoutes(
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Name is required")
         val created = decisionRepository.insert(DecisionInput(name = name))
-        return Response(Status.SEE_OTHER).header("Location", "/ui/decisions/${created.id}/edit")
+        return Response(Status.SEE_OTHER).header("Location", "/decisions/${created.id}/edit")
     }
 
     private fun editDecision(request: Request): Response {
@@ -81,7 +81,7 @@ class DecisionUiRoutes(
         return if (isHx(request)) {
             htmlResponse(DecisionPages.nameFragment(updated))
         } else {
-            Response(Status.SEE_OTHER).header("Location", "/ui/decisions/${updated.id}/edit")
+            Response(Status.SEE_OTHER).header("Location", "/decisions/${updated.id}/edit")
         }
     }
 
@@ -96,7 +96,7 @@ class DecisionUiRoutes(
             val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.optionsFragment(decision))
         } else {
-            Response(Status.SEE_OTHER).header("Location", "/ui/decisions/$decisionId/edit")
+            Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
         }
     }
 
@@ -112,7 +112,7 @@ class DecisionUiRoutes(
             val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.optionsFragment(decision))
         } else {
-            Response(Status.SEE_OTHER).header("Location", "/ui/decisions/$decisionId/edit")
+            Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
         }
     }
 
@@ -125,7 +125,7 @@ class DecisionUiRoutes(
             val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.optionsFragment(decision))
         } else {
-            Response(Status.SEE_OTHER).header("Location", "/ui/decisions/$decisionId/edit")
+            Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
         }
     }
 
@@ -141,7 +141,7 @@ class DecisionUiRoutes(
             val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.criteriaFragment(decision))
         } else {
-            Response(Status.SEE_OTHER).header("Location", "/ui/decisions/$decisionId/edit")
+            Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
         }
     }
 
@@ -158,7 +158,7 @@ class DecisionUiRoutes(
             val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.criteriaFragment(decision))
         } else {
-            Response(Status.SEE_OTHER).header("Location", "/ui/decisions/$decisionId/edit")
+            Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
         }
     }
 
@@ -171,7 +171,7 @@ class DecisionUiRoutes(
             val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.criteriaFragment(decision))
         } else {
-            Response(Status.SEE_OTHER).header("Location", "/ui/decisions/$decisionId/edit")
+            Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
         }
     }
 
@@ -231,7 +231,7 @@ class DecisionUiRoutes(
         }
 
         return Response(Status.SEE_OTHER)
-            .header("Location", "/ui/decisions/$decisionId/my-scores?userid=$userId")
+            .header("Location", "/decisions/$decisionId/my-scores?userid=$userId")
     }
 
     private fun calculateScores(request: Request): Response {

@@ -15,9 +15,9 @@ import org.http4k.routing.routes
 class CriteriaRoutes(private val criteriaRepository: CriteriaRepository) {
 
     val routes: RoutingHttpHandler = routes(
-        "/decisions/{decisionId}/criteria/" bind Method.POST to ::createCriteria,
-        "/decisions/{decisionId}/criteria/{criteriaId}" bind Method.PUT to ::updateCriteria,
-        "/decisions/{decisionId}/criteria/{criteriaId}" bind Method.DELETE to ::deleteCriteria
+        "/api/decisions/{decisionId}/criteria/" bind Method.POST to ::createCriteria,
+        "/api/decisions/{decisionId}/criteria/{criteriaId}" bind Method.PUT to ::updateCriteria,
+        "/api/decisions/{decisionId}/criteria/{criteriaId}" bind Method.DELETE to ::deleteCriteria
     )
 
     fun createCriteria(request: Request): Response {

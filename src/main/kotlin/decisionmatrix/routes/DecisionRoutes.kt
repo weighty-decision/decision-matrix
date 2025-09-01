@@ -15,10 +15,10 @@ import org.http4k.routing.routes
 class DecisionRoutes(private val decisionRepository: DecisionRepository) {
 
     val routes: RoutingHttpHandler = routes(
-        "/decisions" bind Method.POST to ::createDecision,
-        "/decisions/{id}" bind Method.GET to ::getDecision,
-        "/decisions/{id}" bind Method.PUT to ::updateDecision,
-        "/decisions/{id}" bind Method.DELETE to ::deleteDecision
+        "/api/decisions" bind Method.POST to ::createDecision,
+        "/api/decisions/{id}" bind Method.GET to ::getDecision,
+        "/api/decisions/{id}" bind Method.PUT to ::updateDecision,
+        "/api/decisions/{id}" bind Method.DELETE to ::deleteDecision
     )
 
     fun createDecision(request: Request): Response {

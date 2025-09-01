@@ -1,5 +1,5 @@
 ### Create a new decision
-POST http://localhost:9000/decisions
+POST http://localhost:9000/api/decisions
 Content-Type: application/json
 
 {
@@ -7,7 +7,7 @@ Content-Type: application/json
 }
 
 ### Add an option to a decision
-POST http://localhost:9000/decisions/1/options/
+POST http://localhost:9000/api/decisions/1/options/
 Content-Type: application/json
 
 {
@@ -15,7 +15,7 @@ Content-Type: application/json
 }
 
 ### Add a criteria to a decision
-POST http://localhost:9000/decisions/1/criteria/
+POST http://localhost:9000/api/decisions/1/criteria/
 Content-Type: application/json
 
 {
@@ -24,7 +24,7 @@ Content-Type: application/json
 }
 
 ### Update a single option for a decision
-PUT http://localhost:9000/decisions/1/options/1
+PUT http://localhost:9000/api/decisions/1/options/1
 Content-Type: application/json
 
 {
@@ -32,7 +32,7 @@ Content-Type: application/json
 }
 
 ### Update a single criteria for a decision
-PUT http://localhost:9000/decisions/1/criteria/1
+PUT http://localhost:9000/api/decisions/1/criteria/1
 Content-Type: application/json
 
 {
@@ -41,15 +41,15 @@ Content-Type: application/json
 }
 
 ### Delete a single option for a decision
-DELETE http://localhost:9000/decisions/1/options/1
+DELETE http://localhost:9000/api/decisions/1/options/1
 
 ### Delete a single criteria for a decision
-DELETE http://localhost:9000/decisions/1/criteria/1
+DELETE http://localhost:9000/api/decisions/1/criteria/1
 
 ### Get a decision by ID
-GET http://localhost:9000/decisions/1
+GET http://localhost:9000/api/decisions/1
 Accept: application/json
 
 ### Health check endpoint
-GET http://localhost:9000/ping
+GET http://localhost:9000/api/ping
 

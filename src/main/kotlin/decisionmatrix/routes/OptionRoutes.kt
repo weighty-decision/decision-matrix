@@ -17,9 +17,9 @@ class OptionRoutes(
 ) {
 
     val routes: RoutingHttpHandler = routes(
-        "/decisions/{decisionId}/options/" bind Method.POST to ::createOption,
-        "/decisions/{decisionId}/options/{optionId}" bind Method.PUT to ::updateOption,
-        "/decisions/{decisionId}/options/{optionId}" bind Method.DELETE to ::deleteOption
+        "/api/decisions/{decisionId}/options/" bind Method.POST to ::createOption,
+        "/api/decisions/{decisionId}/options/{optionId}" bind Method.PUT to ::updateOption,
+        "/api/decisions/{decisionId}/options/{optionId}" bind Method.DELETE to ::deleteOption
     )
 
     fun createOption(request: Request): Response {

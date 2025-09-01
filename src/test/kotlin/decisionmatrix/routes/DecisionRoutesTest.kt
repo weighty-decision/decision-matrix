@@ -42,7 +42,7 @@ class DecisionRoutesTest {
         val created = repo.insert(DecisionInput(name = "Original"))
 
         val body = json.encodeToString(DecisionInput(name = "Updated"))
-        val request = Request(Method.PUT, "/decisions/${created.id}")
+        val request = Request(Method.PUT, "/api/decisions/${created.id}")
             .body(body)
 
         val response = routes(request)
@@ -58,7 +58,7 @@ class DecisionRoutesTest {
         val routes = DecisionRoutes(repo).routes
 
         val body = json.encodeToString(DecisionInput(name = "Updated"))
-        val response = routes(Request(Method.PUT, "/decisions/999").body(body))
+        val response = routes(Request(Method.PUT, "/api/decisions/999").body(body))
 
         response.status shouldBe Status.NOT_FOUND
     }
@@ -68,7 +68,7 @@ class DecisionRoutesTest {
         val routes = DecisionRoutes(repo).routes
         val created = repo.insert(DecisionInput(name = "ToDelete"))
 
-        val response = routes(Request(Method.DELETE, "/decisions/${created.id}"))
+        val response = routes(Request(Method.DELETE, "/api/decisions/${created.id}"))
         response.status shouldBe Status.NO_CONTENT
 
         val after = repo.findById(created.id)
@@ -79,7 +79,7 @@ class DecisionRoutesTest {
         val repo = FakeDecisionRepository()
         val routes = DecisionRoutes(repo).routes
 
-        val response = routes(Request(Method.DELETE, "/decisions/12345"))
+        val response = routes(Request(Method.DELETE, "/api/decisions/12345"))
         response.status shouldBe Status.NOT_FOUND
     }
 }

@@ -11,7 +11,7 @@ object DecisionPages {
             h1 { +"Create a decision" }
             form {
                 attributes["method"] = "post"
-                attributes["action"] = "/ui/decisions"
+                attributes["action"] = "/decisions"
                 classes = setOf("stack")
 
                 label {
@@ -47,13 +47,13 @@ object DecisionPages {
             ul {
                 li {
                     a(classes = "btn") {
-                        href = "/ui/decisions/${decision.id}/my-scores?userid=fakeuser"
+                        href = "/decisions/${decision.id}/my-scores?userid=fakeuser"
                         +"Enter my scores"
                     }
                 }
                 li {
                     a(classes = "btn") {
-                        href = "/ui/decisions/${decision.id}/calculate-scores"
+                        href = "/decisions/${decision.id}/calculate-scores"
                         +"View calculated scores"
                     }
                 }
@@ -67,7 +67,7 @@ object DecisionPages {
             h1 { +"Edit decision" }
             form {
                 // htmx: submit updates and swap the entire fragment
-                attributes["hx-post"] = "/ui/decisions/${decision.id}/name"
+                attributes["hx-post"] = "/decisions/${decision.id}/name"
                 attributes["hx-target"] = "#decision-name-fragment"
                 attributes["hx-swap"] = "outerHTML"
                 classes = setOf("stack")
@@ -99,7 +99,7 @@ object DecisionPages {
                     li(classes = "row") {
                         form(classes = "row grow") {
                             // Update option inline
-                            attributes["hx-post"] = "/ui/decisions/${decision.id}/options/${opt.id}/update"
+                            attributes["hx-post"] = "/decisions/${decision.id}/options/${opt.id}/update"
                             attributes["hx-target"] = "#options-fragment"
                             attributes["hx-swap"] = "outerHTML"
                             textInput(classes = "grow") {
@@ -114,7 +114,7 @@ object DecisionPages {
                         }
                         form {
                             // Delete option inline
-                            attributes["hx-post"] = "/ui/decisions/${decision.id}/options/${opt.id}/delete"
+                            attributes["hx-post"] = "/decisions/${decision.id}/options/${opt.id}/delete"
                             attributes["hx-target"] = "#options-fragment"
                             attributes["hx-swap"] = "outerHTML"
                             button(classes = "btn danger small") {
@@ -127,7 +127,7 @@ object DecisionPages {
             }
             form(classes = "row") {
                 // Create option inline
-                attributes["hx-post"] = "/ui/decisions/${decision.id}/options"
+                attributes["hx-post"] = "/decisions/${decision.id}/options"
                 attributes["hx-target"] = "#options-fragment"
                 attributes["hx-swap"] = "outerHTML"
                 textInput {
@@ -152,7 +152,7 @@ object DecisionPages {
                     li(classes = "row") {
                         form(classes = "row grow") {
                             // Update criteria inline
-                            attributes["hx-post"] = "/ui/decisions/${decision.id}/criteria/${c.id}/update"
+                            attributes["hx-post"] = "/decisions/${decision.id}/criteria/${c.id}/update"
                             attributes["hx-target"] = "#criteria-fragment"
                             attributes["hx-swap"] = "outerHTML"
                             textInput(classes = "grow") {
@@ -173,7 +173,7 @@ object DecisionPages {
                         }
                         form {
                             // Delete criteria inline
-                            attributes["hx-post"] = "/ui/decisions/${decision.id}/criteria/${c.id}/delete"
+                            attributes["hx-post"] = "/decisions/${decision.id}/criteria/${c.id}/delete"
                             attributes["hx-target"] = "#criteria-fragment"
                             attributes["hx-swap"] = "outerHTML"
                             button(classes = "btn danger small") {
@@ -186,7 +186,7 @@ object DecisionPages {
             }
             form(classes = "row") {
                 // Create criteria inline
-                attributes["hx-post"] = "/ui/decisions/${decision.id}/criteria"
+                attributes["hx-post"] = "/decisions/${decision.id}/criteria"
                 attributes["hx-target"] = "#criteria-fragment"
                 attributes["hx-swap"] = "outerHTML"
                 textInput {

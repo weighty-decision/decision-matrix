@@ -22,7 +22,7 @@ object MyScoresPages {
                 form {
                     // Post back to same endpoint and preserve userid in query as well
                     attributes["method"] = "post"
-                    attributes["action"] = "/ui/decisions/${decision.id}/my-scores?userid=$userId"
+                    attributes["action"] = "/decisions/${decision.id}/my-scores?userid=$userId"
                     classes = setOf("stack")
 
                     // Ensure userid is posted in the body to be used server-side
@@ -77,7 +77,7 @@ object MyScoresPages {
             ul {
                 li {
                     a(classes = "btn") {
-                        href = "/ui/decisions/${decision.id}/calculate-scores"
+                        href = "/decisions/${decision.id}/calculate-scores"
                         +"View calculated scores"
                     }
                 }
