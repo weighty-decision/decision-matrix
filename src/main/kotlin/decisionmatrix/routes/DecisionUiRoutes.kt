@@ -194,26 +194,7 @@ class DecisionUiRoutes(
             ?: request.query("userid")?.trim()
             ?: return Response(Status.BAD_REQUEST).body("Missing userid")
 
-        // If a delete submit button was clicked, it will be the only delete_* key present. Handle it explicitly.
-        val deleteKey = form.keys.firstOrNull { it.startsWith("delete_") }
-        if (deleteKey != null) {
-            val parts = deleteKey.split("_")
-            if (parts.size == 3) {
-                val optId = parts[1].toLongOrNull()
-                val critId = parts[2].toLongOrNull()
-                if (optId != null && critId != null) {
-                    val existingForUser = optionCriteriaScoreRepository.findAllByDecisionId(decisionId)
-                        .firstOrNull { it.scoredBy == userId && it.optionId == optId && it.criteriaId == critId }
-                    if (existingForUser != null) {
-                        optionCriteriaScoreRepository.delete(existingForUser.id)
-                    }
-                }
-            }
-            return Response(Status.SEE_OTHER)
-                .header("Location", "/ui/decisions/$decisionId/my-scores?userid=$userId")
-        }
-
-        // Otherwise, treat as a Save action: insert/update any provided numeric scores. Do NOT delete on blanks.
+        // Save action: insert/update any provided numeric scores; delete existing scores if a blank was submitted.
         val existingForUser = optionCriteriaScoreRepository.findAllByDecisionId(decisionId)
             .filter { it.scoredBy == userId }
         val existingMap = existingForUser.associateBy { it.optionId to it.criteriaId }
@@ -223,11 +204,16 @@ class DecisionUiRoutes(
                 val key = "score_${opt.id}_${c.id}"
                 if (!form.containsKey(key)) continue
                 val raw = form[key]?.trim()
-                if (raw.isNullOrBlank()) continue
+
+                val existing = existingMap[opt.id to c.id]
+                if (raw.isNullOrBlank()) {
+                    if (existing != null) {
+                        optionCriteriaScoreRepository.delete(existing.id)
+                    }
+                    continue
+                }
 
                 val value = raw.toIntOrNull() ?: continue
-                val existing = existingMap[opt.id to c.id]
-
                 if (existing == null) {
                     optionCriteriaScoreRepository.insert(
                         decisionId = decisionId,

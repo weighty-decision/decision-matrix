@@ -9,7 +9,7 @@ object MyScoresPages {
 
     fun myScoresPage(decision: Decision, userId: String, scores: List<OptionCriteriaScore>): String = page("${decision.name} · My scores") {
         section(classes = "card") {
-            h1 { +"Score options for '${decision.name}'" }
+            h1 { +"My scores for '${decision.name}'" }
 
             if (decision.options.isEmpty() || decision.criteria.isEmpty()) {
                 p {
@@ -54,15 +54,6 @@ object MyScoresPages {
                                                 placeholder = "Score"
                                                 if (existing != null) {
                                                     value = existing.score.toString()
-                                                }
-                                            }
-                                            if (existing != null) {
-                                                // Explicit per-cell delete action
-                                                button(classes = "btn danger small") {
-                                                    type = ButtonType.submit
-                                                    attributes["name"] = "delete_${opt.id}_${c.id}"
-                                                    attributes["value"] = "1"
-                                                    +"Delete"
                                                 }
                                             }
                                         }
