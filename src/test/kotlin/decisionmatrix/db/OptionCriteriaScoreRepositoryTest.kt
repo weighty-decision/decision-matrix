@@ -27,6 +27,7 @@ class OptionCriteriaScoreRepositoryTest {
 
         val optionCriteriaScoreRepository = OptionCriteriaScoreRepositoryImpl(jdbi)
         val optionScore = optionCriteriaScoreRepository.insert(
+            decisionId = decision.id,
             optionId = option.id,
             criteriaId = criteria.id,
             scoredBy = "joe",
@@ -34,7 +35,7 @@ class OptionCriteriaScoreRepositoryTest {
         )
         val found = optionCriteriaScoreRepository.findById(optionScore.id)
         found shouldNotBe null
-        found shouldBe OptionCriteriaScore(id = optionScore.id, optionId = option.id, criteriaId = criteria.id, scoredBy = "joe", score = 9)
+        found shouldBe OptionCriteriaScore(id = optionScore.id, decisionId = decision.id, optionId = option.id, criteriaId = criteria.id, scoredBy = "joe", score = 9)
     }
 
     @Test
@@ -52,6 +53,7 @@ class OptionCriteriaScoreRepositoryTest {
 
         val optionCriteriaScoreRepository = OptionCriteriaScoreRepositoryImpl(jdbi)
         val inserted = optionCriteriaScoreRepository.insert(
+            decisionId = decision.id,
             optionId = option.id,
             criteriaId = criteria.id,
             scoredBy = "joe",
@@ -61,6 +63,7 @@ class OptionCriteriaScoreRepositoryTest {
         val updated = requireNotNull(optionCriteriaScoreRepository.update(inserted.id, 8))
         updated.score shouldBe 8
         updated.id shouldBe inserted.id
+        updated.decisionId shouldBe decision.id
         updated.optionId shouldBe option.id
         updated.criteriaId shouldBe criteria.id
         updated.scoredBy shouldBe "joe"
@@ -95,6 +98,7 @@ class OptionCriteriaScoreRepositoryTest {
 
         val optionCriteriaScoreRepository = OptionCriteriaScoreRepositoryImpl(jdbi)
         val inserted = optionCriteriaScoreRepository.insert(
+            decisionId = decision.id,
             optionId = option.id,
             criteriaId = criteria.id,
             scoredBy = "joe",

@@ -49,6 +49,7 @@ data class OptionCriteriaScoreInput(
 @Serializable
 data class OptionCriteriaScore(
     val id: Long,
+    val decisionId: Long,
     val optionId: Long,
     val criteriaId: Long,
     val scoredBy: String,

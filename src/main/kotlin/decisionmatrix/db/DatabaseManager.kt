@@ -69,10 +69,12 @@ fun createSchema(jdbi: Jdbi) {
             """
                 CREATE TABLE IF NOT EXISTS option_criteria_scores (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    decision_id INTEGER NOT NULL,
                     option_id INTEGER NOT NULL,
                     criteria_id INTEGER NOT NULL,
                     score INTEGER NOT NULL,
                     scored_by TEXT NOT NULL,
+                    FOREIGN KEY(decision_id) REFERENCES decisions(id)
                     FOREIGN KEY(option_id) REFERENCES options(id)
                     FOREIGN KEY(criteria_id) REFERENCES criteria(id)
                 )
