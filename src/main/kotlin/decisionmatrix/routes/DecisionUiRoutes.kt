@@ -3,10 +3,13 @@ package decisionmatrix.routes
 import decisionmatrix.CriteriaInput
 import decisionmatrix.DecisionInput
 import decisionmatrix.OptionInput
+import decisionmatrix.OptionCriteriaScoreInput
 import decisionmatrix.db.CriteriaRepository
 import decisionmatrix.db.DecisionRepository
 import decisionmatrix.db.OptionRepository
+import decisionmatrix.db.OptionCriteriaScoreRepository
 import decisionmatrix.ui.DecisionPages
+import decisionmatrix.ui.MyScoresPages
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -21,7 +24,8 @@ import java.nio.charset.StandardCharsets
 class DecisionUiRoutes(
     private val decisionRepository: DecisionRepository,
     private val optionRepository: OptionRepository,
-    private val criteriaRepository: CriteriaRepository
+    private val criteriaRepository: CriteriaRepository,
+    private val optionCriteriaScoreRepository: OptionCriteriaScoreRepository
 ) {
 
     val routes: RoutingHttpHandler = routes(
@@ -39,7 +43,10 @@ class DecisionUiRoutes(
 
         "/ui/decisions/{id}/criteria" bind Method.POST to ::createCriteria,
         "/ui/decisions/{id}/criteria/{criteriaId}/update" bind Method.POST to ::updateCriteria,
-        "/ui/decisions/{id}/criteria/{criteriaId}/delete" bind Method.POST to ::deleteCriteria
+        "/ui/decisions/{id}/criteria/{criteriaId}/delete" bind Method.POST to ::deleteCriteria,
+
+        "/ui/decisions/{id}/my-scores" bind Method.GET to ::viewMyScores,
+        "/ui/decisions/{id}/my-scores" bind Method.POST to ::submitMyScores
     )
 
     private fun home(@Suppress("UNUSED_PARAMETER") request: Request): Response =
@@ -164,6 +171,79 @@ class DecisionUiRoutes(
         } else {
             Response(Status.SEE_OTHER).header("Location", "/ui/decisions/$decisionId/edit")
         }
+    }
+
+    private fun viewMyScores(request: Request): Response {
+        val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
+        val userId = request.query("userid")?.trim().orEmpty()
+        if (userId.isBlank()) return Response(Status.BAD_REQUEST).body("Missing required query param 'userid'")
+
+        val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+        val userScores = optionCriteriaScoreRepository.findAllByDecisionId(decisionId)
+            .filter { it.scoredBy == userId }
+
+        return htmlResponse(MyScoresPages.myScoresPage(decision, userId, userScores))
+    }
+
+    private fun submitMyScores(request: Request): Response {
+        val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
+        val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+
+        val form = parseForm(request)
+        val userId = form["userid"]?.trim().takeUnless { it.isNullOrBlank() }
+            ?: request.query("userid")?.trim()
+            ?: return Response(Status.BAD_REQUEST).body("Missing userid")
+
+        // If a delete submit button was clicked, it will be the only delete_* key present. Handle it explicitly.
+        val deleteKey = form.keys.firstOrNull { it.startsWith("delete_") }
+        if (deleteKey != null) {
+            val parts = deleteKey.split("_")
+            if (parts.size == 3) {
+                val optId = parts[1].toLongOrNull()
+                val critId = parts[2].toLongOrNull()
+                if (optId != null && critId != null) {
+                    val existingForUser = optionCriteriaScoreRepository.findAllByDecisionId(decisionId)
+                        .firstOrNull { it.scoredBy == userId && it.optionId == optId && it.criteriaId == critId }
+                    if (existingForUser != null) {
+                        optionCriteriaScoreRepository.delete(existingForUser.id)
+                    }
+                }
+            }
+            return Response(Status.SEE_OTHER)
+                .header("Location", "/ui/decisions/$decisionId/my-scores?userid=$userId")
+        }
+
+        // Otherwise, treat as a Save action: insert/update any provided numeric scores. Do NOT delete on blanks.
+        val existingForUser = optionCriteriaScoreRepository.findAllByDecisionId(decisionId)
+            .filter { it.scoredBy == userId }
+        val existingMap = existingForUser.associateBy { it.optionId to it.criteriaId }
+
+        for (opt in decision.options) {
+            for (c in decision.criteria) {
+                val key = "score_${opt.id}_${c.id}"
+                if (!form.containsKey(key)) continue
+                val raw = form[key]?.trim()
+                if (raw.isNullOrBlank()) continue
+
+                val value = raw.toIntOrNull() ?: continue
+                val existing = existingMap[opt.id to c.id]
+
+                if (existing == null) {
+                    optionCriteriaScoreRepository.insert(
+                        decisionId = decisionId,
+                        optionId = opt.id,
+                        criteriaId = c.id,
+                        scoredBy = userId,
+                        score = OptionCriteriaScoreInput(score = value)
+                    )
+                } else if (existing.score != value) {
+                    optionCriteriaScoreRepository.update(existing.id, value)
+                }
+            }
+        }
+
+        return Response(Status.SEE_OTHER)
+            .header("Location", "/ui/decisions/$decisionId/my-scores?userid=$userId")
     }
 
     // ---- helpers

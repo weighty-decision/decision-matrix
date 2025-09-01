@@ -32,7 +32,8 @@ val optionRoutes = OptionRoutes(optionRepository)
 val decisionUiRoutes = DecisionUiRoutes(
     decisionRepository = decisionRepository,
     optionRepository = optionRepository,
-    criteriaRepository = criteriaRepository
+    criteriaRepository = criteriaRepository,
+    optionCriteriaScoreRepository = optionCriteriaScoreRepository
 )
 
 val app: RoutingHttpHandler = routes(
