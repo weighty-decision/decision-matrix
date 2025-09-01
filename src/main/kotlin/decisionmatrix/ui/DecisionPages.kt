@@ -39,8 +39,8 @@ object DecisionPages {
             +nameFragment(decision)
         }
         div(classes = "grid") {
-            unsafe { +optionsFragment(decision) }
             unsafe { +criteriaFragment(decision) }
+            unsafe { +optionsFragment(decision) }
         }
         section(classes = "card") {
             h2 { +"Next steps" }
