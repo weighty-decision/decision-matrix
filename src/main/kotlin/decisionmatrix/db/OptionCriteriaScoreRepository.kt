@@ -8,6 +8,7 @@ import java.sql.ResultSet
 interface OptionCriteriaScoreRepository {
     fun insert(decisionId: Long, optionId: Long, criteriaId: Long, scoredBy: String, score: OptionCriteriaScoreInput): OptionCriteriaScore = throw NotImplementedError()
     fun findById(id: Long): OptionCriteriaScore? = throw NotImplementedError()
+    fun findAllByDecisionId(decisionId: Long): List<OptionCriteriaScore> = throw NotImplementedError()
     fun update(id: Long, score: Int): OptionCriteriaScore? = throw NotImplementedError()
     fun delete(id: Long): Boolean = throw NotImplementedError()
 }
@@ -32,7 +33,21 @@ class OptionCriteriaScoreRepositoryImpl(private val jdbi: Jdbi) : OptionCriteria
         }
     }
 
-
+    override fun findAllByDecisionId(decisionId: Long): List<OptionCriteriaScore> {
+        return jdbi.withHandle<List<OptionCriteriaScore>, Exception> { handle ->
+            handle.createQuery(
+                """
+                SELECT id, decision_id, option_id, criteria_id, scored_by, score
+                FROM option_criteria_scores
+                WHERE decision_id = :decisionId
+                ORDER BY id
+                """.trimIndent()
+            )
+                .bind("decisionId", decisionId)
+                .map { rs, _ -> mapOptionCriteriaScore(rs) }
+                .list()
+        }
+    }
 
     override fun findById(id: Long): OptionCriteriaScore? {
         return jdbi.withHandle<OptionCriteriaScore?, Exception> { handle ->

@@ -123,4 +123,88 @@ class OptionCriteriaScoreRepositoryTest {
 
         deleted shouldBe false
     }
+
+    @Test
+    fun findAllByDecisionId_returns_all_scores_for_decision() {
+        val jdbi = createTempDatabase()
+
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val decision1 = decisionRepository.insert(DecisionInput(name = "Decision 1"))
+        val decision2 = decisionRepository.insert(DecisionInput(name = "Decision 2"))
+
+        val optionRepository = OptionRepositoryImpl(jdbi)
+        val option1 = optionRepository.insert(decisionId = decision1.id, OptionInput(name = "Option A"))
+        val option2 = optionRepository.insert(decisionId = decision1.id, OptionInput(name = "Option B"))
+        val option3 = optionRepository.insert(decisionId = decision2.id, OptionInput(name = "Option C"))
+
+        val criteriaRepository = CriteriaRepositoryImpl(jdbi)
+        val criteria1 = criteriaRepository.insert(decisionId = decision1.id, CriteriaInput(name = "Cost", weight = 5))
+        val criteria2 = criteriaRepository.insert(decisionId = decision1.id, CriteriaInput(name = "Quality", weight = 8))
+        val criteria3 = criteriaRepository.insert(decisionId = decision2.id, CriteriaInput(name = "Speed", weight = 3))
+
+        val optionCriteriaScoreRepository = OptionCriteriaScoreRepositoryImpl(jdbi)
+
+        // Insert scores for decision1
+        val score1 = optionCriteriaScoreRepository.insert(
+            decisionId = decision1.id,
+            optionId = option1.id,
+            criteriaId = criteria1.id,
+            scoredBy = "alice",
+            score = OptionCriteriaScoreInput(score = 7)
+        )
+        val score2 = optionCriteriaScoreRepository.insert(
+            decisionId = decision1.id,
+            optionId = option2.id,
+            criteriaId = criteria2.id,
+            scoredBy = "bob",
+            score = OptionCriteriaScoreInput(score = 9)
+        )
+
+        // Insert score for decision2 (should not be returned)
+        optionCriteriaScoreRepository.insert(
+            decisionId = decision2.id,
+            optionId = option3.id,
+            criteriaId = criteria3.id,
+            scoredBy = "charlie",
+            score = OptionCriteriaScoreInput(score = 6)
+        )
+
+        val scoresForDecision1 = optionCriteriaScoreRepository.findAllByDecisionId(decision1.id)
+
+        scoresForDecision1.size shouldBe 2
+        scoresForDecision1[0] shouldBe OptionCriteriaScore(
+            id = score1.id,
+            decisionId = decision1.id,
+            optionId = option1.id,
+            criteriaId = criteria1.id,
+            scoredBy = "alice",
+            score = 7
+        )
+        scoresForDecision1[1] shouldBe OptionCriteriaScore(
+            id = score2.id,
+            decisionId = decision1.id,
+            optionId = option2.id,
+            criteriaId = criteria2.id,
+            scoredBy = "bob",
+            score = 9
+        )
+
+        // Verify decision2 has its own score
+        val scoresForDecision2 = optionCriteriaScoreRepository.findAllByDecisionId(decision2.id)
+        scoresForDecision2.size shouldBe 1
+        scoresForDecision2[0].decisionId shouldBe decision2.id
+    }
+
+    @Test
+    fun findAllByDecisionId_returns_empty_list_when_no_scores_exist() {
+        val jdbi = createTempDatabase()
+
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
+
+        val optionCriteriaScoreRepository = OptionCriteriaScoreRepositoryImpl(jdbi)
+        val scores = optionCriteriaScoreRepository.findAllByDecisionId(decision.id)
+
+        scores shouldBe emptyList()
+    }
 }
