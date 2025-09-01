@@ -10,6 +10,7 @@ import decisionmatrix.db.OptionRepository
 import decisionmatrix.db.OptionCriteriaScoreRepository
 import decisionmatrix.ui.DecisionPages
 import decisionmatrix.ui.MyScoresPages
+import decisionmatrix.ui.CalculateScoresPages
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -46,7 +47,8 @@ class DecisionUiRoutes(
         "/ui/decisions/{id}/criteria/{criteriaId}/delete" bind Method.POST to ::deleteCriteria,
 
         "/ui/decisions/{id}/my-scores" bind Method.GET to ::viewMyScores,
-        "/ui/decisions/{id}/my-scores" bind Method.POST to ::submitMyScores
+        "/ui/decisions/{id}/my-scores" bind Method.POST to ::submitMyScores,
+        "/ui/decisions/{id}/calculate-scores" bind Method.GET to ::calculateScores
     )
 
     private fun home(@Suppress("UNUSED_PARAMETER") request: Request): Response =
@@ -230,6 +232,15 @@ class DecisionUiRoutes(
 
         return Response(Status.SEE_OTHER)
             .header("Location", "/ui/decisions/$decisionId/my-scores?userid=$userId")
+    }
+
+    private fun calculateScores(request: Request): Response {
+        val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
+        val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+
+        val scores = optionCriteriaScoreRepository.findAllByDecisionId(decisionId)
+
+        return htmlResponse(CalculateScoresPages.calculateScoresPage(decision, scores))
     }
 
     // ---- helpers

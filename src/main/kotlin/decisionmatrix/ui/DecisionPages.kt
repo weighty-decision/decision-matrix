@@ -42,6 +42,23 @@ object DecisionPages {
             unsafe { +optionsFragment(decision) }
             unsafe { +criteriaFragment(decision) }
         }
+        section(classes = "card") {
+            h2 { +"Next steps" }
+            ul {
+                li {
+                    a(classes = "btn") {
+                        href = "/ui/decisions/${decision.id}/my-scores?userid=fakeuser"
+                        +"Enter my scores"
+                    }
+                }
+                li {
+                    a(classes = "btn") {
+                        href = "/ui/decisions/${decision.id}/calculate-scores"
+                        +"View calculated scores"
+                    }
+                }
+            }
+        }
     }
 
     fun nameFragment(decision: Decision): String = buildString {
