@@ -1,17 +1,46 @@
 package decisionmatrix
 
+import decisionmatrix.auth.withMockAuth
+import decisionmatrix.db.*
+import decisionmatrix.routes.DecisionUiRoutes
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
+import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
+import org.http4k.routing.ResourceLoader
+import org.http4k.routing.bind
+import org.http4k.routing.routes
+import org.http4k.routing.static
 import org.junit.jupiter.api.Test
 
 class ScoreRangeEndToEndTest {
+    
+    private val jdbi = createTempDatabase()
+    private val decisionRepository = DecisionRepositoryImpl(jdbi)
+    private val optionRepository = OptionRepositoryImpl(jdbi)
+    private val criteriaRepository = CriteriaRepositoryImpl(jdbi)
+    private val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+
+    private val decisionUiRoutes = DecisionUiRoutes(
+        decisionRepository = decisionRepository,
+        optionRepository = optionRepository,
+        criteriaRepository = criteriaRepository,
+        userScoreRepository = userScoreRepository
+    )
+
+    private val testApp = routes(
+        "/ping" bind GET to {
+            Response(OK).body("pong")
+        },
+        "/assets" bind static(ResourceLoader.Classpath("public")),
+        decisionUiRoutes.routes
+    ).withMockAuth()
 
     @Test fun `Complete decision workflow with score range validates at all stages`() {
         // Step 1: Create decision with specific score range
@@ -19,7 +48,7 @@ class ScoreRangeEndToEndTest {
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=Laptop+Decision&minScore=1&maxScore=7")
         
-        val createResponse = app(createDecisionRequest)
+        val createResponse = testApp(createDecisionRequest)
         createResponse.status shouldBe SEE_OTHER
         val decisionId = createResponse.header("Location")!!.split("/")[2]
         
@@ -27,22 +56,22 @@ class ScoreRangeEndToEndTest {
         val addCriteria1 = Request(POST, "/decisions/$decisionId/criteria")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=Performance&weight=5")
-        app(addCriteria1).status shouldBe SEE_OTHER
+        testApp(addCriteria1).status shouldBe SEE_OTHER
         
         val addCriteria2 = Request(POST, "/decisions/$decisionId/criteria")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=Price&weight=3")
-        app(addCriteria2).status shouldBe SEE_OTHER
+        testApp(addCriteria2).status shouldBe SEE_OTHER
         
         val addOption1 = Request(POST, "/decisions/$decisionId/options")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=MacBook")
-        app(addOption1).status shouldBe SEE_OTHER
+        testApp(addOption1).status shouldBe SEE_OTHER
         
         val addOption2 = Request(POST, "/decisions/$decisionId/options")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=ThinkPad")
-        app(addOption2).status shouldBe SEE_OTHER
+        testApp(addOption2).status shouldBe SEE_OTHER
         
         // Step 3: Verify score range constraints are enforced (simple test)
         // We'll just test that invalid range creation fails
@@ -50,13 +79,13 @@ class ScoreRangeEndToEndTest {
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=Invalid+Range&minScore=5&maxScore=3")
         
-        val invalidRangeResponse = app(invalidRangeRequest)
+        val invalidRangeResponse = testApp(invalidRangeRequest)
         invalidRangeResponse.status shouldBe BAD_REQUEST
         invalidRangeResponse.bodyString() shouldBe "Min score must be less than max score"
         
         // Step 4: Just verify calculate scores page loads (content depends on actual scores)
         val calculateScoresRequest = Request(GET, "/decisions/$decisionId/calculate-scores")
-        val calculateScoresResponse = app(calculateScoresRequest)
+        val calculateScoresResponse = testApp(calculateScoresRequest)
         calculateScoresResponse.status shouldBe OK
     }
 
@@ -66,21 +95,21 @@ class ScoreRangeEndToEndTest {
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=Range+Update+Test&minScore=1&maxScore=5")
         
-        val createResponse = app(createRequest)
+        val createResponse = testApp(createRequest)
         createResponse.status shouldBe SEE_OTHER
         val decisionId = createResponse.header("Location")!!.split("/")[2]
         
         // Add criteria and option
-        app(Request(POST, "/decisions/$decisionId/criteria")
+        testApp(Request(POST, "/decisions/$decisionId/criteria")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=Test+Criteria&weight=1")).status shouldBe SEE_OTHER
             
-        app(Request(POST, "/decisions/$decisionId/options")
+        testApp(Request(POST, "/decisions/$decisionId/options")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=Test+Option")).status shouldBe SEE_OTHER
         
         // Step 2: Check initial my-scores page constraints
-        val initialMyScores = app(Request(GET, "/decisions/$decisionId/my-scores?userid=testuser"))
+        val initialMyScores = testApp(Request(GET, "/decisions/$decisionId/my-scores"))
         initialMyScores.status shouldBe OK
         val initialBody = initialMyScores.bodyString()
         initialBody shouldContain "min=\"1\""
@@ -93,10 +122,10 @@ class ScoreRangeEndToEndTest {
             .header("HX-Request", "true")
             .body("name=Range+Update+Test&minScore=2&maxScore=8")
         
-        app(updateRangeRequest).status shouldBe OK
+        testApp(updateRangeRequest).status shouldBe OK
         
         // Step 4: Verify updated my-scores page reflects new constraints
-        val updatedMyScores = app(Request(GET, "/decisions/$decisionId/my-scores?userid=testuser"))
+        val updatedMyScores = testApp(Request(GET, "/decisions/$decisionId/my-scores"))
         updatedMyScores.status shouldBe OK
         val updatedBody = updatedMyScores.bodyString()
         updatedBody shouldContain "min=\"2\""
@@ -116,16 +145,16 @@ class ScoreRangeEndToEndTest {
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=Min+Range&minScore=1&maxScore=2")
         
-        val minRangeResponse = app(minRangeRequest)
+        val minRangeResponse = testApp(minRangeRequest)
         minRangeResponse.status shouldBe SEE_OTHER
         val minRangeDecisionId = minRangeResponse.header("Location")!!.split("/")[2]
         
         // Add basic structure
-        app(Request(POST, "/decisions/$minRangeDecisionId/criteria")
+        testApp(Request(POST, "/decisions/$minRangeDecisionId/criteria")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=Test&weight=1")).status shouldBe SEE_OTHER
         
-        app(Request(POST, "/decisions/$minRangeDecisionId/options")
+        testApp(Request(POST, "/decisions/$minRangeDecisionId/options")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=Option")).status shouldBe SEE_OTHER
         
@@ -135,7 +164,7 @@ class ScoreRangeEndToEndTest {
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=Invalid+Range&minScore=5&maxScore=3")
         
-        val invalidRangeResponse = app(invalidRangeRequest)
+        val invalidRangeResponse = testApp(invalidRangeRequest)
         invalidRangeResponse.status shouldBe BAD_REQUEST
         invalidRangeResponse.bodyString() shouldBe "Min score must be less than max score"
         
@@ -144,7 +173,7 @@ class ScoreRangeEndToEndTest {
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=Equal+Range&minScore=5&maxScore=5")
         
-        val equalRangeResponse = app(equalRangeRequest)
+        val equalRangeResponse = testApp(equalRangeRequest)
         equalRangeResponse.status shouldBe BAD_REQUEST
         equalRangeResponse.bodyString() shouldBe "Min score must be less than max score"
     }

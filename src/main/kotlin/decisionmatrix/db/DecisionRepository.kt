@@ -8,7 +8,7 @@ import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 
 interface DecisionRepository {
-    fun insert(decision: DecisionInput): Decision = throw NotImplementedError()
+    fun insert(decision: DecisionInput, createdBy: String = "unknown"): Decision = throw NotImplementedError()
     fun findById(id: Long): Decision? = throw NotImplementedError()
     fun update(id: Long, name: String): Decision? = throw NotImplementedError()
     fun update(id: Long, name: String, minScore: Int, maxScore: Int): Decision? = throw NotImplementedError()
@@ -16,18 +16,19 @@ interface DecisionRepository {
 }
 
 class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
-    override fun insert(decision: DecisionInput): Decision {
+    override fun insert(decision: DecisionInput, createdBy: String): Decision {
         return jdbi.withHandle<Decision, Exception> { handle ->
             handle.createQuery(
                 """
-                INSERT INTO decisions (name, min_score, max_score) 
-                VALUES (:name, :minScore, :maxScore)
+                INSERT INTO decisions (name, min_score, max_score, created_by) 
+                VALUES (:name, :minScore, :maxScore, :createdBy)
                 RETURNING *
                 """.trimIndent()
             )
                 .bind("name", decision.name)
                 .bind("minScore", decision.minScore)
                 .bind("maxScore", decision.maxScore)
+                .bind("createdBy", createdBy)
                 .map { rs, _ -> mapDecision(rs) }
                 .one()
         }
@@ -42,6 +43,7 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
                     d.name as decision_name,
                     d.min_score as decision_min_score,
                     d.max_score as decision_max_score,
+                    d.created_by as decision_created_by,
                     c.id as criteria_id,
                     c.name as criteria_name,
                     c.weight as criteria_weight,
@@ -124,6 +126,7 @@ fun mapDecision(rs: ResultSet): Decision {
         name = rs.getString("name"),
         minScore = rs.getInt("min_score"),
         maxScore = rs.getInt("max_score"),
+        createdBy = rs.getString("created_by")
     )
 }
 
@@ -135,6 +138,7 @@ fun mapDecisionWithRelations(rows: List<Map<String, Any>>): Decision {
     val decisionName = firstRow["decision_name"] as String
     val decisionMinScore = (firstRow["decision_min_score"] as Number).toInt()
     val decisionMaxScore = (firstRow["decision_max_score"] as Number).toInt()
+    val decisionCreatedBy = firstRow["decision_created_by"] as? String
 
     val criteriaMap = mutableMapOf<Long, Criteria>()
     val optionsMap = mutableMapOf<Long, Option>()
@@ -167,6 +171,7 @@ fun mapDecisionWithRelations(rows: List<Map<String, Any>>): Decision {
         name = decisionName,
         minScore = decisionMinScore,
         maxScore = decisionMaxScore,
+        createdBy = decisionCreatedBy,
         criteria = criteriaMap.values.toList(),
         options = optionsMap.values.toList()
     )

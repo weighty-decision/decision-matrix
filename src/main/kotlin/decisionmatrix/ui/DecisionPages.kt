@@ -72,7 +72,7 @@ object DecisionPages {
             ul {
                 li {
                     a(classes = "btn") {
-                        href = "/decisions/${decision.id}/my-scores?userid=fakeuser"
+                        href = "/decisions/${decision.id}/my-scores"
                         +"Enter my scores"
                     }
                 }

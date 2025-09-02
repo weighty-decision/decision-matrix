@@ -20,16 +20,9 @@ object MyScoresPages {
                 val scoreMap = scores.associateBy { it.optionId to it.criteriaId }
 
                 form {
-                    // Post back to same endpoint and preserve userid in query as well
                     attributes["method"] = "post"
-                    attributes["action"] = "/decisions/${decision.id}/my-scores?userid=$userId"
+                    attributes["action"] = "/decisions/${decision.id}/my-scores"
                     classes = setOf("stack")
-
-                    // Ensure userid is posted in the body to be used server-side
-                    hiddenInput {
-                        name = "userid"
-                        value = userId
-                    }
 
                     table {
                         thead {

@@ -1,5 +1,7 @@
 package decisionmatrix
 
+import decisionmatrix.auth.*
+import decisionmatrix.auth.providers.GoogleOAuthProvider
 import decisionmatrix.db.*
 import decisionmatrix.routes.DecisionUiRoutes
 import org.http4k.core.HttpHandler
@@ -8,6 +10,7 @@ import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.then
 import org.http4k.filter.DebuggingFilters.PrintRequest
+import org.http4k.filter.ServerFilters
 import org.http4k.routing.*
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
@@ -22,6 +25,19 @@ val optionRepository = OptionRepositoryImpl(jdbi)
 val criteriaRepository = CriteriaRepositoryImpl(jdbi)
 val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
+// Authentication setup
+val authConfig = AuthConfiguration.fromEnvironment()
+val sessionManager = SessionManager()
+
+val oauthProvider = when (authConfig.oauthProvider) {
+    "google" -> GoogleOAuthProvider()
+    else -> throw IllegalArgumentException("Unsupported OAuth provider: ${authConfig.oauthProvider}")
+}
+
+val authRoutes = if (!authConfig.devMode && authConfig.oauthConfig != null) {
+    AuthRoutes(oauthProvider, authConfig.oauthConfig, sessionManager)
+} else null
+
 val decisionUiRoutes = DecisionUiRoutes(
     decisionRepository = decisionRepository,
     optionRepository = optionRepository,
@@ -34,14 +50,24 @@ val app: RoutingHttpHandler = routes(
         Response(OK).body("pong")
     },
     "/assets" bind static(ResourceLoader.Classpath("public")),
+    *if (authRoutes != null) arrayOf(authRoutes.routes) else emptyArray(),
     decisionUiRoutes.routes
 )
 
 fun main() {
-    val app: HttpHandler = PrintRequest()
+    val appWithAuth: HttpHandler = PrintRequest()
+        .then(ServerFilters.InitialiseRequestContext(UserContext.contexts))
+        .then(requireAuth(sessionManager, authConfig.devMode, authConfig.devUserId))
         .then(app)
 
-    val server = app.asServer(Undertow(9000)).start()
+    val server = appWithAuth.asServer(Undertow(9000)).start()
 
     log.info("Server started. UI available at http://localhost:${server.port()}")
+    if (authConfig.devMode) {
+        log.info("Running in DEV MODE - authentication bypassed")
+        log.info("Default dev user: {}", authConfig.devUserId ?: "dev-user")
+        log.info("Override with ?dev_user=<user_id> query parameter")
+    } else {
+        log.info("OAuth provider: {}", authConfig.oauthProvider)
+    }
 }

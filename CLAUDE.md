@@ -109,3 +109,47 @@ When working on decision matrix features, remember:
 - Multiple users need to input weights and scores
 - Calculations should be transparent and auditable
 - Results should be easy to understand and export
+
+### Authentication
+The application uses OAuth for authentication with pluggable provider support.
+
+#### Development Mode
+For local development, set `DM_DEV_MODE=true` to bypass OAuth:
+```bash
+export DM_DEV_MODE=true
+export DM_DEV_USER_ID=your-dev-username  # Optional, defaults to "dev-user"
+```
+
+You can also specify different users per request using the `?dev_user=<user_id>` query parameter.
+
+#### Production OAuth Setup
+For production, configure OAuth environment variables:
+
+```bash
+export DM_DEV_MODE=false
+export DM_OAUTH_PROVIDER=google  # Currently only "google" is supported
+export DM_OAUTH_CLIENT_ID=your-google-client-id
+export DM_OAUTH_CLIENT_SECRET=your-google-client-secret
+export DM_OAUTH_REDIRECT_URI=https://your-domain.com/auth/callback
+```
+
+#### Google OAuth Setup
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google+ API
+4. Go to "Credentials" → "Create Credentials" → "OAuth 2.0 Client IDs"
+5. Set application type to "Web application"
+6. Add your redirect URI (e.g., `http://localhost:9000/auth/callback` for local dev)
+7. Copy the Client ID and Client Secret to your environment variables
+
+#### Adding New OAuth Providers
+To add a new OAuth provider:
+
+1. Implement the `OAuthProvider` interface in `src/main/kotlin/decisionmatrix/auth/providers/`
+2. Add provider selection logic in `App.kt`
+3. Update the `DM_OAUTH_PROVIDER` environment variable documentation
+
+#### Session Management
+- Sessions are stored in memory (suitable for single-instance deployments)
+- Session timeout is 24 hours by default
+- Sessions are automatically cleaned up on expiry

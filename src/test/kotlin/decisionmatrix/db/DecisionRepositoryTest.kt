@@ -23,7 +23,7 @@ class DecisionRepositoryTest {
         val found = decisionRepository.findById(inserted.id)
 
         found shouldNotBe null
-        found shouldBe Decision(id = inserted.id, name = "My decision", minScore = 1, maxScore = 10, criteria = emptyList(), options = emptyList())
+        found shouldBe Decision(id = inserted.id, name = "My decision", minScore = 1, maxScore = 10, createdBy = "unknown", criteria = emptyList(), options = emptyList())
     }
 
     @Test fun `findById fully hydrates decision with criteria and options`() {

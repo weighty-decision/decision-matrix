@@ -18,6 +18,7 @@ data class Decision(
     val name: String,
     val minScore: Int = DEFAULT_MIN_SCORE,
     val maxScore: Int = DEFAULT_MAX_SCORE,
+    val createdBy: String? = null,
     val criteria: List<Criteria> = emptyList(),
     val options: List<Option> = emptyList(),
 )

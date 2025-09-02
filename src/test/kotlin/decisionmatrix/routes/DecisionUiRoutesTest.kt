@@ -1,6 +1,7 @@
 package decisionmatrix.routes
 
 import decisionmatrix.DecisionInput
+import decisionmatrix.auth.withMockAuth
 import decisionmatrix.db.*
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -19,7 +20,7 @@ class DecisionUiRoutesTest {
 
     private val routes = DecisionUiRoutes(
         decisionRepository, optionRepository, criteriaRepository, userScoreRepository
-    ).routes
+    ).routes.withMockAuth()
 
     @Test fun `createDecision with custom score range creates decision with correct range`() {
         val request = Request(Method.POST, "/decisions")
@@ -52,32 +53,33 @@ class DecisionUiRoutesTest {
     @Test fun `submitMyScores validates score within range`() {
         // Create decision with custom score range
         val decision = decisionRepository.insert(
-            DecisionInput(name = "Test Decision", minScore = 1, maxScore = 5)
+            DecisionInput(name = "Test Decision", minScore = 1, maxScore = 5),
+            createdBy = "test-user"
         )
         val option = optionRepository.insert(decision.id, decisionmatrix.OptionInput("Option A"))
         val criteria = criteriaRepository.insert(decision.id, decisionmatrix.CriteriaInput("Criteria A", 1))
 
         // Test valid score
-        val validRequest = Request(Method.POST, "/decisions/${decision.id}/my-scores?userid=testuser")
+        val validRequest = Request(Method.POST, "/decisions/${decision.id}/my-scores")
             .header("Content-Type", "application/x-www-form-urlencoded")
-            .body("userid=testuser&score_${option.id}_${criteria.id}=3")
+            .body("score_${option.id}_${criteria.id}=3")
 
         val validResponse = routes(validRequest)
         validResponse.status shouldBe Status.SEE_OTHER
 
         // Test invalid score (too high)
-        val invalidHighRequest = Request(Method.POST, "/decisions/${decision.id}/my-scores?userid=testuser")
+        val invalidHighRequest = Request(Method.POST, "/decisions/${decision.id}/my-scores")
             .header("Content-Type", "application/x-www-form-urlencoded")
-            .body("userid=testuser&score_${option.id}_${criteria.id}=7")
+            .body("score_${option.id}_${criteria.id}=7")
 
         val invalidHighResponse = routes(invalidHighRequest)
         invalidHighResponse.status shouldBe Status.BAD_REQUEST
         invalidHighResponse.bodyString() shouldBe "Score 7 is outside the allowed range of 1-5"
 
         // Test invalid score (too low)
-        val invalidLowRequest = Request(Method.POST, "/decisions/${decision.id}/my-scores?userid=testuser")
+        val invalidLowRequest = Request(Method.POST, "/decisions/${decision.id}/my-scores")
             .header("Content-Type", "application/x-www-form-urlencoded")
-            .body("userid=testuser&score_${option.id}_${criteria.id}=0")
+            .body("score_${option.id}_${criteria.id}=0")
 
         val invalidLowResponse = routes(invalidLowRequest)
         invalidLowResponse.status shouldBe Status.BAD_REQUEST
@@ -86,7 +88,8 @@ class DecisionUiRoutesTest {
 
     @Test fun `edit page includes focus behavior for new criteria and options inputs`() {
         val decision = decisionRepository.insert(
-            DecisionInput(name = "Test Decision", minScore = 1, maxScore = 10)
+            DecisionInput(name = "Test Decision", minScore = 1, maxScore = 10),
+            createdBy = "test-user"
         )
 
         val request = Request(Method.GET, "/decisions/${decision.id}/edit")
@@ -107,7 +110,8 @@ class DecisionUiRoutesTest {
 
     @Test fun `updateDecisionName with score range updates all fields`() {
         val decision = decisionRepository.insert(
-            DecisionInput(name = "Original Decision", minScore = 1, maxScore = 10)
+            DecisionInput(name = "Original Decision", minScore = 1, maxScore = 10),
+            createdBy = "test-user"
         )
 
         val request = Request(Method.POST, "/decisions/${decision.id}/name")
@@ -127,7 +131,8 @@ class DecisionUiRoutesTest {
 
     @Test fun `updateDecisionName with invalid score range returns error`() {
         val decision = decisionRepository.insert(
-            DecisionInput(name = "Original Decision", minScore = 1, maxScore = 10)
+            DecisionInput(name = "Original Decision", minScore = 1, maxScore = 10),
+            createdBy = "test-user"
         )
 
         val request = Request(Method.POST, "/decisions/${decision.id}/name")

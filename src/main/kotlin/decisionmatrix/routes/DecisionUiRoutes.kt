@@ -6,6 +6,7 @@ import decisionmatrix.DEFAULT_MIN_SCORE
 import decisionmatrix.DecisionInput
 import decisionmatrix.OptionInput
 import decisionmatrix.UserScoreInput
+import decisionmatrix.auth.UserContext
 import decisionmatrix.db.CriteriaRepository
 import decisionmatrix.db.DecisionRepository
 import decisionmatrix.db.OptionRepository
@@ -60,6 +61,7 @@ class DecisionUiRoutes(
         htmlResponse(DecisionPages.createPage())
 
     private fun createDecision(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Name is required")
@@ -71,7 +73,10 @@ class DecisionUiRoutes(
             return Response(Status.BAD_REQUEST).body("Min score must be less than max score")
         }
         
-        val created = decisionRepository.insert(DecisionInput(name = name, minScore = minScore, maxScore = maxScore))
+        val created = decisionRepository.insert(
+            DecisionInput(name = name, minScore = minScore, maxScore = maxScore),
+            currentUser.id
+        )
         return Response(Status.SEE_OTHER).header("Location", "/decisions/${created.id}/edit")
     }
 
@@ -195,24 +200,22 @@ class DecisionUiRoutes(
 
     private fun viewMyScores(request: Request): Response {
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
-        val userId = request.query("userid")?.trim().orEmpty()
-        if (userId.isBlank()) return Response(Status.BAD_REQUEST).body("Missing required query param 'userid'")
+        val currentUser = UserContext.requireCurrent(request)
 
         val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
         val userScores = userScoreRepository.findAllByDecisionId(decisionId)
-            .filter { it.scoredBy == userId }
+            .filter { it.scoredBy == currentUser.id }
 
-        return htmlResponse(MyScoresPages.myScoresPage(decision, userId, userScores))
+        return htmlResponse(MyScoresPages.myScoresPage(decision, currentUser.id, userScores))
     }
 
     private fun submitMyScores(request: Request): Response {
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
         val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+        val currentUser = UserContext.requireCurrent(request)
 
         val form = parseForm(request)
-        val userId = form["userid"]?.trim().takeUnless { it.isNullOrBlank() }
-            ?: request.query("userid")?.trim()
-            ?: return Response(Status.BAD_REQUEST).body("Missing userid")
+        val userId = currentUser.id
 
         // Save action: insert/update any provided numeric scores; delete existing scores if a blank was submitted.
         val existingForUser = userScoreRepository.findAllByDecisionId(decisionId)
@@ -254,7 +257,7 @@ class DecisionUiRoutes(
         }
 
         return Response(Status.SEE_OTHER)
-            .header("Location", "/decisions/$decisionId/my-scores?userid=$userId")
+            .header("Location", "/decisions/$decisionId/my-scores")
     }
 
     private fun calculateScores(request: Request): Response {

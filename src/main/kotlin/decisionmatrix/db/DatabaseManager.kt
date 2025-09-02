@@ -43,7 +43,8 @@ fun createSchema(jdbi: Jdbi) {
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     min_score INTEGER NOT NULL,
-                    max_score INTEGER NOT NULL
+                    max_score INTEGER NOT NULL,
+                    created_by TEXT
                 )
                 """.trimIndent()
         )
