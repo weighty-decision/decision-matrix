@@ -179,6 +179,7 @@ object DecisionPages {
                 attributes["hx-target"] = "#options-fragment"
                 attributes["hx-swap"] = "outerHTML"
                 textInput {
+                    id = "new-option-input"
                     name = "name"
                     placeholder = "New option"
                     required = true
@@ -238,6 +239,7 @@ object DecisionPages {
                 attributes["hx-target"] = "#criteria-fragment"
                 attributes["hx-swap"] = "outerHTML"
                 textInput {
+                    id = "new-criteria-input"
                     name = "name"
                     placeholder = "New criteria"
                     required = true
@@ -270,6 +272,30 @@ object DecisionPages {
                 link(rel = "stylesheet", href = "/assets/style.css")
                 script {
                     src = "https://unpkg.com/htmx.org@2.0.2"
+                }
+                script {
+                    unsafe {
+                        +"""
+                        document.addEventListener('DOMContentLoaded', function() {
+                            document.body.addEventListener('htmx:afterSwap', function(evt) {
+                                // Focus on new criteria input after criteria fragment swap
+                                if (evt.target.id === 'criteria-fragment') {
+                                    setTimeout(function() {
+                                        var input = document.getElementById('new-criteria-input');
+                                        if (input) input.focus();
+                                    }, 50);
+                                }
+                                // Focus on new option input after options fragment swap
+                                if (evt.target.id === 'options-fragment') {
+                                    setTimeout(function() {
+                                        var input = document.getElementById('new-option-input');
+                                        if (input) input.focus();
+                                    }, 50);
+                                }
+                            });
+                        });
+                        """.trimIndent()
+                    }
                 }
             }
             body {

@@ -3,6 +3,7 @@ package decisionmatrix.routes
 import decisionmatrix.DecisionInput
 import decisionmatrix.db.*
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Status
@@ -81,6 +82,27 @@ class DecisionUiRoutesTest {
         val invalidLowResponse = routes(invalidLowRequest)
         invalidLowResponse.status shouldBe Status.BAD_REQUEST
         invalidLowResponse.bodyString() shouldBe "Score 0 is outside the allowed range of 1-5"
+    }
+
+    @Test fun `edit page includes focus behavior for new criteria and options inputs`() {
+        val decision = decisionRepository.insert(
+            DecisionInput(name = "Test Decision", minScore = 1, maxScore = 10)
+        )
+
+        val request = Request(Method.GET, "/decisions/${decision.id}/edit")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        // Verify the new criteria input has focus behavior
+        htmlContent shouldContain "id=\"new-criteria-input\""
+        htmlContent shouldContain "htmx:afterSwap"
+        htmlContent shouldContain "new-criteria-input"
+        
+        // Verify the new option input has focus behavior
+        htmlContent shouldContain "id=\"new-option-input\""
+        htmlContent shouldContain "new-option-input"
     }
 
     @Test fun `updateDecisionName with score range updates all fields`() {
