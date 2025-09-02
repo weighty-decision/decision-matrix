@@ -1,6 +1,5 @@
 package decisionmatrix.auth
 
-import decisionmatrix.auth.providers.MockOAuthProvider
 import org.http4k.core.Filter
 import org.http4k.core.HttpHandler
 import org.http4k.core.Request
@@ -23,15 +22,10 @@ object TestAuthSetup {
     
     fun createMockSessionManager(): SessionManager = SessionManager()
     
-    fun createMockOAuthConfig(): OAuthConfig = OAuthConfig(
-        clientId = "test-client-id",
-        clientSecret = "test-client-secret",
-        redirectUri = "http://localhost:9000/auth/callback"
-    )
+    fun createMockOAuthService(): MockOAuthService = MockOAuthService()
     
     fun createMockAuthRoutes(): AuthRoutes = AuthRoutes(
-        oauthProvider = MockOAuthProvider(),
-        oauthConfig = createMockOAuthConfig(),
+        oauthService = createMockOAuthService(),
         sessionManager = createMockSessionManager()
     )
 }

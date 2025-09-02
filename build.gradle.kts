@@ -44,6 +44,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.jdbi.core)
     implementation(libs.sqlite.jdbc)
+    implementation(libs.nimbus.oauth2.sdk)
+    implementation(libs.nimbus.jose.jwt)
     testImplementation(libs.bundles.testing)
     testImplementation(libs.bundles.http4k.testing)
 }

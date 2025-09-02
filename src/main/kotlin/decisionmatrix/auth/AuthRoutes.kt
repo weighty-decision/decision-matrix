@@ -1,6 +1,5 @@
 package decisionmatrix.auth
 
-import kotlinx.serialization.json.Json
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -11,8 +10,7 @@ import org.http4k.routing.routes
 import org.slf4j.LoggerFactory
 
 class AuthRoutes(
-    private val oauthProvider: OAuthProvider,
-    private val oauthConfig: OAuthConfig,
+    private val oauthService: OAuthServiceInterface,
     private val sessionManager: SessionManager
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -25,9 +23,8 @@ class AuthRoutes(
 
     private fun loginPage(request: Request): Response {
         val redirectAfterLogin = request.query("redirect") ?: "/"
-        val state = redirectAfterLogin // Use redirect URL as state for simplicity
 
-        val authUrl = oauthProvider.authorizationUrl(oauthConfig, state)
+        val authUrl = oauthService.createAuthorizationUrl(redirectAfterLogin)
 
         val html = """
             <!DOCTYPE html>
@@ -55,7 +52,7 @@ class AuthRoutes(
                 <div class="login-container">
                     <h1>Decision Matrix</h1>
                     <p>Please sign in to continue</p>
-                    <a href="$authUrl" class="login-btn">Sign in with ${oauthProvider.name}</a>
+                    <a href="$authUrl" class="login-btn">Sign in with OAuth Provider</a>
                 </div>
             </body>
             </html>
@@ -71,54 +68,31 @@ class AuthRoutes(
         val state = request.query("state")
         val error = request.query("error")
 
-        if (error != null) {
-            log.warn("OAuth error: {}", error)
-            return Response(Status.BAD_REQUEST).body("Authentication failed: $error")
-        }
+        val result = oauthService.handleCallback(code, state, error)
 
-        if (code == null) {
-            log.warn("No authorization code received")
-            return Response(Status.BAD_REQUEST).body("No authorization code received")
-        }
-
-        try {
-            // Exchange code for access token (blocking call - in production consider async)
-            val accessToken = runCatching {
-                oauthProvider.exchangeCodeForToken(oauthConfig, code)
-            }.getOrElse { e ->
-                log.error("Failed to exchange code for token", e)
-                return Response(Status.INTERNAL_SERVER_ERROR).body("Failed to exchange code for token")
+        return when (result) {
+            is StandardsBasedOAuthService.CallbackResult.Error -> {
+                log.warn("OAuth callback failed: {}", result.message)
+                Response(Status.BAD_REQUEST).body(result.message)
             }
+            
+            is StandardsBasedOAuthService.CallbackResult.Success -> {
+                // Create session
+                val user = AuthenticatedUser(
+                    id = result.user.id,
+                    email = result.user.email,
+                    name = result.user.name
+                )
 
-            // Get user info (blocking call - in production consider async)
-            val userInfo = runCatching {
-                oauthProvider.getUserInfo(accessToken)
-            }.getOrElse { e ->
-                log.error("Failed to get user info", e)
-                return Response(Status.INTERNAL_SERVER_ERROR).body("Failed to get user info")
+                val sessionId = sessionManager.createSession(user)
+
+                log.info("User logged in: {}", user.email)
+
+                // Redirect to original destination or home
+                Response(Status.SEE_OTHER)
+                    .header("Location", result.redirectAfterLogin)
+                    .let { sessionManager.addSessionCookie(it, sessionId) }
             }
-
-            // Create session
-            val user = AuthenticatedUser(
-                id = userInfo.id,
-                email = userInfo.email,
-                name = userInfo.name
-            )
-
-            val sessionId = sessionManager.createSession(user)
-
-            log.info("User logged in: {}", user.email)
-
-            // Redirect to original destination or home
-            val redirectUrl = state?.takeIf { it.isNotBlank() } ?: "/"
-
-            return Response(Status.SEE_OTHER)
-                .header("Location", redirectUrl)
-                .let { sessionManager.addSessionCookie(it, sessionId) }
-
-        } catch (e: Exception) {
-            log.error("OAuth callback error", e)
-            return Response(Status.INTERNAL_SERVER_ERROR).body("Authentication failed")
         }
     }
 

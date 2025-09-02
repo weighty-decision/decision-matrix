@@ -9,6 +9,8 @@ kotest = "5.9.1"
 sqlite-jdbc = "3.44.1.0"
 slf4j = "2.0.16"
 logback = "1.5.12"
+nimbus-oauth2 = "11.20.1"
+nimbus-jose-jwt = "9.47"
 
 [libraries]
 jdbi-core = { module = "org.jdbi:jdbi3-core", version.ref = "jdbi" }
@@ -34,6 +36,8 @@ kotest-property = { module = "io.kotest:kotest-property-jvm", version.ref = "kot
 sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+nimbus-oauth2-sdk = { module = "com.nimbusds:oauth2-oidc-sdk", version.ref = "nimbus-oauth2" }
+nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus-jose-jwt" }
 
 [bundles]
 testing = [

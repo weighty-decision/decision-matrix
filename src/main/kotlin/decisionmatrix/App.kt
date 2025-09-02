@@ -1,7 +1,6 @@
 package decisionmatrix
 
 import decisionmatrix.auth.*
-import decisionmatrix.auth.providers.GoogleOAuthProvider
 import decisionmatrix.db.*
 import decisionmatrix.routes.DecisionUiRoutes
 import org.http4k.core.HttpHandler
@@ -29,13 +28,13 @@ val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 val authConfig = AuthConfiguration.fromEnvironment()
 val sessionManager = SessionManager()
 
-val oauthProvider = when (authConfig.oauthProvider) {
-    "google" -> GoogleOAuthProvider()
-    else -> throw IllegalArgumentException("Unsupported OAuth provider: ${authConfig.oauthProvider}")
-}
+val oauthService = if (!authConfig.devMode) {
+    val oauthConfiguration = OAuthConfiguration.fromEnvironment()
+    StandardsBasedOAuthService(oauthConfiguration)
+} else null
 
-val authRoutes = if (!authConfig.devMode && authConfig.oauthConfig != null) {
-    AuthRoutes(oauthProvider, authConfig.oauthConfig, sessionManager)
+val authRoutes = if (oauthService != null) {
+    AuthRoutes(oauthService, sessionManager)
 } else null
 
 val decisionUiRoutes = DecisionUiRoutes(
@@ -68,6 +67,6 @@ fun main() {
         log.info("Default dev user: {}", authConfig.devUserId ?: "dev-user")
         log.info("Override with ?dev_user=<user_id> query parameter")
     } else {
-        log.info("OAuth provider: {}", authConfig.oauthProvider)
+        log.info("OAuth authentication enabled - using standards-based OAuth 2.0")
     }
 }
