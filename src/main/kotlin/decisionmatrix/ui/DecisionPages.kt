@@ -117,14 +117,20 @@ object DecisionPages {
                             required = true
                         }
                     }
-                    label {
-                        span { +"Max score" }
-                        numberInput {
-                            name = "maxScore"
-                            value = decision.maxScore.toString()
-                            min = "1"
-                            max = "100"
-                            required = true
+                    div(classes = "row") {
+                        label {
+                            span { +"Max score" }
+                            numberInput {
+                                name = "maxScore"
+                                value = decision.maxScore.toString()
+                                min = "1"
+                                max = "100"
+                                required = true
+                            }
+                        }
+                        small(classes = "muted") { 
+                            style = "margin-left: 0.5rem; align-self: end; margin-bottom: 0.25rem;"
+                            +"Constrains the range of scores users can give each option" 
                         }
                     }
                 }
