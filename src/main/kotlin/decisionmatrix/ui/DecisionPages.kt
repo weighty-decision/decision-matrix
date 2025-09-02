@@ -31,7 +31,7 @@ object DecisionPages {
                         span { +"Min score" }
                         numberInput {
                             name = "minScore"
-                            value = "1"
+                            value = "$DEFAULT_MIN_SCORE"
                             min = "1"
                             max = "100"
                             required = true
@@ -42,7 +42,7 @@ object DecisionPages {
                         numberInput {
                             name = "maxScore"
                             value = "$DEFAULT_MAX_SCORE"
-                            min = "$DEFAULT_MIN_SCORE"
+                            min = "1"
                             max = "100"
                             required = true
                         }
@@ -213,7 +213,6 @@ object DecisionPages {
                                 name = "weight"
                                 value = c.weight.toString()
                                 min = "1"
-                                max = "10"
                             }
                             button(classes = "btn small") {
                                 type = ButtonType.submit
@@ -248,7 +247,6 @@ object DecisionPages {
                     name = "weight"
                     placeholder = "Weight"
                     min = "1"
-                    max = "10"
                 }
                 button(classes = "btn") {
                     type = ButtonType.submit
