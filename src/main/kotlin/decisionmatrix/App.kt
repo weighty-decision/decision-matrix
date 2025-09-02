@@ -51,9 +51,6 @@ val app: RoutingHttpHandler = routes(
 
 fun main() {
     val app: HttpHandler = PrintRequest()
-//        .then(ServerFilters.OpenTelemetryTracing())
-//        .then(ServerFilters.OpenTelemetryMetrics.RequestCounter())
-//        .then(ServerFilters.OpenTelemetryMetrics.RequestTimer())
         .then(app)
 
     val server = app.asServer(Undertow(9000)).start()
