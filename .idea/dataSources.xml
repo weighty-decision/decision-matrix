@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="decision_matrix.sqlite" uuid="37cd52cc-a35c-43ed-8784-e17f1cee862e">
+    <data-source source="LOCAL" name="decision_matrix.sqlite" uuid="18bf1774-5e2a-4d79-a380-3980d0557815">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:/private/tmp/decision_matrix.sqlite</jdbc-url>
+      <jdbc-url>jdbc:sqlite:$USER_HOME$/decision_matrix.sqlite</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

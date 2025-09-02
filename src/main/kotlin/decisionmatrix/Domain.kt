@@ -2,15 +2,22 @@ package decisionmatrix
 
 import kotlinx.serialization.Serializable
 
+const val DEFAULT_MIN_SCORE: Int = 1
+const val DEFAULT_MAX_SCORE: Int = 10
+
 @Serializable
 data class DecisionInput(
-    val name: String
+    val name: String,
+    val minScore: Int = DEFAULT_MIN_SCORE,
+    val maxScore: Int = DEFAULT_MAX_SCORE,
 )
 
 @Serializable
 data class Decision(
     val id: Long,
     val name: String,
+    val minScore: Int = DEFAULT_MIN_SCORE,
+    val maxScore: Int = DEFAULT_MAX_SCORE,
     val criteria: List<Criteria> = emptyList(),
     val options: List<Option> = emptyList(),
 )

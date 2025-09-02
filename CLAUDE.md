@@ -61,6 +61,7 @@ Closes #123
 ### Testing Framework & Tools
 - Use Kotest matchers for assertions
 - Use JUnit as the test runner
+- When adding a JUnit test @Test annotation, put @Test on the same line as the function declaration
 - Don't use mockk; use interfaces as dependencies, with `NotImplementedError()` as the default implementation in the interface
 - When writing tests, use a similar style as the rest of the codebase
 

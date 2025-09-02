@@ -17,7 +17,7 @@ class DecisionRoutesTest {
         private var nextId = 1L
 
         override fun insert(decision: DecisionInput): Decision {
-            val created = Decision(id = nextId++, name = decision.name)
+            val created = Decision(id = nextId++, name = decision.name, minScore = decision.minScore, maxScore = decision.maxScore)
             store[created.id] = created
             return created
         }
@@ -27,6 +27,13 @@ class DecisionRoutesTest {
         override fun update(id: Long, name: String): Decision? {
             val existing = store[id] ?: return null
             val updated = existing.copy(name = name)
+            store[id] = updated
+            return updated
+        }
+
+        override fun update(id: Long, name: String, minScore: Int, maxScore: Int): Decision? {
+            val existing = store[id] ?: return null
+            val updated = existing.copy(name = name, minScore = minScore, maxScore = maxScore)
             store[id] = updated
             return updated
         }

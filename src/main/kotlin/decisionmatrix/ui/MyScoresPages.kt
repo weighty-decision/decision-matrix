@@ -51,7 +51,9 @@ object MyScoresPages {
                                         td {
                                             numberInput {
                                                 name = "score_${opt.id}_${c.id}"
-                                                placeholder = "Score"
+                                                placeholder = "Score (${decision.minScore}-${decision.maxScore})"
+                                                min = decision.minScore.toString()
+                                                max = decision.maxScore.toString()
                                                 if (existing != null) {
                                                     value = existing.score.toString()
                                                 }

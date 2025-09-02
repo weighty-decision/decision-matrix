@@ -1,5 +1,7 @@
 package decisionmatrix.ui
 
+import decisionmatrix.DEFAULT_MAX_SCORE
+import decisionmatrix.DEFAULT_MIN_SCORE
 import decisionmatrix.Decision
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
@@ -21,6 +23,29 @@ object DecisionPages {
                         placeholder = "e.g., Choose a laptop"
                         required = true
                         autoFocus = true
+                    }
+                }
+
+                div(classes = "row") {
+                    label {
+                        span { +"Min score" }
+                        numberInput {
+                            name = "minScore"
+                            value = "1"
+                            min = "1"
+                            max = "100"
+                            required = true
+                        }
+                    }
+                    label {
+                        span { +"Max score" }
+                        numberInput {
+                            name = "maxScore"
+                            value = "$DEFAULT_MAX_SCORE"
+                            min = "$DEFAULT_MIN_SCORE"
+                            max = "100"
+                            required = true
+                        }
                     }
                 }
                 div(classes = "actions") {
@@ -80,10 +105,33 @@ object DecisionPages {
                         value = decision.name
                     }
                 }
+
+                div(classes = "row") {
+                    label {
+                        span { +"Min score" }
+                        numberInput {
+                            name = "minScore"
+                            value = decision.minScore.toString()
+                            min = "1"
+                            max = "100"
+                            required = true
+                        }
+                    }
+                    label {
+                        span { +"Max score" }
+                        numberInput {
+                            name = "maxScore"
+                            value = decision.maxScore.toString()
+                            min = "1"
+                            max = "100"
+                            required = true
+                        }
+                    }
+                }
                 div(classes = "actions") {
                     button(classes = "btn") {
                         type = ButtonType.submit
-                        +"Save name"
+                        +"Save"
                     }
                 }
             }

@@ -11,6 +11,7 @@ interface DecisionRepository {
     fun insert(decision: DecisionInput): Decision = throw NotImplementedError()
     fun findById(id: Long): Decision? = throw NotImplementedError()
     fun update(id: Long, name: String): Decision? = throw NotImplementedError()
+    fun update(id: Long, name: String, minScore: Int, maxScore: Int): Decision? = throw NotImplementedError()
     fun delete(id: Long): Boolean = throw NotImplementedError()
 }
 
@@ -19,12 +20,14 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
         return jdbi.withHandle<Decision, Exception> { handle ->
             handle.createQuery(
                 """
-                INSERT INTO decisions (name) 
-                VALUES (:name)
+                INSERT INTO decisions (name, min_score, max_score) 
+                VALUES (:name, :minScore, :maxScore)
                 RETURNING *
                 """.trimIndent()
             )
                 .bind("name", decision.name)
+                .bind("minScore", decision.minScore)
+                .bind("maxScore", decision.maxScore)
                 .map { rs, _ -> mapDecision(rs) }
                 .one()
         }
@@ -37,6 +40,8 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
                 SELECT 
                     d.id as decision_id, 
                     d.name as decision_name,
+                    d.min_score as decision_min_score,
+                    d.max_score as decision_max_score,
                     c.id as criteria_id,
                     c.name as criteria_name,
                     c.weight as criteria_weight,
@@ -78,6 +83,26 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
         }
     }
 
+    override fun update(id: Long, name: String, minScore: Int, maxScore: Int): Decision? {
+        return jdbi.withHandle<Decision?, Exception> { handle ->
+            handle.createQuery(
+                """
+                UPDATE decisions
+                SET name = :name, min_score = :minScore, max_score = :maxScore
+                WHERE id = :id
+                RETURNING *
+                """.trimIndent()
+            )
+                .bind("id", id)
+                .bind("name", name)
+                .bind("minScore", minScore)
+                .bind("maxScore", maxScore)
+                .map { rs, _ -> mapDecision(rs) }
+                .findOne()
+                .orElse(null)
+        }
+    }
+
     override fun delete(id: Long): Boolean {
         return jdbi.withHandle<Boolean, Exception> { handle ->
             val updated = handle.createUpdate(
@@ -97,6 +122,8 @@ fun mapDecision(rs: ResultSet): Decision {
     return Decision(
         id = rs.getLong("id"),
         name = rs.getString("name"),
+        minScore = rs.getInt("min_score"),
+        maxScore = rs.getInt("max_score"),
     )
 }
 
@@ -106,6 +133,8 @@ fun mapDecisionWithRelations(rows: List<Map<String, Any>>): Decision {
     val firstRow = rows.first()
     val decisionId = (firstRow["decision_id"] as Number).toLong()
     val decisionName = firstRow["decision_name"] as String
+    val decisionMinScore = (firstRow["decision_min_score"] as Number).toInt()
+    val decisionMaxScore = (firstRow["decision_max_score"] as Number).toInt()
 
     val criteriaMap = mutableMapOf<Long, Criteria>()
     val optionsMap = mutableMapOf<Long, Option>()
@@ -136,6 +165,8 @@ fun mapDecisionWithRelations(rows: List<Map<String, Any>>): Decision {
     return Decision(
         id = decisionId,
         name = decisionName,
+        minScore = decisionMinScore,
+        maxScore = decisionMaxScore,
         criteria = criteriaMap.values.toList(),
         options = optionsMap.values.toList()
     )

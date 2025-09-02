@@ -1,6 +1,8 @@
 package decisionmatrix.routes
 
 import decisionmatrix.CriteriaInput
+import decisionmatrix.DEFAULT_MAX_SCORE
+import decisionmatrix.DEFAULT_MIN_SCORE
 import decisionmatrix.DecisionInput
 import decisionmatrix.OptionInput
 import decisionmatrix.UserScoreInput
@@ -61,7 +63,15 @@ class DecisionUiRoutes(
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Name is required")
-        val created = decisionRepository.insert(DecisionInput(name = name))
+        
+        val minScore = form["minScore"]?.toIntOrNull() ?: DEFAULT_MIN_SCORE
+        val maxScore = form["maxScore"]?.toIntOrNull() ?: DEFAULT_MAX_SCORE
+        
+        if (minScore >= maxScore) {
+            return Response(Status.BAD_REQUEST).body("Min score must be less than max score")
+        }
+        
+        val created = decisionRepository.insert(DecisionInput(name = name, minScore = minScore, maxScore = maxScore))
         return Response(Status.SEE_OTHER).header("Location", "/decisions/${created.id}/edit")
     }
 
@@ -76,7 +86,15 @@ class DecisionUiRoutes(
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Name is required")
-        val updated = decisionRepository.update(id, name) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+        
+        val minScore = form["minScore"]?.toIntOrNull() ?: DEFAULT_MIN_SCORE
+        val maxScore = form["maxScore"]?.toIntOrNull() ?: DEFAULT_MAX_SCORE
+        
+        if (minScore >= maxScore) {
+            return Response(Status.BAD_REQUEST).body("Min score must be less than max score")
+        }
+        
+        val updated = decisionRepository.update(id, name, minScore, maxScore) ?: return Response(Status.NOT_FOUND).body("Decision not found")
 
         return if (isHx(request)) {
             htmlResponse(DecisionPages.nameFragment(updated))
@@ -216,6 +234,11 @@ class DecisionUiRoutes(
                 }
 
                 val value = raw.toIntOrNull() ?: continue
+                
+                if (value < decision.minScore || value > decision.maxScore) {
+                    return Response(Status.BAD_REQUEST).body("Score $value is outside the allowed range of ${decision.minScore}-${decision.maxScore}")
+                }
+                
                 if (existing == null) {
                     userScoreRepository.insert(
                         decisionId = decisionId,

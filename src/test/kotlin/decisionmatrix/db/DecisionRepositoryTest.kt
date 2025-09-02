@@ -23,7 +23,7 @@ class DecisionRepositoryTest {
         val found = decisionRepository.findById(inserted.id)
 
         found shouldNotBe null
-        found shouldBe Decision(id = inserted.id, name = "My decision", criteria = emptyList(), options = emptyList())
+        found shouldBe Decision(id = inserted.id, name = "My decision", minScore = 1, maxScore = 10, criteria = emptyList(), options = emptyList())
     }
 
     @Test fun `findById fully hydrates decision with criteria and options`() {
@@ -147,5 +147,55 @@ class DecisionRepositoryTest {
         val deleted = decisionRepository.delete(999L)
 
         deleted shouldBe false
+    }
+
+    @Test fun `insert decision with custom score range`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val inserted = decisionRepository.insert(
+            DecisionInput(
+                name = "Custom score range decision",
+                minScore = 0,
+                maxScore = 5
+            )
+        )
+        val found = requireNotNull(decisionRepository.findById(inserted.id))
+
+        found.name shouldBe "Custom score range decision"
+        found.minScore shouldBe 0
+        found.maxScore shouldBe 5
+    }
+
+    @Test fun `update decision with new score range`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val inserted = decisionRepository.insert(DecisionInput(name = "Original decision"))
+
+        val updated = requireNotNull(decisionRepository.update(inserted.id, "Updated decision", 2, 8))
+        updated.name shouldBe "Updated decision"
+        updated.minScore shouldBe 2
+        updated.maxScore shouldBe 8
+        updated.id shouldBe inserted.id
+
+        // Verify the update persisted
+        val found = requireNotNull(decisionRepository.findById(inserted.id))
+        found.name shouldBe "Updated decision"
+        found.minScore shouldBe 2
+        found.maxScore shouldBe 8
+    }
+
+    @Test fun `update decision name only preserves existing score range`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val inserted = decisionRepository.insert(
+            DecisionInput(
+                name = "Original decision", 
+                minScore = 3, 
+                maxScore = 7
+            )
+        )
+
+        val updated = requireNotNull(decisionRepository.update(inserted.id, "Updated decision name"))
+        updated.name shouldBe "Updated decision name"
+        updated.minScore shouldBe 3  // Should preserve existing values
+        updated.maxScore shouldBe 7  // Should preserve existing values
+        updated.id shouldBe inserted.id
     }
 }

@@ -57,7 +57,7 @@ class DecisionRoutes(private val decisionRepository: DecisionRepository) {
                 ?: return Response(Status.BAD_REQUEST).body("Missing ID")
 
             val decisionInput = json.decodeFromString<DecisionInput>(request.bodyString())
-            val updated = decisionRepository.update(id, decisionInput.name)
+            val updated = decisionRepository.update(id, decisionInput.name, decisionInput.minScore, decisionInput.maxScore)
             if (updated != null) {
                 val responseBody = json.encodeToString(updated)
                 Response(Status.OK).body(responseBody)

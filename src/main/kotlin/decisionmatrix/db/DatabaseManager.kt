@@ -41,7 +41,9 @@ fun createSchema(jdbi: Jdbi) {
             """
                 CREATE TABLE IF NOT EXISTS decisions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL
+                    name TEXT NOT NULL,
+                    min_score INTEGER NOT NULL,
+                    max_score INTEGER NOT NULL
                 )
                 """.trimIndent()
         )
