@@ -1,3 +1,7 @@
+## Prerequisites
+- Java 21 or newer
+    - If you use homebrew and don't already have a JDK installed: `brew install --cask temurin21`
+
 ## Running it locally
 `./gradlew run`
 
