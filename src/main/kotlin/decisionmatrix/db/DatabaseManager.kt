@@ -44,7 +44,8 @@ fun createSchema(jdbi: Jdbi) {
                     name TEXT NOT NULL,
                     min_score INTEGER NOT NULL,
                     max_score INTEGER NOT NULL,
-                    created_by TEXT
+                    created_by TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
                 """.trimIndent()
         )

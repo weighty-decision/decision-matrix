@@ -1,6 +1,8 @@
 package decisionmatrix
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import java.time.Instant
 
 const val DEFAULT_MIN_SCORE: Int = 1
 const val DEFAULT_MAX_SCORE: Int = 10
@@ -19,6 +21,7 @@ data class Decision(
     val minScore: Int = DEFAULT_MIN_SCORE,
     val maxScore: Int = DEFAULT_MAX_SCORE,
     val createdBy: String? = null,
+    @Contextual val createdAt: Instant? = null,
     val criteria: List<Criteria> = emptyList(),
     val options: List<Option> = emptyList(),
 )

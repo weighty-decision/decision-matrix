@@ -1,10 +1,10 @@
 package decisionmatrix.db
 
 import decisionmatrix.CriteriaInput
-import decisionmatrix.Decision
 import decisionmatrix.DecisionInput
 import decisionmatrix.OptionInput
 import decisionmatrix.UserScoreInput
+import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -21,10 +21,17 @@ class DecisionRepositoryTest {
                 name = "My decision",
             )
         )
-        val found = decisionRepository.findById(inserted.id)
-
-        found shouldNotBe null
-        found shouldBe Decision(id = inserted.id, name = "My decision", minScore = 1, maxScore = 10, createdBy = "unknown", criteria = emptyList(), options = emptyList())
+        val found = requireNotNull(decisionRepository.findById(inserted.id))
+        assertSoftly(found) {
+            id shouldBe inserted.id
+            name shouldBe "My decision"
+            minScore shouldBe 1
+            maxScore shouldBe 10
+            createdBy shouldBe "unknown"
+            createdAt shouldNotBe null
+            criteria shouldBe emptyList()
+            options shouldBe emptyList()
+        }
     }
 
     @Test fun `findById fully hydrates decision with criteria and options`() {
