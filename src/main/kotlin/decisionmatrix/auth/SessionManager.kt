@@ -68,7 +68,8 @@ class SessionManager(
                 value = sessionId,
                 httpOnly = true,
                 secure = false, // Will be true in production
-                sameSite = SameSite.Lax,
+                path = "/", // Ensure cookie is available for all paths
+                // No sameSite attribute for local development to allow cross-origin OAuth redirects
                 maxAge = sessionTimeoutMinutes * 60
             )
         )
@@ -79,6 +80,7 @@ class SessionManager(
                 name = sessionCookieName,
                 value = "",
                 httpOnly = true,
+                path = "/", // Match the path used when setting the cookie
                 maxAge = 0
             )
         )

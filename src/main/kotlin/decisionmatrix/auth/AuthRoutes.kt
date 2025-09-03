@@ -68,9 +68,7 @@ class AuthRoutes(
         val state = request.query("state")
         val error = request.query("error")
 
-        val result = oauthService.handleCallback(code, state, error)
-
-        return when (result) {
+        return when (val result = oauthService.handleCallback(code, state, error)) {
             is StandardsBasedOAuthService.CallbackResult.Error -> {
                 log.warn("OAuth callback failed: {}", result.message)
                 Response(Status.BAD_REQUEST).body(result.message)

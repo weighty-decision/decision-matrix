@@ -79,7 +79,7 @@ class MockOAuthServer(private val port: Int = 8081) {
         return params["client_id"]
     }
 
-    private val routes = routes(
+    val routes = routes(
         "/.well-known/openid-configuration" bind GET to { _ ->
             val config = OpenIdConfiguration(
                 issuer = baseUrl,
