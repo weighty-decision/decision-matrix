@@ -145,4 +145,106 @@ class DecisionUiRoutesTest {
         response.status shouldBe Status.BAD_REQUEST
         response.bodyString() shouldBe "Min score must be less than max score"
     }
+
+    @Test fun `home page shows decisions user is involved with sorted by created_at desc`() {
+        // Create multiple decisions with different users and timestamps
+        val decision1 = decisionRepository.insert(
+            DecisionInput(name = "First Decision"),
+            createdBy = "test-user"
+        )
+        val decision2 = decisionRepository.insert(
+            DecisionInput(name = "Second Decision"),
+            createdBy = "other-user"
+        )
+        val decision3 = decisionRepository.insert(
+            DecisionInput(name = "Third Decision"),
+            createdBy = "test-user"
+        )
+
+        // Add scores for test-user to decision2 so they're involved
+        val option = optionRepository.insert(decision2.id, decisionmatrix.OptionInput("Option A"))
+        val criteria = criteriaRepository.insert(decision2.id, decisionmatrix.CriteriaInput("Criteria A", 1))
+        userScoreRepository.insert(decision2.id, option.id, criteria.id, "test-user", decisionmatrix.UserScoreInput(5))
+
+        val request = Request(Method.GET, "/")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        // Should show decisions user created or participated in
+        htmlContent shouldContain "First Decision"
+        htmlContent shouldContain "Second Decision"
+        htmlContent shouldContain "Third Decision"
+        htmlContent shouldContain "Your Decisions"
+        htmlContent shouldContain "Create New Decision"
+    }
+
+    @Test fun `home page shows creator vs participant roles correctly`() {
+        val decision1 = decisionRepository.insert(
+            DecisionInput(name = "Created by me"),
+            createdBy = "test-user"
+        )
+        val decision2 = decisionRepository.insert(
+            DecisionInput(name = "Participated in"),
+            createdBy = "other-user"
+        )
+
+        // Add scores for test-user to decision2 so they're a participant
+        val option = optionRepository.insert(decision2.id, decisionmatrix.OptionInput("Option A"))
+        val criteria = criteriaRepository.insert(decision2.id, decisionmatrix.CriteriaInput("Criteria A", 1))
+        userScoreRepository.insert(decision2.id, option.id, criteria.id, "test-user", decisionmatrix.UserScoreInput(5))
+
+        val request = Request(Method.GET, "/")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        // Should show appropriate role badges
+        htmlContent shouldContain "Creator"
+        htmlContent shouldContain "Participant"
+    }
+
+    @Test fun `home page shows edit link only for decisions created by current user`() {
+        val decision1 = decisionRepository.insert(
+            DecisionInput(name = "Created by me"),
+            createdBy = "test-user"
+        )
+        val decision2 = decisionRepository.insert(
+            DecisionInput(name = "Created by other"),
+            createdBy = "other-user"
+        )
+
+        // Add scores for test-user to decision2 so they're involved
+        val option = optionRepository.insert(decision2.id, decisionmatrix.OptionInput("Option A"))
+        val criteria = criteriaRepository.insert(decision2.id, decisionmatrix.CriteriaInput("Criteria A", 1))
+        userScoreRepository.insert(decision2.id, option.id, criteria.id, "test-user", decisionmatrix.UserScoreInput(5))
+
+        val request = Request(Method.GET, "/")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        // Should show edit link only for decision created by test-user
+        htmlContent shouldContain "/decisions/${decision1.id}/edit"
+        htmlContent shouldContain "Edit"
+        // Should not show edit link for decision created by other-user
+        // Count occurrences to verify only one edit link
+        val editLinkCount = Regex("/decisions/\\d+/edit").findAll(htmlContent).count()
+        editLinkCount shouldBe 1
+    }
+
+    @Test fun `home page shows empty state when no decisions`() {
+        val request = Request(Method.GET, "/")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        htmlContent shouldContain "No decisions yet"
+        htmlContent shouldContain "Create your first decision"
+        htmlContent shouldContain "Create New Decision"
+    }
 }

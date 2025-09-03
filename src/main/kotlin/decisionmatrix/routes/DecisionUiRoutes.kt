@@ -14,6 +14,7 @@ import decisionmatrix.db.UserScoreRepository
 import decisionmatrix.ui.DecisionPages
 import decisionmatrix.ui.MyScoresPages
 import decisionmatrix.ui.CalculateScoresPages
+import decisionmatrix.ui.IndexPages
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -54,8 +55,11 @@ class DecisionUiRoutes(
         "/decisions/{id}/calculate-scores" bind Method.GET to ::calculateScores
     )
 
-    private fun home(@Suppress("UNUSED_PARAMETER") request: Request): Response =
-        Response(Status.SEE_OTHER).header("Location", "/decisions/new")
+    private fun home(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
+        val decisions = decisionRepository.findAllInvolvedDecisions(currentUser.id)
+        return htmlResponse(IndexPages.indexPage(decisions, currentUser.id))
+    }
 
     private fun newDecisionForm(@Suppress("UNUSED_PARAMETER") request: Request): Response =
         htmlResponse(DecisionPages.createPage())

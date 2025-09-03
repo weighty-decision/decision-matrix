@@ -149,7 +149,7 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
                        FROM user_scores 
                        WHERE scored_by = :userId
                    )
-                ORDER BY d.id
+                ORDER BY d.created_at DESC
                 """.trimIndent()
             )
                 .bind("userId", userId)
