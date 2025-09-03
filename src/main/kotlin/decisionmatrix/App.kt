@@ -2,6 +2,7 @@ package decisionmatrix
 
 import decisionmatrix.auth.*
 import decisionmatrix.db.*
+import decisionmatrix.oauth.MockOAuthServer
 import decisionmatrix.routes.DecisionUiRoutes
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
@@ -27,6 +28,11 @@ val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 // Authentication setup
 val authConfig = AuthConfiguration.fromEnvironment()
 val sessionManager = SessionManager()
+
+// Mock OAuth server setup for testing
+val mockOAuthServer = if (System.getenv("DM_MOCK_OAUTH_SERVER")?.toBoolean() == true) {
+    MockOAuthServer().start()
+} else null
 
 val oauthService = if (!authConfig.devMode) {
     val oauthConfiguration = OAuthConfiguration.fromEnvironment()
@@ -68,5 +74,10 @@ fun main() {
         log.info("Override with ?dev_user=<user_id> query parameter")
     } else {
         log.info("OAuth authentication enabled - using standards-based OAuth 2.0")
+    }
+    
+    if (mockOAuthServer != null) {
+        log.info("Mock OAuth server running at ${mockOAuthServer.getIssuerUrl()}")
+        log.info("Set DM_OAUTH_ISSUER_URL=${mockOAuthServer.getIssuerUrl()} to use it")
     }
 }

@@ -122,6 +122,28 @@ export DM_DEV_USER_ID=your-dev-username  # Optional, defaults to "dev-user"
 
 You can also specify different users per request using the `?dev_user=<user_id>` query parameter.
 
+#### Mock OAuth Server for Testing
+For testing real OAuth flows locally without external dependencies, you can use the embedded mock OAuth server:
+
+```bash
+export DM_DEV_MODE=false
+export DM_MOCK_OAUTH_SERVER=true
+export DM_OAUTH_ISSUER_URL=http://localhost:8081
+export DM_OAUTH_CLIENT_ID=test-client
+export DM_OAUTH_CLIENT_SECRET=test-secret
+export DM_OAUTH_REDIRECT_URI=http://localhost:9000/auth/callback
+```
+
+The mock OAuth server provides:
+- A login page with predefined test users (Alice, Bob, Admin)
+- Standard OAuth 2.0/OpenID Connect endpoints
+- JWT tokens with proper signatures for testing
+
+**Test Users Available:**
+- Alice Test (alice@example.com) - ID: user1
+- Bob Test (bob@example.com) - ID: user2  
+- Admin User (admin@example.com) - ID: admin
+
 #### Production OAuth Setup
 For production, configure OAuth environment variables for any standards-compliant OAuth 2.0/OpenID Connect provider:
 

@@ -116,7 +116,8 @@ class StandardsBasedOAuthService(private val config: OAuthConfiguration) : OAuth
             )
         )
         
-        val tokenResponse = TokenResponse.parse(tokenRequest.toHTTPRequest().send())
+        val httpResponse = tokenRequest.toHTTPRequest().send()
+        val tokenResponse = OIDCTokenResponse.parse(httpResponse)
         
         if (!tokenResponse.indicatesSuccess()) {
             val error = tokenResponse.toErrorResponse()
@@ -124,7 +125,7 @@ class StandardsBasedOAuthService(private val config: OAuthConfiguration) : OAuth
             throw RuntimeException("Failed to exchange authorization code for tokens")
         }
         
-        val successResponse = tokenResponse.toSuccessResponse() as OIDCTokenResponse
+        val successResponse = tokenResponse.toSuccessResponse()
         return successResponse.oidcTokens
     }
     
