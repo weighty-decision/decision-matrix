@@ -4,6 +4,7 @@ import decisionmatrix.CriteriaInput
 import decisionmatrix.Decision
 import decisionmatrix.DecisionInput
 import decisionmatrix.OptionInput
+import decisionmatrix.UserScoreInput
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -197,5 +198,126 @@ class DecisionRepositoryTest {
         updated.minScore shouldBe 3  // Should preserve existing values
         updated.maxScore shouldBe 7  // Should preserve existing values
         updated.id shouldBe inserted.id
+    }
+
+    @Test fun `findAllInvolvedDecisions returns empty list when user has no involvement`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        
+        val decisions = decisionRepository.findAllInvolvedDecisions("nonexistent-user")
+        
+        decisions shouldBe emptyList()
+    }
+
+    @Test fun `findAllInvolvedDecisions returns decisions created by user`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        
+        val decision1 = decisionRepository.insert(DecisionInput(name = "User's Decision 1"), createdBy = "user1")
+        val decision2 = decisionRepository.insert(DecisionInput(name = "User's Decision 2"), createdBy = "user1")
+        decisionRepository.insert(DecisionInput(name = "Other User's Decision"), createdBy = "user2")
+        
+        val decisions = decisionRepository.findAllInvolvedDecisions("user1")
+        
+        decisions.size shouldBe 2
+        decisions.map { it.id }.toSet() shouldBe setOf(decision1.id, decision2.id)
+        decisions.all { it.createdBy == "user1" }.shouldBeTrue()
+    }
+
+    @Test fun `findAllInvolvedDecisions returns decisions where user has scored options`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val criteriaRepository = CriteriaRepositoryImpl(jdbi)
+        val optionRepository = OptionRepositoryImpl(jdbi)
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+        
+        // Create a decision by someone else
+        val decision = decisionRepository.insert(DecisionInput(name = "Team Decision"), createdBy = "admin")
+        val criteria = criteriaRepository.insert(decision.id, CriteriaInput(name = "Quality", weight = 5))
+        val option = optionRepository.insert(decision.id, OptionInput(name = "Option A"))
+        
+        // User scores an option in this decision
+        userScoreRepository.insert(decision.id, option.id, criteria.id, "user1", UserScoreInput(score = 8))
+        
+        val decisions = decisionRepository.findAllInvolvedDecisions("user1")
+        
+        decisions.size shouldBe 1
+        decisions[0].id shouldBe decision.id
+        decisions[0].name shouldBe "Team Decision"
+        decisions[0].createdBy shouldBe "admin"
+    }
+
+    @Test fun `findAllInvolvedDecisions returns decisions where user both created and scored`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val criteriaRepository = CriteriaRepositoryImpl(jdbi)
+        val optionRepository = OptionRepositoryImpl(jdbi)
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+        
+        // User creates a decision and also scores it
+        val decision = decisionRepository.insert(DecisionInput(name = "Self-Scored Decision"), createdBy = "user1")
+        val criteria = criteriaRepository.insert(decision.id, CriteriaInput(name = "Feasibility", weight = 3))
+        val option = optionRepository.insert(decision.id, OptionInput(name = "Option B"))
+        
+        userScoreRepository.insert(decision.id, option.id, criteria.id, "user1", UserScoreInput(score = 6))
+        
+        val decisions = decisionRepository.findAllInvolvedDecisions("user1")
+        
+        decisions.size shouldBe 1
+        decisions[0].id shouldBe decision.id
+        decisions[0].createdBy shouldBe "user1"
+    }
+
+    @Test fun `findAllInvolvedDecisions returns decisions with full hydration including criteria and options`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val criteriaRepository = CriteriaRepositoryImpl(jdbi)
+        val optionRepository = OptionRepositoryImpl(jdbi)
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+        
+        // Create decision with criteria and options
+        val decision = decisionRepository.insert(DecisionInput(name = "Complex Decision"), createdBy = "admin")
+        val criteria1 = criteriaRepository.insert(decision.id, CriteriaInput(name = "Cost", weight = 4))
+        val criteria2 = criteriaRepository.insert(decision.id, CriteriaInput(name = "Speed", weight = 2))
+        val option1 = optionRepository.insert(decision.id, OptionInput(name = "Option X"))
+        val option2 = optionRepository.insert(decision.id, OptionInput(name = "Option Y"))
+        
+        // User scores an option
+        userScoreRepository.insert(decision.id, option1.id, criteria1.id, "user1", UserScoreInput(score = 7))
+        
+        val decisions = decisionRepository.findAllInvolvedDecisions("user1")
+        
+        decisions.size shouldBe 1
+        val foundDecision = decisions[0]
+        foundDecision.name shouldBe "Complex Decision"
+        
+        // Verify criteria are fully hydrated
+        foundDecision.criteria.size shouldBe 2
+        foundDecision.criteria.any { it.name == "Cost" && it.weight == 4 }.shouldBeTrue()
+        foundDecision.criteria.any { it.name == "Speed" && it.weight == 2 }.shouldBeTrue()
+        
+        // Verify options are fully hydrated
+        foundDecision.options.size shouldBe 2
+        foundDecision.options.any { it.name == "Option X" }.shouldBeTrue()
+        foundDecision.options.any { it.name == "Option Y" }.shouldBeTrue()
+    }
+
+    @Test fun `findAllInvolvedDecisions returns decisions for multiple involvement types`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val criteriaRepository = CriteriaRepositoryImpl(jdbi)
+        val optionRepository = OptionRepositoryImpl(jdbi)
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+        
+        // Decision 1: Created by user
+        val decision1 = decisionRepository.insert(DecisionInput(name = "Own Decision"), createdBy = "user1")
+        
+        // Decision 2: Scored by user
+        val decision2 = decisionRepository.insert(DecisionInput(name = "Scored Decision"), createdBy = "admin")
+        val criteria2 = criteriaRepository.insert(decision2.id, CriteriaInput(name = "Priority", weight = 3))
+        val option2 = optionRepository.insert(decision2.id, OptionInput(name = "Option Z"))
+        userScoreRepository.insert(decision2.id, option2.id, criteria2.id, "user1", UserScoreInput(score = 5))
+        
+        // Decision 3: Not involved
+        decisionRepository.insert(DecisionInput(name = "Unrelated Decision"), createdBy = "other-user")
+        
+        val decisions = decisionRepository.findAllInvolvedDecisions("user1")
+        
+        decisions.size shouldBe 2
+        decisions.map { it.name }.toSet() shouldBe setOf("Own Decision", "Scored Decision")
     }
 }
