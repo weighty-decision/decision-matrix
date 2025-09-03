@@ -8,7 +8,7 @@ import kotlinx.html.stream.appendHTML
 
 object DecisionPages {
 
-    fun createPage(): String = page("Create decision") {
+    fun createPage(): String = PageLayout.page("Create decision") {
         section(classes = "card") {
             h1 { +"Create a decision" }
             form {
@@ -58,7 +58,30 @@ object DecisionPages {
         }
     }
 
-    fun editPage(decision: Decision): String = page("${decision.name} · edit") {
+    fun editPage(decision: Decision): String = PageLayout.page("${decision.name} · edit", extraTopLevelScript = {
+        unsafe {
+            +"""
+            document.addEventListener('DOMContentLoaded', function() {
+                document.body.addEventListener('htmx:afterSwap', function(evt) {
+                    // Focus on new criteria input after criteria fragment swap
+                    if (evt.target.id === 'criteria-fragment') {
+                        setTimeout(function() {
+                            var input = document.getElementById('new-criteria-input');
+                            if (input) input.focus();
+                        }, 50);
+                    }
+                    // Focus on new option input after options fragment swap
+                    if (evt.target.id === 'options-fragment') {
+                        setTimeout(function() {
+                            var input = document.getElementById('new-option-input');
+                            if (input) input.focus();
+                        }, 50);
+                    }
+                });
+            });
+            """.trimIndent()
+        }
+    }) {
         unsafe {
             // Name form fragment
             +nameFragment(decision)
@@ -262,59 +285,4 @@ object DecisionPages {
         }
     }
 
-    // ---- base page layout
-    private fun page(titleText: String, mainContent: MAIN.() -> Unit): String = buildString {
-        appendHTML().html {
-            lang = "en"
-            head {
-                meta { charset = "utf-8" }
-                meta {
-                    name = "viewport"
-                    content = "width=device-width, initial-scale=1"
-                }
-                title { +titleText }
-                link(rel = "stylesheet", href = "/assets/style.css")
-                script {
-                    src = "https://unpkg.com/htmx.org@2.0.2"
-                }
-                script {
-                    unsafe {
-                        +"""
-                        document.addEventListener('DOMContentLoaded', function() {
-                            document.body.addEventListener('htmx:afterSwap', function(evt) {
-                                // Focus on new criteria input after criteria fragment swap
-                                if (evt.target.id === 'criteria-fragment') {
-                                    setTimeout(function() {
-                                        var input = document.getElementById('new-criteria-input');
-                                        if (input) input.focus();
-                                    }, 50);
-                                }
-                                // Focus on new option input after options fragment swap
-                                if (evt.target.id === 'options-fragment') {
-                                    setTimeout(function() {
-                                        var input = document.getElementById('new-option-input');
-                                        if (input) input.focus();
-                                    }, 50);
-                                }
-                            });
-                        });
-                        """.trimIndent()
-                    }
-                }
-            }
-            body {
-                header(classes = "container") {
-                    a(classes = "logo") {
-                        href = "/"
-                        +"Decision Matrix"
-                    }
-                }
-                main(classes = "container") {
-                    mainContent()
-                }
-                footer(classes = "container muted") {
-                }
-            }
-        }
-    }
 }

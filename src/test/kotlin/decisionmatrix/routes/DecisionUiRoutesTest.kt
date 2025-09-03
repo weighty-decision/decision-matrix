@@ -176,7 +176,7 @@ class DecisionUiRoutesTest {
         htmlContent shouldContain "First Decision"
         htmlContent shouldContain "Second Decision"
         htmlContent shouldContain "Third Decision"
-        htmlContent shouldContain "Your Decisions"
+        htmlContent shouldContain "Decisions you're involved in"
         htmlContent shouldContain "Create New Decision"
     }
 

@@ -2,13 +2,12 @@ package decisionmatrix.ui
 
 import decisionmatrix.Decision
 import kotlinx.html.*
-import kotlinx.html.stream.appendHTML
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 object IndexPages {
 
-    fun indexPage(decisions: List<Decision>, currentUserId: String): String = page("Decision Matrix") {
+    fun indexPage(decisions: List<Decision>, currentUserId: String): String = PageLayout.page("Decision Matrix") {
         section(classes = "card") {
             div(classes = "row") {
                 h1 { +"Decisions you're involved in" }
@@ -17,10 +16,10 @@ object IndexPages {
                     +"Create New Decision"
                 }
             }
-            
+
             if (decisions.isEmpty()) {
-                p(classes = "muted") { 
-                    +"No decisions yet. Create your first decision to get started." 
+                p(classes = "muted") {
+                    +"No decisions yet. Create your first decision to get started."
                 }
             } else {
                 table {
@@ -75,35 +74,4 @@ object IndexPages {
         }
     }
 
-    // ---- base page layout
-    private fun page(titleText: String, mainContent: MAIN.() -> Unit): String = buildString {
-        appendHTML().html {
-            lang = "en"
-            head {
-                meta { charset = "utf-8" }
-                meta {
-                    name = "viewport"
-                    content = "width=device-width, initial-scale=1"
-                }
-                title { +titleText }
-                link(rel = "stylesheet", href = "/assets/style.css")
-                script {
-                    src = "https://unpkg.com/htmx.org@2.0.2"
-                }
-            }
-            body {
-                header(classes = "container") {
-                    a(classes = "logo") {
-                        href = "/"
-                        +"Decision Matrix"
-                    }
-                }
-                main(classes = "container") {
-                    mainContent()
-                }
-                footer(classes = "container muted") {
-                }
-            }
-        }
-    }
 }
