@@ -17,30 +17,31 @@ object IndexPages {
         PageLayout.page("Decision Matrix", user = currentUser) {
             section(classes = "card") {
                 div(classes = "row") {
-                    div {
-                        // View mode selector
-                        select(classes = "form-control") {
-                            id = "view-mode-select"
-                            attributes["hx-get"] = "/"
-                            attributes["hx-include"] = "#view-mode-select"
-                            attributes["hx-trigger"] = "change"
-                            attributes["hx-target"] = "body"
-                            attributes["hx-push-url"] = "true"
-                            name = "view"
-                            
-                            ViewMode.values().forEach { mode ->
-                                option {
-                                    value = mode.paramValue
-                                    if (mode == viewMode) {
-                                        selected = true
-                                    }
-                                    +mode.displayName
+                    select {
+                        id = "view-mode-select"
+                        attributes["hx-get"] = "/"
+                        attributes["hx-include"] = "#view-mode-select"
+                        attributes["hx-trigger"] = "change"
+                        attributes["hx-target"] = "body"
+                        attributes["hx-push-url"] = "true"
+                        name = "view"
+                        
+                        ViewMode.entries.forEach { mode ->
+                            option {
+                                value = mode.paramValue
+                                if (mode == viewMode) {
+                                    selected = true
                                 }
+                                +mode.displayName
                             }
                         }
                     }
+                    div(classes = "grow") {
+                        // Empty div to push button to the right
+                    }
                     a(classes = "btn primary") {
                         href = "/decisions/new"
+                        attributes["style"] = "white-space: nowrap;"
                         +"Create New Decision"
                     }
                 }
