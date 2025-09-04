@@ -59,7 +59,7 @@ object IndexPages {
                             tr {
                                 th { +"Decision" }
                                 th { +"Created" }
-                                th { +"Actions" }
+                                th(classes = "actions") { +"Actions" }
                             }
                         }
                         tbody {

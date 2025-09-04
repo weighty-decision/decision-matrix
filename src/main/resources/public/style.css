@@ -108,6 +108,8 @@ label > span {
 .actions {
   display: flex;
   gap: var(--gap);
+  justify-content: flex-end;
+  min-width: 180px;
 }
 
 .btn {
