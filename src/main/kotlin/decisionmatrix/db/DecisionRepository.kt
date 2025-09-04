@@ -6,7 +6,6 @@ import decisionmatrix.Decision
 import decisionmatrix.Option
 import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
-import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -17,6 +16,7 @@ interface DecisionRepository {
     fun update(id: Long, name: String, minScore: Int, maxScore: Int): Decision? = throw NotImplementedError()
     fun delete(id: Long): Boolean = throw NotImplementedError()
     fun findAllInvolvedDecisions(userId: String): List<Decision> = throw NotImplementedError()
+    fun findAllRecentDecisions(): List<Decision> = throw NotImplementedError()
 }
 
 class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
@@ -166,6 +166,21 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
             decisionGroups.map { (_, decisionRows) ->
                 mapDecisionWithRelations(decisionRows)
             }
+        }
+    }
+
+    override fun findAllRecentDecisions(): List<Decision> {
+        return jdbi.withHandle<List<Decision>, Exception> { handle ->
+            handle.createQuery(
+                """
+                SELECT *
+                FROM decisions 
+                WHERE created_at >= datetime('now', '-3 months')
+                ORDER BY created_at DESC
+                """.trimIndent()
+            )
+                .map { rs, _ -> mapDecision(rs) }
+                .list()
         }
     }
 }

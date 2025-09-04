@@ -327,4 +327,70 @@ class DecisionRepositoryTest {
         decisions.size shouldBe 2
         decisions.map { it.name }.toSet() shouldBe setOf("Own Decision", "Scored Decision")
     }
+
+    @Test fun `findAllRecentDecisions returns empty list when no decisions exist`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        
+        val decisions = decisionRepository.findAllRecentDecisions()
+        
+        decisions shouldBe emptyList()
+    }
+
+    @Test fun `findAllRecentDecisions returns all decisions created within last 3 months`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        
+        val decision1 = decisionRepository.insert(DecisionInput(name = "Recent Decision 1"))
+        val decision2 = decisionRepository.insert(DecisionInput(name = "Recent Decision 2"))
+        val decision3 = decisionRepository.insert(DecisionInput(name = "Recent Decision 3"))
+        
+        val decisions = decisionRepository.findAllRecentDecisions()
+        
+        decisions.size shouldBe 3
+        decisions.map { it.id }.toSet() shouldBe setOf(decision1.id, decision2.id, decision3.id)
+        decisions.all { it.createdAt != null }.shouldBeTrue()
+    }
+
+    @Test fun `findAllRecentDecisions orders results by created_at descending`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        
+        val decision1 = decisionRepository.insert(DecisionInput(name = "First Decision"))
+        Thread.sleep(1100) // Wait over 1 second to ensure different timestamps
+        val decision2 = decisionRepository.insert(DecisionInput(name = "Second Decision"))
+        Thread.sleep(1100)
+        val decision3 = decisionRepository.insert(DecisionInput(name = "Third Decision"))
+        
+        val decisions = decisionRepository.findAllRecentDecisions()
+        
+        decisions.size shouldBe 3
+        
+        // Verify ordering: most recent first (decisions should be sorted by createdAt DESC)
+        for (i in 0 until decisions.size - 1) {
+            val current = requireNotNull(decisions[i].createdAt)
+            val next = requireNotNull(decisions[i + 1].createdAt)
+            current.isAfter(next) shouldBe true
+        }
+        
+        // Verify the specific order
+        decisions[0].name shouldBe "Third Decision"
+        decisions[1].name shouldBe "Second Decision" 
+        decisions[2].name shouldBe "First Decision"
+    }
+
+    @Test fun `findAllRecentDecisions returns decisions without hydrating criteria and options`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val criteriaRepository = CriteriaRepositoryImpl(jdbi)
+        val optionRepository = OptionRepositoryImpl(jdbi)
+        
+        val decision = decisionRepository.insert(DecisionInput(name = "Decision with Relations"))
+        criteriaRepository.insert(decision.id, CriteriaInput(name = "Cost", weight = 5))
+        optionRepository.insert(decision.id, OptionInput(name = "Option A"))
+        
+        val decisions = decisionRepository.findAllRecentDecisions()
+        
+        decisions.size shouldBe 1
+        val foundDecision = decisions[0]
+        foundDecision.name shouldBe "Decision with Relations"
+        foundDecision.criteria shouldBe emptyList()
+        foundDecision.options shouldBe emptyList()
+    }
 }
