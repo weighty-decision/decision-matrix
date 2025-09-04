@@ -58,11 +58,13 @@ class DecisionUiRoutes(
     private fun home(request: Request): Response {
         val currentUser = UserContext.requireCurrent(request)
         val decisions = decisionRepository.findAllInvolvedDecisions(currentUser.id)
-        return htmlResponse(IndexPages.indexPage(decisions, currentUser.id))
+        return htmlResponse(IndexPages.indexPage(decisions, currentUser))
     }
 
-    private fun newDecisionForm(@Suppress("UNUSED_PARAMETER") request: Request): Response =
-        htmlResponse(DecisionPages.createPage())
+    private fun newDecisionForm(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
+        return htmlResponse(DecisionPages.createPage(currentUser))
+    }
 
     private fun createDecision(request: Request): Response {
         val currentUser = UserContext.requireCurrent(request)
@@ -85,9 +87,10 @@ class DecisionUiRoutes(
     }
 
     private fun editDecision(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
         val id = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
         val decision = decisionRepository.findById(id) ?: return Response(Status.NOT_FOUND).body("Decision not found")
-        return htmlResponse(DecisionPages.editPage(decision))
+        return htmlResponse(DecisionPages.editPage(decision, currentUser))
     }
 
     private fun updateDecisionName(request: Request): Response {
@@ -210,7 +213,7 @@ class DecisionUiRoutes(
         val userScores = userScoreRepository.findAllByDecisionId(decisionId)
             .filter { it.scoredBy == currentUser.id }
 
-        return htmlResponse(MyScoresPages.myScoresPage(decision, currentUser.id, userScores))
+        return htmlResponse(MyScoresPages.myScoresPage(decision, currentUser, userScores))
     }
 
     private fun submitMyScores(request: Request): Response {
@@ -270,7 +273,8 @@ class DecisionUiRoutes(
 
         val scores = userScoreRepository.findAllByDecisionId(decisionId)
 
-        return htmlResponse(CalculateScoresPages.calculateScoresPage(decision, scores))
+        val currentUser = UserContext.requireCurrent(request)
+        return htmlResponse(CalculateScoresPages.calculateScoresPage(decision, scores, currentUser))
     }
 
     // ---- helpers

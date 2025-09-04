@@ -2,11 +2,12 @@ package decisionmatrix.ui
 
 import decisionmatrix.Decision
 import decisionmatrix.UserScore
+import decisionmatrix.auth.AuthenticatedUser
 import kotlinx.html.*
 
 object MyScoresPages {
 
-    fun myScoresPage(decision: Decision, userId: String, scores: List<UserScore>): String = PageLayout.page("${decision.name} · My scores") {
+    fun myScoresPage(decision: Decision, user: AuthenticatedUser, scores: List<UserScore>): String = PageLayout.page("${decision.name} · My scores", user = user) {
         section(classes = "card") {
             h1 { +"My scores for '${decision.name}'" }
 

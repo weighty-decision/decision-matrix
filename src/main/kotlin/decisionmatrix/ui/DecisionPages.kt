@@ -3,12 +3,13 @@ package decisionmatrix.ui
 import decisionmatrix.DEFAULT_MAX_SCORE
 import decisionmatrix.DEFAULT_MIN_SCORE
 import decisionmatrix.Decision
+import decisionmatrix.auth.AuthenticatedUser
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
 
 object DecisionPages {
 
-    fun createPage(): String = PageLayout.page("Create decision") {
+    fun createPage(user: AuthenticatedUser): String = PageLayout.page("Create decision", user = user) {
         section(classes = "card") {
             h1 { +"Create a decision" }
             form {
@@ -58,7 +59,7 @@ object DecisionPages {
         }
     }
 
-    fun editPage(decision: Decision): String = PageLayout.page("${decision.name} · edit", extraTopLevelScript = {
+    fun editPage(decision: Decision, user: AuthenticatedUser): String = PageLayout.page("${decision.name} · edit", user = user, extraTopLevelScript = {
         unsafe {
             +"""
             document.addEventListener('DOMContentLoaded', function() {

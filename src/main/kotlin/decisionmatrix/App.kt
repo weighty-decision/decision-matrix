@@ -34,14 +34,25 @@ val mockOAuthServer = if (System.getenv("DM_MOCK_OAUTH_SERVER")?.toBoolean() == 
     MockOAuthServer().start()
 } else null
 
+// Create a simple dev OAuth service for dev mode
+class DevOAuthService : OAuthServiceInterface {
+    override fun createAuthorizationUrl(redirectAfterLogin: String): String {
+        return "/auth/login"
+    }
+    
+    override fun handleCallback(code: String?, state: String?, error: String?): StandardsBasedOAuthService.CallbackResult {
+        return StandardsBasedOAuthService.CallbackResult.Error("Not supported in dev mode")
+    }
+}
+
 val oauthService = if (!authConfig.devMode) {
     val oauthConfiguration = OAuthConfiguration.fromEnvironment()
     StandardsBasedOAuthService(oauthConfiguration)
-} else null
+} else {
+    DevOAuthService()
+}
 
-val authRoutes = if (oauthService != null) {
-    AuthRoutes(oauthService, sessionManager)
-} else null
+val authRoutes = AuthRoutes(oauthService, sessionManager)
 
 val decisionUiRoutes = DecisionUiRoutes(
     decisionRepository = decisionRepository,
@@ -55,7 +66,7 @@ val app: RoutingHttpHandler = routes(
         Response(OK).body("pong")
     },
     "/assets" bind static(ResourceLoader.Classpath("public")),
-    *if (authRoutes != null) arrayOf(authRoutes.routes) else emptyArray(),
+    authRoutes.routes,
     decisionUiRoutes.routes
 )
 

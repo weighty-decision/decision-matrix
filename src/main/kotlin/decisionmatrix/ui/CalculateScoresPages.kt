@@ -2,13 +2,14 @@ package decisionmatrix.ui
 
 import decisionmatrix.Decision
 import decisionmatrix.UserScore
+import decisionmatrix.auth.AuthenticatedUser
 import decisionmatrix.calculateOptionScores
 import kotlinx.html.*
 import java.math.RoundingMode
 
 object CalculateScoresPages {
 
-    fun calculateScoresPage(decision: Decision, scores: List<UserScore>): String = PageLayout.page("${decision.name} · Calculated scores") {
+    fun calculateScoresPage(decision: Decision, scores: List<UserScore>, user: AuthenticatedUser): String = PageLayout.page("${decision.name} · Calculated scores", user = user) {
         section(classes = "card") {
             h1 { +"Calculated scores for '${decision.name}'" }
 

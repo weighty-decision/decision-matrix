@@ -1,13 +1,14 @@
 package decisionmatrix.ui
 
 import decisionmatrix.Decision
+import decisionmatrix.auth.AuthenticatedUser
 import kotlinx.html.*
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 object IndexPages {
 
-    fun indexPage(decisions: List<Decision>, currentUserId: String): String = PageLayout.page("Decision Matrix") {
+    fun indexPage(decisions: List<Decision>, currentUser: AuthenticatedUser): String = PageLayout.page("Decision Matrix", user = currentUser) {
         section(classes = "card") {
             div(classes = "row") {
                 h1 { +"Decisions you're involved in" }
@@ -44,14 +45,14 @@ object IndexPages {
                                     } ?: span(classes = "muted") { +"Unknown" }
                                 }
                                 td {
-                                    if (decision.createdBy == currentUserId) {
+                                    if (decision.createdBy == currentUser.id) {
                                         span(classes = "badge primary") { +"Creator" }
                                     } else {
                                         span(classes = "badge") { +"Participant" }
                                     }
                                 }
                                 td(classes = "actions") {
-                                    if (decision.createdBy == currentUserId) {
+                                    if (decision.createdBy == currentUser.id) {
                                         a(classes = "btn small") {
                                             href = "/decisions/${decision.id}/edit"
                                             +"Edit"
