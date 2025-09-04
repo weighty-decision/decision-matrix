@@ -15,6 +15,7 @@ import decisionmatrix.ui.DecisionPages
 import decisionmatrix.ui.MyScoresPages
 import decisionmatrix.ui.CalculateScoresPages
 import decisionmatrix.ui.IndexPages
+import decisionmatrix.ui.ViewMode
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -57,8 +58,15 @@ class DecisionUiRoutes(
 
     private fun home(request: Request): Response {
         val currentUser = UserContext.requireCurrent(request)
-        val decisions = decisionRepository.findAllInvolvedDecisions(currentUser.id)
-        return htmlResponse(IndexPages.indexPage(decisions, currentUser))
+        val viewModeParam = request.query("view") ?: ViewMode.INVOLVED.paramValue
+        val viewMode = ViewMode.entries.find { it.paramValue == viewModeParam } ?: ViewMode.INVOLVED
+
+        val decisions = when (viewMode) {
+            ViewMode.INVOLVED -> decisionRepository.findAllInvolvedDecisions(currentUser.id)
+            ViewMode.RECENT -> decisionRepository.findAllRecentDecisions()
+        }
+
+        return htmlResponse(IndexPages.indexPage(decisions, currentUser, viewMode))
     }
 
     private fun newDecisionForm(request: Request): Response {

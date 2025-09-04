@@ -176,11 +176,10 @@ class DecisionUiRoutesTest {
         htmlContent shouldContain "First Decision"
         htmlContent shouldContain "Second Decision"
         htmlContent shouldContain "Third Decision"
-        htmlContent shouldContain "Decisions you're involved in"
         htmlContent shouldContain "Create New Decision"
     }
 
-    @Test fun `home page shows creator vs participant roles correctly`() {
+    @Test fun `home page shows decisions user is involved in without role column`() {
         val decision1 = decisionRepository.insert(
             DecisionInput(name = "Created by me"),
             createdBy = "test-user"
@@ -201,9 +200,9 @@ class DecisionUiRoutesTest {
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
         
-        // Should show appropriate role badges
-        htmlContent shouldContain "Creator"
-        htmlContent shouldContain "Participant"
+        // Should show both decisions user is involved in
+        htmlContent shouldContain "Created by me"
+        htmlContent shouldContain "Participated in"
     }
 
     @Test fun `home page shows edit link only for decisions created by current user`() {
@@ -246,5 +245,89 @@ class DecisionUiRoutesTest {
         htmlContent shouldContain "No decisions yet"
         htmlContent shouldContain "Create your first decision"
         htmlContent shouldContain "Create New Decision"
+    }
+
+    @Test fun `home page defaults to involved view mode`() {
+        val request = Request(Method.GET, "/")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        htmlContent shouldContain "view-mode-select"
+        htmlContent shouldContain "Decisions you're involved in"
+        htmlContent shouldContain "Recent decisions"
+        htmlContent shouldContain "selected=\"selected\">Decisions you're involved in"
+    }
+
+    @Test fun `home page with recent view mode parameter shows recent decisions`() {
+        val decision = decisionRepository.insert(
+            DecisionInput(name = "Recent Decision"),
+            createdBy = "other-user"
+        )
+
+        val request = Request(Method.GET, "/?view=recent")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        htmlContent shouldContain "Recent Decision"
+        htmlContent shouldContain "selected=\"selected\">Recent decisions"
+    }
+
+    @Test fun `home page with invalid view mode parameter defaults to involved`() {
+        val request = Request(Method.GET, "/?view=invalid")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        htmlContent shouldContain "selected=\"selected\">Decisions you're involved in"
+    }
+
+    @Test fun `home page does not show role column anymore`() {
+        val decision = decisionRepository.insert(
+            DecisionInput(name = "Test Decision"),
+            createdBy = "test-user"
+        )
+
+        val request = Request(Method.GET, "/")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        // Should not contain the Role column header
+        htmlContent.contains("<th>Role</th>") shouldBe false
+        htmlContent.contains("Creator") shouldBe false
+        htmlContent.contains("Participant") shouldBe false
+    }
+
+    @Test fun `home page shows Score instead of My Scores in action links`() {
+        val decision = decisionRepository.insert(
+            DecisionInput(name = "Test Decision"),
+            createdBy = "test-user"
+        )
+
+        val request = Request(Method.GET, "/")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        htmlContent shouldContain ">Score<"
+        htmlContent.contains(">My Scores<") shouldBe false
+    }
+
+    @Test fun `recent view shows empty state when no recent decisions`() {
+        val request = Request(Method.GET, "/?view=recent")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        htmlContent shouldContain "No recent decisions found"
+        htmlContent shouldContain "selected=\"selected\">Recent decisions"
     }
 }
