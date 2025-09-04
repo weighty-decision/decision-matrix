@@ -376,21 +376,26 @@ class DecisionRepositoryTest {
         decisions[2].name shouldBe "First Decision"
     }
 
-    @Test fun `findAllRecentDecisions returns decisions without hydrating criteria and options`() {
+    @Test fun `findAllRecentDecisions returns decisions with hydrated criteria and options`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
         val optionRepository = OptionRepositoryImpl(jdbi)
         
         val decision = decisionRepository.insert(DecisionInput(name = "Decision with Relations"))
-        criteriaRepository.insert(decision.id, CriteriaInput(name = "Cost", weight = 5))
-        optionRepository.insert(decision.id, OptionInput(name = "Option A"))
+        val insertedCriteria = criteriaRepository.insert(decision.id, CriteriaInput(name = "Cost", weight = 5))
+        val insertedOption = optionRepository.insert(decision.id, OptionInput(name = "Option A"))
         
         val decisions = decisionRepository.findAllRecentDecisions()
         
         decisions.size shouldBe 1
         val foundDecision = decisions[0]
         foundDecision.name shouldBe "Decision with Relations"
-        foundDecision.criteria shouldBe emptyList()
-        foundDecision.options shouldBe emptyList()
+        foundDecision.criteria.size shouldBe 1
+        foundDecision.criteria[0].id shouldBe insertedCriteria.id
+        foundDecision.criteria[0].name shouldBe "Cost"
+        foundDecision.criteria[0].weight shouldBe 5
+        foundDecision.options.size shouldBe 1
+        foundDecision.options[0].id shouldBe insertedOption.id
+        foundDecision.options[0].name shouldBe "Option A"
     }
 }

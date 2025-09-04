@@ -171,16 +171,40 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
 
     override fun findAllRecentDecisions(): List<Decision> {
         return jdbi.withHandle<List<Decision>, Exception> { handle ->
-            handle.createQuery(
+            val rows = handle.createQuery(
                 """
-                SELECT *
-                FROM decisions 
-                WHERE created_at >= datetime('now', '-3 months')
-                ORDER BY created_at DESC
+                SELECT 
+                    d.id as decision_id, 
+                    d.name as decision_name,
+                    d.min_score as decision_min_score,
+                    d.max_score as decision_max_score,
+                    d.created_by as decision_created_by,
+                    d.created_at as decision_created_at,
+                    c.id as criteria_id,
+                    c.name as criteria_name,
+                    c.weight as criteria_weight,
+                    o.id as option_id,
+                    o.name as option_name
+                FROM decisions d
+                LEFT JOIN criteria c ON d.id = c.decision_id
+                LEFT JOIN options o ON d.id = o.decision_id
+                WHERE d.created_at >= datetime('now', '-3 months')
+                ORDER BY d.created_at DESC
                 """.trimIndent()
             )
-                .map { rs, _ -> mapDecision(rs) }
+                .mapToMap()
                 .list()
+
+            if (rows.isEmpty()) {
+                return@withHandle emptyList()
+            }
+
+            // Group rows by decision_id
+            val decisionGroups = rows.groupBy { (it["decision_id"] as Number).toLong() }
+            
+            decisionGroups.map { (_, decisionRows) ->
+                mapDecisionWithRelations(decisionRows)
+            }
         }
     }
 }
