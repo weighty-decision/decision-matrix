@@ -53,7 +53,8 @@ class DecisionRoutes(
 
         "/decisions/{id}/my-scores" bind Method.GET to ::viewMyScores,
         "/decisions/{id}/my-scores" bind Method.POST to ::submitMyScores,
-        "/decisions/{id}/results" bind Method.GET to ::calculateScores
+        "/decisions/{id}/results" bind Method.GET to ::calculateScores,
+        "/decisions/{id}/user-scores.csv" bind Method.GET to ::downloadUserScoresCsv
     )
 
     private fun home(request: Request): Response {
@@ -285,6 +286,32 @@ class DecisionRoutes(
         return htmlResponse(ResultsPage.resultsPage(decision, scores, currentUser))
     }
 
+    private fun downloadUserScoresCsv(request: Request): Response {
+        val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
+        val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+
+        val scores = userScoreRepository.findAllByDecisionId(decisionId)
+
+        val optionMap = decision.options.associateBy { it.id }
+        val criteriaMap = decision.criteria.associateBy { it.id }
+
+        val csvContent = buildString {
+            appendLine("scoredby,criteria,option,score")
+            
+            for (score in scores) {
+                val optionName = optionMap[score.optionId]?.name ?: "Unknown Option"
+                val criteriaName = criteriaMap[score.criteriaId]?.name ?: "Unknown Criteria"
+                
+                appendLine("${score.scoredBy},${escapeCsv(criteriaName)},${escapeCsv(optionName)},${score.score}")
+            }
+        }
+
+        return Response(Status.OK)
+            .header("Content-Type", "text/csv; charset=utf-8")
+            .header("Content-Disposition", "attachment; filename=\"decision-${decision.id}-user-scores.csv\"")
+            .body(csvContent)
+    }
+
     // ---- helpers
     private fun htmlResponse(html: String): Response =
         Response(Status.OK).header("Content-Type", "text/html; charset=utf-8").body(html)
@@ -305,4 +332,12 @@ class DecisionRoutes(
     }
 
     private fun urlDecode(s: String) = URLDecoder.decode(s, StandardCharsets.UTF_8)
+
+    private fun escapeCsv(value: String): String {
+        return if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            "\"${value.replace("\"", "\"\"")}\"" 
+        } else {
+            value
+        }
+    }
 }

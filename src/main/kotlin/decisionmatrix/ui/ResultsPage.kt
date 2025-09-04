@@ -60,6 +60,10 @@ object ResultsPage {
             }
 
             div(classes = "actions") {
+                a(classes = "btn btn-secondary") {
+                    href = "/decisions/${decision.id}/user-scores.csv"
+                    +"Download User Scores (CSV)"
+                }
                 a(classes = "btn") {
                     href = "/decisions/${decision.id}/edit"
                     +"Back to edit"
