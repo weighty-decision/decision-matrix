@@ -7,13 +7,13 @@ It stores the data in a sqlite database, by default located in $HOME/decision_ma
 I'm just building the 1.0 version now, so it's not ready for production use yet.
 
 ## Screenshots
-### Index
+### Home
 ![Index](docs/resources/index.png)
-### Edit
+### /decisions/{id}/edit/
 ![Edit](docs/resources/edit.png)
-### Score
+### /decisions/{id}/my-scores
 ![Score](docs/resources/score.png)
-### Results
+### /decisions/{id}/results
 ![Results](docs/resources/results.png)
 
 ## Development
