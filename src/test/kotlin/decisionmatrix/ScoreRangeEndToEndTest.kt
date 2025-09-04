@@ -2,7 +2,7 @@ package decisionmatrix
 
 import decisionmatrix.auth.withMockAuth
 import decisionmatrix.db.*
-import decisionmatrix.routes.DecisionUiRoutes
+import decisionmatrix.routes.DecisionRoutes
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
@@ -27,7 +27,7 @@ class ScoreRangeEndToEndTest {
     private val criteriaRepository = CriteriaRepositoryImpl(jdbi)
     private val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
-    private val decisionUiRoutes = DecisionUiRoutes(
+    private val decisionRoutes = DecisionRoutes(
         decisionRepository = decisionRepository,
         optionRepository = optionRepository,
         criteriaRepository = criteriaRepository,
@@ -39,7 +39,7 @@ class ScoreRangeEndToEndTest {
             Response(OK).body("pong")
         },
         "/assets" bind static(ResourceLoader.Classpath("public")),
-        decisionUiRoutes.routes
+        decisionRoutes.routes
     ).withMockAuth()
 
     @Test fun `Complete decision workflow with score range validates at all stages`() {
@@ -83,8 +83,8 @@ class ScoreRangeEndToEndTest {
         invalidRangeResponse.status shouldBe BAD_REQUEST
         invalidRangeResponse.bodyString() shouldBe "Min score must be less than max score"
         
-        // Step 4: Just verify calculate scores page loads (content depends on actual scores)
-        val calculateScoresRequest = Request(GET, "/decisions/$decisionId/calculate-scores")
+        // Step 4: Just verify results page loads (content depends on actual scores)
+        val calculateScoresRequest = Request(GET, "/decisions/$decisionId/results")
         val calculateScoresResponse = testApp(calculateScoresRequest)
         calculateScoresResponse.status shouldBe OK
     }

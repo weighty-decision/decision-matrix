@@ -3,7 +3,7 @@ package decisionmatrix
 import decisionmatrix.auth.*
 import decisionmatrix.db.*
 import decisionmatrix.oauth.MockOAuthServer
-import decisionmatrix.routes.DecisionUiRoutes
+import decisionmatrix.routes.DecisionRoutes
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Response
@@ -54,7 +54,7 @@ val oauthService = if (!authConfig.devMode) {
 
 val authRoutes = AuthRoutes(oauthService, sessionManager)
 
-val decisionUiRoutes = DecisionUiRoutes(
+val decisionRoutes = DecisionRoutes(
     decisionRepository = decisionRepository,
     optionRepository = optionRepository,
     criteriaRepository = criteriaRepository,
@@ -67,7 +67,7 @@ val app: RoutingHttpHandler = routes(
     },
     "/assets" bind static(ResourceLoader.Classpath("public")),
     authRoutes.routes,
-    decisionUiRoutes.routes
+    decisionRoutes.routes
 )
 
 fun main() {

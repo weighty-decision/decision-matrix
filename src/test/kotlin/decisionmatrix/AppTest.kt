@@ -2,7 +2,7 @@ package decisionmatrix
 
 import decisionmatrix.auth.withMockAuth
 import decisionmatrix.db.*
-import decisionmatrix.routes.DecisionUiRoutes
+import decisionmatrix.routes.DecisionRoutes
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.http4k.core.Method.GET
@@ -25,7 +25,7 @@ class AppTest {
     private val criteriaRepository = CriteriaRepositoryImpl(jdbi)
     private val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
-    private val decisionUiRoutes = DecisionUiRoutes(
+    private val decisionRoutes = DecisionRoutes(
         decisionRepository = decisionRepository,
         optionRepository = optionRepository,
         criteriaRepository = criteriaRepository,
@@ -37,7 +37,7 @@ class AppTest {
             Response(OK).body("pong")
         },
         "/assets" bind static(ResourceLoader.Classpath("public")),
-        decisionUiRoutes.routes
+        decisionRoutes.routes
     ).withMockAuth()
 
     @Test fun `Ping test`() {

@@ -7,11 +7,11 @@ import decisionmatrix.calculateOptionScores
 import kotlinx.html.*
 import java.math.RoundingMode
 
-object CalculateScoresPages {
+object ResultsPage {
 
-    fun calculateScoresPage(decision: Decision, scores: List<UserScore>, user: AuthenticatedUser): String = PageLayout.page("${decision.name} · Calculated scores", user = user) {
+    fun resultsPage(decision: Decision, scores: List<UserScore>, user: AuthenticatedUser): String = PageLayout.page("${decision.name} · results", user = user) {
         section(classes = "card") {
-            h1 { +"Calculated scores for '${decision.name}'" }
+            h1 { +"Results for '${decision.name}'" }
 
             if (decision.options.isEmpty() || decision.criteria.isEmpty()) {
                 p { +"Add options and criteria first on the edit page." }
@@ -43,7 +43,6 @@ object CalculateScoresPages {
                             }
                         }
 
-                        // Add total row
                         tr(classes = "total-row") {
                             td { +"Total" }
                             decision.options.forEach { option ->

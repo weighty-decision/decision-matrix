@@ -86,7 +86,7 @@ object IndexPages {
                                             +"Score"
                                         }
                                         a(classes = "btn small") {
-                                            href = "/decisions/${decision.id}/calculate-scores"
+                                            href = "/decisions/${decision.id}/results"
                                             +"Results"
                                         }
                                     }

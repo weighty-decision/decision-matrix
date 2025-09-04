@@ -72,8 +72,8 @@ object MyScoresPages {
             ul {
                 li {
                     a(classes = "btn") {
-                        href = "/decisions/${decision.id}/calculate-scores"
-                        +"View calculated scores"
+                        href = "/decisions/${decision.id}/results"
+                        +"View results"
                     }
                 }
             }

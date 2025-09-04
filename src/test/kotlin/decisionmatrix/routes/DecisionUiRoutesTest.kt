@@ -18,7 +18,7 @@ class DecisionUiRoutesTest {
     private val criteriaRepository = CriteriaRepositoryImpl(jdbi)
     private val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
-    private val routes = DecisionUiRoutes(
+    private val routes = DecisionRoutes(
         decisionRepository, optionRepository, criteriaRepository, userScoreRepository
     ).routes.withMockAuth()
 

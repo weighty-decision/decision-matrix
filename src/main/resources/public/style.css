@@ -154,7 +154,6 @@ footer.container {
 }
 .muted { color: var(--muted); }
 
-/* Table styling for calculate-scores page */
 table {
   width: 100%;
   border-collapse: collapse;

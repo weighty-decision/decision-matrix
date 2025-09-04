@@ -13,7 +13,7 @@ import decisionmatrix.db.OptionRepository
 import decisionmatrix.db.UserScoreRepository
 import decisionmatrix.ui.DecisionPages
 import decisionmatrix.ui.MyScoresPages
-import decisionmatrix.ui.CalculateScoresPages
+import decisionmatrix.ui.ResultsPage
 import decisionmatrix.ui.IndexPages
 import decisionmatrix.ui.ViewMode
 import org.http4k.core.Method
@@ -27,7 +27,7 @@ import org.http4k.routing.routes
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
-class DecisionUiRoutes(
+class DecisionRoutes(
     private val decisionRepository: DecisionRepository,
     private val optionRepository: OptionRepository,
     private val criteriaRepository: CriteriaRepository,
@@ -53,7 +53,7 @@ class DecisionUiRoutes(
 
         "/decisions/{id}/my-scores" bind Method.GET to ::viewMyScores,
         "/decisions/{id}/my-scores" bind Method.POST to ::submitMyScores,
-        "/decisions/{id}/calculate-scores" bind Method.GET to ::calculateScores
+        "/decisions/{id}/results" bind Method.GET to ::calculateScores
     )
 
     private fun home(request: Request): Response {
@@ -282,7 +282,7 @@ class DecisionUiRoutes(
         val scores = userScoreRepository.findAllByDecisionId(decisionId)
 
         val currentUser = UserContext.requireCurrent(request)
-        return htmlResponse(CalculateScoresPages.calculateScoresPage(decision, scores, currentUser))
+        return htmlResponse(ResultsPage.resultsPage(decision, scores, currentUser))
     }
 
     // ---- helpers
