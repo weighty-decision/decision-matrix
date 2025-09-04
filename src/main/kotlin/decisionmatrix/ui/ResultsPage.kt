@@ -52,6 +52,11 @@ object ResultsPage {
                         }
                     }
                 }
+
+                div(classes = "score-count") {
+                    val uniqueUsers = scores.map { it.scoredBy }.distinct().size
+                    p { +"Scores from $uniqueUsers participant${if (uniqueUsers == 1) "" else "s"}" }
+                }
             }
 
             div(classes = "actions") {
