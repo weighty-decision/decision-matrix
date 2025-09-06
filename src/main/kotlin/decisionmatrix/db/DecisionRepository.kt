@@ -19,11 +19,8 @@ data class DecisionSearchFilters(
 interface DecisionRepository {
     fun insert(decision: DecisionInput, createdBy: String = "unknown"): Decision = throw NotImplementedError()
     fun findById(id: Long): Decision? = throw NotImplementedError()
-    fun update(id: Long, name: String): Decision? = throw NotImplementedError()
     fun update(id: Long, name: String, minScore: Int, maxScore: Int): Decision? = throw NotImplementedError()
     fun delete(id: Long): Boolean = throw NotImplementedError()
-    fun findAllInvolvedDecisions(userId: String): List<Decision> = throw NotImplementedError()
-    fun findAllRecentDecisions(): List<Decision> = throw NotImplementedError()
     fun findDecisions(filters: DecisionSearchFilters): List<Decision> = throw NotImplementedError()
 }
 
@@ -80,24 +77,6 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
         }
     }
 
-    override fun update(id: Long, name: String): Decision? {
-        return jdbi.withHandle<Decision?, Exception> { handle ->
-            handle.createQuery(
-                """
-                UPDATE decisions
-                SET name = :name
-                WHERE id = :id
-                RETURNING *
-                """.trimIndent()
-            )
-                .bind("id", id)
-                .bind("name", name)
-                .map { rs, _ -> mapDecision(rs) }
-                .findOne()
-                .orElse(null)
-        }
-    }
-
     override fun update(id: Long, name: String, minScore: Int, maxScore: Int): Decision? {
         return jdbi.withHandle<Decision?, Exception> { handle ->
             handle.createQuery(
@@ -129,90 +108,6 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
                 .bind("id", id)
                 .execute()
             updated > 0
-        }
-    }
-
-    override fun findAllInvolvedDecisions(userId: String): List<Decision> {
-        return jdbi.withHandle<List<Decision>, Exception> { handle ->
-            val rows = handle.createQuery(
-                """
-                SELECT 
-                    d.id as decision_id, 
-                    d.name as decision_name,
-                    d.min_score as decision_min_score,
-                    d.max_score as decision_max_score,
-                    d.created_by as decision_created_by,
-                    d.created_at as decision_created_at,
-                    c.id as criteria_id,
-                    c.name as criteria_name,
-                    c.weight as criteria_weight,
-                    o.id as option_id,
-                    o.name as option_name
-                FROM decisions d
-                LEFT JOIN criteria c ON d.id = c.decision_id
-                LEFT JOIN options o ON d.id = o.decision_id
-                WHERE d.created_by = :userId 
-                   OR d.id IN (
-                       SELECT DISTINCT decision_id 
-                       FROM user_scores 
-                       WHERE scored_by = :userId
-                   )
-                ORDER BY d.created_at DESC
-                """.trimIndent()
-            )
-                .bind("userId", userId)
-                .mapToMap()
-                .list()
-
-            if (rows.isEmpty()) {
-                return@withHandle emptyList()
-            }
-
-            // Group rows by decision_id
-            val decisionGroups = rows.groupBy { (it["decision_id"] as Number).toLong() }
-            
-            decisionGroups.map { (_, decisionRows) ->
-                mapDecisionWithRelations(decisionRows)
-            }
-        }
-    }
-
-    override fun findAllRecentDecisions(): List<Decision> {
-        return jdbi.withHandle<List<Decision>, Exception> { handle ->
-            val rows = handle.createQuery(
-                """
-                SELECT 
-                    d.id as decision_id, 
-                    d.name as decision_name,
-                    d.min_score as decision_min_score,
-                    d.max_score as decision_max_score,
-                    d.created_by as decision_created_by,
-                    d.created_at as decision_created_at,
-                    c.id as criteria_id,
-                    c.name as criteria_name,
-                    c.weight as criteria_weight,
-                    o.id as option_id,
-                    o.name as option_name
-                FROM decisions d
-                LEFT JOIN criteria c ON d.id = c.decision_id
-                LEFT JOIN options o ON d.id = o.decision_id
-                WHERE d.created_at >= datetime('now', '-3 months')
-                ORDER BY d.created_at DESC
-                """.trimIndent()
-            )
-                .mapToMap()
-                .list()
-
-            if (rows.isEmpty()) {
-                return@withHandle emptyList()
-            }
-
-            // Group rows by decision_id
-            val decisionGroups = rows.groupBy { (it["decision_id"] as Number).toLong() }
-            
-            decisionGroups.map { (_, decisionRows) ->
-                mapDecisionWithRelations(decisionRows)
-            }
         }
     }
 

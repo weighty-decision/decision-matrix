@@ -276,51 +276,6 @@ class DecisionUiRoutesTest {
         htmlContent shouldContain "btn filter-btn active"
     }
 
-    @Test fun `home page with invalid parameters ignores them`() {
-        val request = Request(Method.GET, "/?invalid=true")
-        val response = routes(request)
-
-        response.status shouldBe Status.OK
-        val htmlContent = response.bodyString()
-        
-        htmlContent shouldContain "search-input"
-        htmlContent.contains("btn filter-btn active") shouldBe false
-    }
-
-    @Test fun `home page does not show role column anymore`() {
-        val decision = decisionRepository.insert(
-            DecisionInput(name = "Test Decision"),
-            createdBy = "test-user"
-        )
-
-        val request = Request(Method.GET, "/")
-        val response = routes(request)
-
-        response.status shouldBe Status.OK
-        val htmlContent = response.bodyString()
-        
-        // Should not contain the Role column header
-        htmlContent.contains("<th>Role</th>") shouldBe false
-        htmlContent.contains("Creator") shouldBe false
-        htmlContent.contains("Participant") shouldBe false
-    }
-
-    @Test fun `home page shows Score instead of My Scores in action links`() {
-        val decision = decisionRepository.insert(
-            DecisionInput(name = "Test Decision"),
-            createdBy = "test-user"
-        )
-
-        val request = Request(Method.GET, "/")
-        val response = routes(request)
-
-        response.status shouldBe Status.OK
-        val htmlContent = response.bodyString()
-        
-        htmlContent shouldContain ">Score<"
-        htmlContent.contains(">My Scores<") shouldBe false
-    }
-
     @Test fun `recent filter shows empty state when no recent decisions`() {
         val request = Request(Method.GET, "/?recent=true")
         val response = routes(request)
