@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version libs.versions.kotlin.core
     kotlin("plugin.serialization") version libs.versions.kotlin.core
     alias(libs.plugins.detekt)
+    alias(libs.plugins.flyway)
     application
 }
 
@@ -12,6 +13,8 @@ buildscript {
     }
 
     dependencies {
+        classpath(libs.postgresql)
+        classpath(libs.flyway.postgresql)
     }
 }
 
@@ -44,9 +47,18 @@ dependencies {
     implementation(libs.kotlinx.html)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.jdbi.core)
-    implementation(libs.sqlite.jdbc)
+    implementation(libs.postgresql)
+    implementation(libs.flyway.core)
+    implementation(libs.flyway.postgresql)
     implementation(libs.nimbus.oauth2.sdk)
     implementation(libs.nimbus.jose.jwt)
     testImplementation(libs.bundles.testing)
     testImplementation(libs.bundles.http4k.testing)
+}
+
+flyway {
+    url = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/decision_matrix"
+    user = System.getenv("DB_USER") ?: "decision_matrix"
+    password = System.getenv("DB_PASSWORD") ?: "decision_matrix_password"
+    locations = arrayOf("filesystem:src/main/resources/db/migration")
 }

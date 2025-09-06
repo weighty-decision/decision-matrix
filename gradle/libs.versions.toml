@@ -7,7 +7,8 @@ http4k = "6.15.1.0"
 kotlinx-html = "0.11.0"
 kotlinx-serialization-json = "1.9.0"
 kotest = "5.9.1"
-sqlite-jdbc = "3.44.1.0"
+postgresql = "42.7.4"
+flyway = "10.20.1"
 slf4j = "2.0.16"
 logback = "1.5.12"
 nimbus-oauth2 = "11.20.1"
@@ -34,7 +35,9 @@ kotest-assertions-json = { module = "io.kotest:kotest-assertions-json", version.
 kotest-extensions = { module = "io.kotest:kotest-extensions", version.ref = "kotest" }
 kotest-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 kotest-property = { module = "io.kotest:kotest-property-jvm", version.ref = "kotest" }
-sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 nimbus-oauth2-sdk = { module = "com.nimbusds:oauth2-oidc-sdk", version.ref = "nimbus-oauth2" }
@@ -74,3 +77,4 @@ logging = [
 [plugins]
 serialization = { id = "plugin.serialization", version.ref = "kotlin-core" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+flyway = { id = "org.flywaydb.flyway", version.ref = "flyway" }

@@ -6,8 +6,6 @@ import decisionmatrix.DecisionInput
 import decisionmatrix.Option
 import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 data class DecisionSearchFilters(
     val search: String? = null,
@@ -124,8 +122,8 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
 
             // Recent filter (1 month)
             if (filters.recentOnly) {
-                conditions.add("(d.created_at >= datetime('now', '-1 month') " +
-                        "OR EXISTS (SELECT 1 FROM user_scores us WHERE us.decision_id = d.id AND us.created_at >= datetime('now', '-1 month')))")
+                conditions.add("(d.created_at >= CURRENT_TIMESTAMP - INTERVAL '1 month' " +
+                        "OR EXISTS (SELECT 1 FROM user_scores us WHERE us.decision_id = d.id AND us.created_at >= CURRENT_TIMESTAMP - INTERVAL '1 month'))")
             }
 
             // Involvement filter
@@ -184,9 +182,7 @@ fun mapDecision(rs: ResultSet): Decision {
         minScore = rs.getInt("min_score"),
         maxScore = rs.getInt("max_score"),
         createdBy = rs.getString("created_by"),
-        createdAt = rs.getString("created_at")?.let {
-            LocalDateTime.parse(it.replace(" ", "T")).atOffset(ZoneOffset.UTC).toInstant()
-        }
+        createdAt = rs.getTimestamp("created_at")?.toInstant()
     )
 }
 
@@ -199,9 +195,7 @@ fun mapDecisionWithRelations(rows: List<Map<String, Any>>): Decision {
     val decisionMinScore = (firstRow["decision_min_score"] as Number).toInt()
     val decisionMaxScore = (firstRow["decision_max_score"] as Number).toInt()
     val decisionCreatedBy = firstRow["decision_created_by"] as? String
-    val decisionCreatedAt = (firstRow["decision_created_at"] as? String)?.let {
-        LocalDateTime.parse(it.replace(" ", "T")).atOffset(ZoneOffset.UTC).toInstant()
-    }
+    val decisionCreatedAt = (firstRow["decision_created_at"] as? java.sql.Timestamp)?.toInstant()
 
     val criteriaMap = mutableMapOf<Long, Criteria>()
     val optionsMap = mutableMapOf<Long, Option>()

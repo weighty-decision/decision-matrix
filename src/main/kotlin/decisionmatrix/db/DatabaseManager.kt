@@ -1,90 +1,50 @@
 package decisionmatrix.db
 
+import org.flywaydb.core.Flyway
 import org.jdbi.v3.core.Jdbi
-import java.nio.file.Path
-import java.nio.file.Paths
-import kotlin.io.path.createTempFile
 
-fun loadDatabase(databasePath: Path = Paths.get(System.getProperty("user.home"), "decision_matrix.sqlite")): Jdbi {
-    val jdbi = Jdbi.create("jdbc:sqlite:$databasePath")
-    jdbi.useHandle<Exception> { it.execute("PRAGMA foreign_keys = ON") }
-    if (!schemaExists(jdbi)) {
-        createSchema(jdbi)
-    }
-    return jdbi
-}
-
-private fun schemaExists(jdbi: Jdbi): Boolean {
-    return jdbi.withHandle<Boolean, Exception> { handle ->
-        handle.createQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='decisions'")
-            .mapTo(String::class.java)
-            .findFirst()
-            .isPresent
-    }
+fun loadDatabase(
+    host: String = System.getenv("DB_HOST") ?: "localhost",
+    port: String = System.getenv("DB_PORT") ?: "5432",
+    database: String = System.getenv("DB_NAME") ?: "decision_matrix",
+    username: String = System.getenv("DB_USER") ?: "decision_matrix",
+    password: String = System.getenv("DB_PASSWORD") ?: "decision_matrix_password"
+): Jdbi {
+    val jdbcUrl = "jdbc:postgresql://$host:$port/$database"
+    
+    // Run Flyway migrations
+    val flyway = Flyway.configure()
+        .dataSource(jdbcUrl, username, password)
+        .locations("classpath:db/migration")
+        .load()
+    flyway.migrate()
+    
+    return Jdbi.create(jdbcUrl, username, password)
 }
 
 fun createTempDatabase(): Jdbi {
-    val tempDbFile = createTempFile("decision_matrix", ".db").toFile().apply {
-        println("Using database at $absolutePath")
-        deleteOnExit()
+    // For testing, use a test database on the same PostgreSQL instance
+    val testDatabase = "decision_matrix_test_${System.currentTimeMillis()}"
+    val host = System.getenv("DB_HOST") ?: "localhost"
+    val port = System.getenv("DB_PORT") ?: "5432"
+    val username = System.getenv("DB_USER") ?: "decision_matrix"
+    val password = System.getenv("DB_PASSWORD") ?: "decision_matrix_password"
+    
+    // First connect to the default postgres database to create the test database
+    val adminJdbi = Jdbi.create("jdbc:postgresql://$host:$port/postgres", username, password)
+    adminJdbi.useHandle<Exception> { handle ->
+        handle.execute("CREATE DATABASE \"$testDatabase\"")
     }
-    val jdbi = Jdbi.create("jdbc:sqlite:${tempDbFile.absolutePath}")
-    jdbi.useHandle<Exception> { it.execute("PRAGMA foreign_keys = ON") }
-    createSchema(jdbi)
-
-    return jdbi
-}
-
-fun createSchema(jdbi: Jdbi) {
-    jdbi.useHandle<Exception> { handle ->
-        handle.execute(
-            """
-                CREATE TABLE IF NOT EXISTS decisions (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    min_score INTEGER NOT NULL,
-                    max_score INTEGER NOT NULL,
-                    created_by TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-                """.trimIndent()
-        )
-        handle.execute(
-            """
-                CREATE TABLE IF NOT EXISTS criteria (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    decision_id INTEGER NOT NULL,
-                    name TEXT NOT NULL,
-                    weight INTEGER NOT NULL,
-                    FOREIGN KEY(decision_id) REFERENCES decisions(id)
-                )
-                """.trimIndent()
-        )
-        handle.execute(
-            """
-                CREATE TABLE IF NOT EXISTS options (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    decision_id INTEGER NOT NULL,
-                    name TEXT NOT NULL,
-                    FOREIGN KEY(decision_id) REFERENCES decisions(id)
-                )
-                """.trimIndent()
-        )
-        handle.execute(
-            """
-                CREATE TABLE IF NOT EXISTS user_scores (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    decision_id INTEGER NOT NULL,
-                    option_id INTEGER NOT NULL,
-                    criteria_id INTEGER NOT NULL,
-                    score INTEGER NOT NULL,
-                    scored_by TEXT NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY(decision_id) REFERENCES decisions(id)
-                    FOREIGN KEY(option_id) REFERENCES options(id)
-                    FOREIGN KEY(criteria_id) REFERENCES criteria(id)
-                )
-                """.trimIndent()
-        )
-    }
+    
+    val testJdbcUrl = "jdbc:postgresql://$host:$port/$testDatabase"
+    
+    // Run Flyway migrations on the test database
+    val flyway = Flyway.configure()
+        .dataSource(testJdbcUrl, username, password)
+        .locations("classpath:db/migration")
+        .load()
+    flyway.migrate()
+    
+    println("Using PostgreSQL test database: $testDatabase")
+    return Jdbi.create(testJdbcUrl, username, password)
 }

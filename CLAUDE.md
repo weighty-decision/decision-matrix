@@ -80,6 +80,7 @@ Closes #123
 - When adding a JUnit test @Test annotation, put @Test on the same line as the function declaration
 - Don't use mockk; use interfaces as dependencies, with `NotImplementedError()` as the default implementation in the interface
 - When writing tests, use a similar style as the rest of the codebase
+- Use detekt to enforce code style and quality. It is installed as a gradle plugin and runs automatically on build.
 
 ### Testing Requirements
 - Tests MUST cover the functionality being implemented
