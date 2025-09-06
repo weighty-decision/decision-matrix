@@ -40,7 +40,7 @@ object IndexPages {
                             attributes["hx-get"] = "/search"
                             attributes["hx-trigger"] = "click"
                             attributes["hx-target"] = "#decisions-table"
-                            attributes["hx-include"] = "#search-form"
+                            attributes["hx-vals"] = "js:{recent: document.querySelector('input[name=\"recent\"]').value === 'true' ? 'false' : 'true', involved: document.querySelector('input[name=\"involved\"]').value}"
                             attributes["hx-push-url"] = "true"
                             +"Recent"
                         }
@@ -52,17 +52,19 @@ object IndexPages {
                             attributes["hx-get"] = "/search"
                             attributes["hx-trigger"] = "click"
                             attributes["hx-target"] = "#decisions-table"
-                            attributes["hx-include"] = "#search-form"
+                            attributes["hx-vals"] = "js:{involved: document.querySelector('input[name=\"involved\"]').value === 'true' ? 'false' : 'true', recent: document.querySelector('input[name=\"recent\"]').value}"
                             attributes["hx-push-url"] = "true"
                             +"I'm involved in"
                         }
                         
                         // Hidden inputs to track filter state
                         input(type = InputType.hidden) {
+                            id = "recent-input"
                             name = "recent"
                             value = if (recentFilter) "true" else "false"
                         }
                         input(type = InputType.hidden) {
+                            id = "involved-input"
                             name = "involved" 
                             value = if (involvedFilter) "true" else "false"
                         }
@@ -87,22 +89,41 @@ object IndexPages {
             script {
                 unsafe {
                     +"""
-                    // Toggle button behavior
+                    // Toggle button behavior - update local hidden inputs and button appearance
                     document.addEventListener('DOMContentLoaded', function() {
-                        // Toggle Recent filter
+                        // Update button appearance immediately on click
                         document.getElementById('recent-toggle').addEventListener('click', function() {
+                            const button = this;
                             const hiddenInput = document.querySelector('input[name="recent"]');
                             const currentValue = hiddenInput.value === 'true';
-                            hiddenInput.value = (!currentValue).toString();
-                            this.classList.toggle('active', !currentValue);
+                            const newValue = !currentValue;
+                            
+                            // Update local state
+                            hiddenInput.value = newValue.toString();
+                            
+                            // Update button appearance immediately
+                            if (newValue) {
+                                button.classList.add('active');
+                            } else {
+                                button.classList.remove('active');
+                            }
                         });
                         
-                        // Toggle Involved filter  
                         document.getElementById('involved-toggle').addEventListener('click', function() {
+                            const button = this;
                             const hiddenInput = document.querySelector('input[name="involved"]');
                             const currentValue = hiddenInput.value === 'true';
-                            hiddenInput.value = (!currentValue).toString();
-                            this.classList.toggle('active', !currentValue);
+                            const newValue = !currentValue;
+                            
+                            // Update local state
+                            hiddenInput.value = newValue.toString();
+                            
+                            // Update button appearance immediately
+                            if (newValue) {
+                                button.classList.add('active');
+                            } else {
+                                button.classList.remove('active');
+                            }
                         });
                     });
                     """.trimIndent()
