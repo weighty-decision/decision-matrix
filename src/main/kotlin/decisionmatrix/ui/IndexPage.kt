@@ -40,7 +40,7 @@ object IndexPages {
                             attributes["hx-get"] = "/search"
                             attributes["hx-trigger"] = "click"
                             attributes["hx-target"] = "#decisions-table"
-                            attributes["hx-vals"] = "js:{recent: document.querySelector('input[name=\"recent\"]').value === 'true' ? 'false' : 'true', involved: document.querySelector('input[name=\"involved\"]').value}"
+                            attributes["hx-vals"] = "js:{recent: document.querySelector('input[name=\"recent\"]').value === 'true' ? 'false' : 'true', involved: document.querySelector('input[name=\"involved\"]').value, search: document.getElementById('search-input').value}"
                             attributes["hx-push-url"] = "true"
                             +"Recent"
                         }
@@ -52,7 +52,7 @@ object IndexPages {
                             attributes["hx-get"] = "/search"
                             attributes["hx-trigger"] = "click"
                             attributes["hx-target"] = "#decisions-table"
-                            attributes["hx-vals"] = "js:{involved: document.querySelector('input[name=\"involved\"]').value === 'true' ? 'false' : 'true', recent: document.querySelector('input[name=\"recent\"]').value}"
+                            attributes["hx-vals"] = "js:{involved: document.querySelector('input[name=\"involved\"]').value === 'true' ? 'false' : 'true', recent: document.querySelector('input[name=\"recent\"]').value, search: document.getElementById('search-input').value}"
                             attributes["hx-push-url"] = "true"
                             +"I'm involved in"
                         }
