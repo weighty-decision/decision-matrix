@@ -205,9 +205,9 @@ class DecisionRepositoryTest {
         val optionRepository = OptionRepositoryImpl(jdbi)
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
         
-        val decision1 = decisionRepository.insert(DecisionInput(name = "Created By User"), createdBy = "user1")
+        decisionRepository.insert(DecisionInput(name = "Created By User"), createdBy = "user1")
         val decision2 = decisionRepository.insert(DecisionInput(name = "Scored By User"), createdBy = "user2")
-        val decision3 = decisionRepository.insert(DecisionInput(name = "Not Involved"), createdBy = "user3")
+        decisionRepository.insert(DecisionInput(name = "Not Involved"), createdBy = "user3")
         
         // Add option and criteria to decision2 so user1 can score it
         val option = optionRepository.insert(decision2.id, OptionInput(name = "Option"))
@@ -223,31 +223,21 @@ class DecisionRepositoryTest {
 
     @Test fun `findDecisions with recent filter returns recent decisions`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
-        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
-        val optionRepository = OptionRepositoryImpl(jdbi)
-        val criteriaRepository = CriteriaRepositoryImpl(jdbi)
-        
-        // Create a decision that's not recent (we can't easily create an old decision, 
-        // so we'll test with recent decisions and verify the SQL is correct)
-        val decision1 = decisionRepository.insert(DecisionInput(name = "Recent Decision"), createdBy = "user1")
-        val decision2 = decisionRepository.insert(DecisionInput(name = "Also Recent"), createdBy = "user2")
-        
-        val filters = DecisionSearchFilters(recentOnly = true)
+
+        decisionRepository.insert(DecisionInput(name = "Recent Decision"), createdBy = "user1")
+
+        val filters = DecisionSearchFilters(search = "Recent Decision", recentOnly = true)
         val decisions = decisionRepository.findDecisions(filters)
-        
-        // Both decisions should be recent since they were just created
-        decisions.size shouldBe 2
+
+        decisions.size shouldBe 1
     }
 
     @Test fun `findDecisions with multiple filters combines them with AND`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
-        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
-        val optionRepository = OptionRepositoryImpl(jdbi)
-        val criteriaRepository = CriteriaRepositoryImpl(jdbi)
-        
-        val decision1 = decisionRepository.insert(DecisionInput(name = "Team Meeting"), createdBy = "user1")
-        val decision2 = decisionRepository.insert(DecisionInput(name = "Personal Meeting"), createdBy = "user2")
-        val decision3 = decisionRepository.insert(DecisionInput(name = "Team Project"), createdBy = "user1")
+
+        decisionRepository.insert(DecisionInput(name = "Team Meeting"), createdBy = "user1")
+        decisionRepository.insert(DecisionInput(name = "Personal Meeting"), createdBy = "user2")
+        decisionRepository.insert(DecisionInput(name = "Team Project"), createdBy = "user1")
         
         val filters = DecisionSearchFilters(
             search = "Meeting", 
