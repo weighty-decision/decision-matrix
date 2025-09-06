@@ -9,7 +9,7 @@ import java.time.format.FormatStyle
 
 object IndexPages {
 
-    fun indexPage(decisions: List<Decision>, currentUser: AuthenticatedUser, searchTerm: String? = null, recentFilter: Boolean = false, involvedFilter: Boolean = false): String = 
+    fun indexPage(decisions: List<Decision>, currentUser: AuthenticatedUser, searchTerm: String? = null, recentFilter: Boolean = true, involvedFilter: Boolean = false): String = 
         PageLayout.page("Decision Matrix", user = currentUser) {
             section(classes = "card") {
                 div(classes = "row") {

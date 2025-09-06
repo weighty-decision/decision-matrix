@@ -63,7 +63,7 @@ class DecisionRoutes(
         
         // Parse query parameters for search and filters
         val search = request.query("search")?.takeIf { it.isNotBlank() }
-        val recent = request.query("recent") == "true"
+        val recent = request.query("recent")?.let { it == "true" } ?: true
         val involved = request.query("involved") == "true"
         
         val filters = DecisionSearchFilters(
@@ -83,7 +83,7 @@ class DecisionRoutes(
         
         // Parse query parameters for search and filters
         val search = request.query("search")?.takeIf { it.isNotBlank() }
-        val recent = request.query("recent") == "true"
+        val recent = request.query("recent")?.let { it == "true" } ?: true
         val involved = request.query("involved") == "true"
         
         val filters = DecisionSearchFilters(
