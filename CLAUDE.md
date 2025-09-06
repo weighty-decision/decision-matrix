@@ -158,35 +158,6 @@ export DM_OAUTH_SCOPES=openid,profile,email  # Optional, defaults to "openid,pro
 
 The application will automatically discover OAuth endpoints via the `/.well-known/openid-configuration` endpoint at your issuer URL.
 
-#### OAuth Provider Examples
-
-**Google OAuth Setup:**
-```bash
-export DM_OAUTH_ISSUER_URL=https://accounts.google.com
-export DM_OAUTH_CLIENT_ID=your-google-client-id
-export DM_OAUTH_CLIENT_SECRET=your-google-client-secret
-export DM_OAUTH_REDIRECT_URI=https://your-domain.com/auth/callback
-```
-
-**Microsoft Entra ID (Azure AD) Setup:**
-```bash
-export DM_OAUTH_ISSUER_URL=https://login.microsoftonline.com/your-tenant-id/v2.0
-export DM_OAUTH_CLIENT_ID=your-azure-client-id
-export DM_OAUTH_CLIENT_SECRET=your-azure-client-secret
-export DM_OAUTH_REDIRECT_URI=https://your-domain.com/auth/callback
-```
-
-**Auth0 Setup:**
-```bash
-export DM_OAUTH_ISSUER_URL=https://your-auth0-domain.auth0.com
-export DM_OAUTH_CLIENT_ID=your-auth0-client-id
-export DM_OAUTH_CLIENT_SECRET=your-auth0-client-secret
-export DM_OAUTH_REDIRECT_URI=https://your-domain.com/auth/callback
-```
-
-**Enterprise/Custom OAuth Provider:**
-Any OAuth 2.0/OpenID Connect compliant provider will work. Set the issuer URL to your provider's base URL.
-
 #### Standards Compliance
 The application uses standards-based OAuth 2.0 with PKCE and OpenID Connect, supporting any compliant provider that exposes a `/.well-known/openid-configuration` endpoint.
 
