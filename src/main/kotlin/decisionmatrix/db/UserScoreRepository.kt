@@ -4,6 +4,8 @@ import decisionmatrix.UserScore
 import decisionmatrix.UserScoreInput
 import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 interface UserScoreRepository {
     fun insert(decisionId: Long, optionId: Long, criteriaId: Long, scoredBy: String, score: UserScoreInput): UserScore = throw NotImplementedError()
@@ -37,7 +39,7 @@ class UserScoreRepositoryImpl(private val jdbi: Jdbi) : UserScoreRepository {
         return jdbi.withHandle<List<UserScore>, Exception> { handle ->
             handle.createQuery(
                 """
-                SELECT id, decision_id, option_id, criteria_id, scored_by, score
+                SELECT id, decision_id, option_id, criteria_id, scored_by, score, created_at
                 FROM user_scores
                 WHERE decision_id = :decisionId
                 ORDER BY id
@@ -53,7 +55,7 @@ class UserScoreRepositoryImpl(private val jdbi: Jdbi) : UserScoreRepository {
         return jdbi.withHandle<UserScore?, Exception> { handle ->
             handle.createQuery(
                 """
-                SELECT id, decision_id, option_id, criteria_id, scored_by, score
+                SELECT id, decision_id, option_id, criteria_id, scored_by, score, created_at
                 FROM user_scores
                 WHERE id = :id
                 """.trimIndent()
@@ -106,5 +108,8 @@ private fun mapUserScore(rs: ResultSet): UserScore {
         criteriaId = rs.getLong("criteria_id"),
         scoredBy = rs.getString("scored_by"),
         score = rs.getInt("score"),
+        createdAt = rs.getString("created_at")?.let { 
+            LocalDateTime.parse(it.replace(" ", "T")).atOffset(ZoneOffset.UTC).toInstant()
+        }
     )
 }

@@ -50,6 +50,7 @@ This project supports the creation of weighted decision matrices when multiple p
 - Never use `!!`. Use `requireNotNull()` or `require()` instead, or find more elegant ways to handle nulls.
 - Prefer explicit types when they improve readability.
 - Use meaningful variable and function names that clearly express intent.
+- Use named parameters when there is more than one parameter.
 
 ### Git Commit Messages
 Follow this format:

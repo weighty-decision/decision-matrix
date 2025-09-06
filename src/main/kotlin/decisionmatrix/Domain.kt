@@ -64,5 +64,6 @@ data class UserScore(
     val optionId: Long,
     val criteriaId: Long,
     val scoredBy: String,
+    @Contextual val createdAt: Instant? = null,
     val score: Int,
 )

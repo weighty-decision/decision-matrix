@@ -32,9 +32,14 @@ class UserScoreRepositoryTest {
             scoredBy = "joe",
             score = UserScoreInput(score = 9)
         )
-        val found = userScoreRepository.findById(optionScore.id)
-        found shouldNotBe null
-        found shouldBe UserScore(id = optionScore.id, decisionId = decision.id, optionId = option.id, criteriaId = criteria.id, scoredBy = "joe", score = 9)
+        val found = requireNotNull(userScoreRepository.findById(optionScore.id))
+        found.id shouldBe optionScore.id
+        found.decisionId shouldBe decision.id
+        found.optionId shouldBe option.id
+        found.criteriaId shouldBe criteria.id
+        found.scoredBy shouldBe "joe"
+        found.score shouldBe 9
+        found.createdAt shouldNotBe null
     }
 
     @Test fun `update existing option score`() {
@@ -65,10 +70,12 @@ class UserScoreRepositoryTest {
         updated.optionId shouldBe option.id
         updated.criteriaId shouldBe criteria.id
         updated.scoredBy shouldBe "joe"
+        updated.createdAt shouldNotBe null
 
         // Verify the update persisted
         val found = requireNotNull(userScoreRepository.findById(inserted.id))
         found.score shouldBe 8
+        found.createdAt shouldNotBe null
     }
 
     @Test fun `update nonexistent option score returns null`() {
@@ -166,27 +173,30 @@ class UserScoreRepositoryTest {
         val scoresForDecision1 = userScoreRepository.findAllByDecisionId(decision1.id)
 
         scoresForDecision1.size shouldBe 2
-        scoresForDecision1[0] shouldBe UserScore(
-            id = score1.id,
-            decisionId = decision1.id,
-            optionId = option1.id,
-            criteriaId = criteria1.id,
-            scoredBy = "alice",
-            score = 7
-        )
-        scoresForDecision1[1] shouldBe UserScore(
-            id = score2.id,
-            decisionId = decision1.id,
-            optionId = option2.id,
-            criteriaId = criteria2.id,
-            scoredBy = "bob",
-            score = 9
-        )
+        
+        val firstScore = scoresForDecision1[0]
+        firstScore.id shouldBe score1.id
+        firstScore.decisionId shouldBe decision1.id
+        firstScore.optionId shouldBe option1.id
+        firstScore.criteriaId shouldBe criteria1.id
+        firstScore.scoredBy shouldBe "alice"
+        firstScore.score shouldBe 7
+        firstScore.createdAt shouldNotBe null
+        
+        val secondScore = scoresForDecision1[1]
+        secondScore.id shouldBe score2.id
+        secondScore.decisionId shouldBe decision1.id
+        secondScore.optionId shouldBe option2.id
+        secondScore.criteriaId shouldBe criteria2.id
+        secondScore.scoredBy shouldBe "bob"
+        secondScore.score shouldBe 9
+        secondScore.createdAt shouldNotBe null
 
         // Verify decision2 has its own score
         val scoresForDecision2 = userScoreRepository.findAllByDecisionId(decision2.id)
         scoresForDecision2.size shouldBe 1
         scoresForDecision2[0].decisionId shouldBe decision2.id
+        scoresForDecision2[0].createdAt shouldNotBe null
     }
 
     @Test fun `findAllByDecisionId returns empty list when no scores exist`() {

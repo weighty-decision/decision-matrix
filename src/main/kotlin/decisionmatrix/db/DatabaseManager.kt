@@ -79,6 +79,7 @@ fun createSchema(jdbi: Jdbi) {
                     criteria_id INTEGER NOT NULL,
                     score INTEGER NOT NULL,
                     scored_by TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY(decision_id) REFERENCES decisions(id)
                     FOREIGN KEY(option_id) REFERENCES options(id)
                     FOREIGN KEY(criteria_id) REFERENCES criteria(id)
