@@ -7,8 +7,12 @@ import org.http4k.core.then
 import org.http4k.filter.ServerFilters
 
 object TestAuthSetup {
-    
-    fun createMockAuthFilter(userId: String = "test-user", userEmail: String = "test@example.com", userName: String? = "Test User"): Filter =
+
+    fun createMockAuthFilter(
+        userId: String = "test-user",
+        userEmail: String = "test@example.com",
+        userName: String? = "Test User"
+    ): Filter =
         Filter { next: HttpHandler ->
             { request: Request ->
                 val mockUser = AuthenticatedUser(
@@ -19,11 +23,11 @@ object TestAuthSetup {
                 next(UserContext.authenticated(mockUser)(request))
             }
         }
-    
+
     fun createMockSessionManager(): SessionManager = SessionManager()
-    
+
     fun createMockOAuthService(): MockOAuthService = MockOAuthService()
-    
+
     fun createMockAuthRoutes(): AuthRoutes = AuthRoutes(
         oauthService = createMockOAuthService(),
         sessionManager = createMockSessionManager()

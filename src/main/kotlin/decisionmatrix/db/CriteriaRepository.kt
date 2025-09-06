@@ -1,7 +1,7 @@
 package decisionmatrix.db
 
-import decisionmatrix.CriteriaInput
 import decisionmatrix.Criteria
+import decisionmatrix.CriteriaInput
 import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 

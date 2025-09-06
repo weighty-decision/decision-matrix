@@ -21,7 +21,7 @@ data class OAuthConfiguration(
             val redirectUri = requireNotNull(System.getenv("DM_OAUTH_REDIRECT_URI")) {
                 "DM_OAUTH_REDIRECT_URI environment variable is required"
             }
-            
+
             val scopes = System.getenv("DM_OAUTH_SCOPES")
                 ?.split(",")
                 ?.map { it.trim() }

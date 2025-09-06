@@ -5,6 +5,9 @@ import org.http4k.core.RequestContexts
 import org.http4k.core.with
 import org.http4k.lens.RequestContextKey
 import org.http4k.lens.RequestContextLens
+import org.slf4j.LoggerFactory
+
+private val log = LoggerFactory.getLogger("UserContext")
 
 data class AuthenticatedUser(
     val id: String,
@@ -15,17 +18,18 @@ data class AuthenticatedUser(
 object UserContext {
     val contexts = RequestContexts()
     private val userLens: RequestContextLens<AuthenticatedUser> = RequestContextKey.required(contexts)
-    
+
     fun authenticated(user: AuthenticatedUser): (Request) -> Request = { request ->
         request.with(userLens of user)
     }
-    
+
     fun current(request: Request): AuthenticatedUser? = try {
         userLens(request)
     } catch (e: Exception) {
+        log.error("Failed to get user from request context. Returning no user.", e)
         null
     }
-    
-    fun requireCurrent(request: Request): AuthenticatedUser = 
+
+    fun requireCurrent(request: Request): AuthenticatedUser =
         current(request) ?: throw IllegalStateException("No authenticated user found in request context")
 }

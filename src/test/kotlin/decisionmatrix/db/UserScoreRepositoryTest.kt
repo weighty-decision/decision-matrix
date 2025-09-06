@@ -2,9 +2,8 @@ package decisionmatrix.db
 
 import decisionmatrix.CriteriaInput
 import decisionmatrix.DecisionInput
-import decisionmatrix.UserScore
-import decisionmatrix.UserScoreInput
 import decisionmatrix.OptionInput
+import decisionmatrix.UserScoreInput
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -12,7 +11,8 @@ import org.junit.jupiter.api.Test
 
 class UserScoreRepositoryTest {
 
-    @Test fun `insert and findById`() {
+    @Test
+    fun `insert and findById`() {
         val jdbi = createTempDatabase()
 
         val decisionRepository = DecisionRepositoryImpl(jdbi)
@@ -42,7 +42,8 @@ class UserScoreRepositoryTest {
         found.createdAt shouldNotBe null
     }
 
-    @Test fun `update existing option score`() {
+    @Test
+    fun `update existing option score`() {
         val jdbi = createTempDatabase()
 
         val decisionRepository = DecisionRepositoryImpl(jdbi)
@@ -78,7 +79,8 @@ class UserScoreRepositoryTest {
         found.createdAt shouldNotBe null
     }
 
-    @Test fun `update nonexistent option score returns null`() {
+    @Test
+    fun `update nonexistent option score returns null`() {
         val jdbi = createTempDatabase()
         val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
@@ -87,7 +89,8 @@ class UserScoreRepositoryTest {
         updated shouldBe null
     }
 
-    @Test fun `delete existing option score`() {
+    @Test
+    fun `delete existing option score`() {
         val jdbi = createTempDatabase()
 
         val decisionRepository = DecisionRepositoryImpl(jdbi)
@@ -117,7 +120,8 @@ class UserScoreRepositoryTest {
         found shouldBe null
     }
 
-    @Test fun `delete nonexistent option score returns false`() {
+    @Test
+    fun `delete nonexistent option score returns false`() {
         val jdbi = createTempDatabase()
         val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
@@ -126,7 +130,8 @@ class UserScoreRepositoryTest {
         deleted shouldBe false
     }
 
-    @Test fun `findAllByDecisionId returns all scores for decision`() {
+    @Test
+    fun `findAllByDecisionId returns all scores for decision`() {
         val jdbi = createTempDatabase()
 
         val decisionRepository = DecisionRepositoryImpl(jdbi)
@@ -173,7 +178,7 @@ class UserScoreRepositoryTest {
         val scoresForDecision1 = userScoreRepository.findAllByDecisionId(decision1.id)
 
         scoresForDecision1.size shouldBe 2
-        
+
         val firstScore = scoresForDecision1[0]
         firstScore.id shouldBe score1.id
         firstScore.decisionId shouldBe decision1.id
@@ -182,7 +187,7 @@ class UserScoreRepositoryTest {
         firstScore.scoredBy shouldBe "alice"
         firstScore.score shouldBe 7
         firstScore.createdAt shouldNotBe null
-        
+
         val secondScore = scoresForDecision1[1]
         secondScore.id shouldBe score2.id
         secondScore.decisionId shouldBe decision1.id
@@ -199,7 +204,8 @@ class UserScoreRepositoryTest {
         scoresForDecision2[0].createdAt shouldNotBe null
     }
 
-    @Test fun `findAllByDecisionId returns empty list when no scores exist`() {
+    @Test
+    fun `findAllByDecisionId returns empty list when no scores exist`() {
         val jdbi = createTempDatabase()
 
         val decisionRepository = DecisionRepositoryImpl(jdbi)

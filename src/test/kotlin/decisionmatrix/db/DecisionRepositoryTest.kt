@@ -16,7 +16,8 @@ class DecisionRepositoryTest {
 
     val jdbi = createTempDatabase()
 
-    @Test fun `insert and findById`() {
+    @Test
+    fun `insert and findById`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val inserted = decisionRepository.insert(
             DecisionInput(
@@ -36,7 +37,8 @@ class DecisionRepositoryTest {
         }
     }
 
-    @Test fun `findById fully hydrates decision with criteria and options`() {
+    @Test
+    fun `findById fully hydrates decision with criteria and options`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
         val optionRepository = OptionRepositoryImpl(jdbi)
@@ -76,7 +78,8 @@ class DecisionRepositoryTest {
             .shouldBeTrue()
     }
 
-    @Test fun `findById returns decision with only criteria when no options exist`() {
+    @Test
+    fun `findById returns decision with only criteria when no options exist`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
 
@@ -97,7 +100,8 @@ class DecisionRepositoryTest {
         found.options.size shouldBe 0
     }
 
-    @Test fun `findById returns decision with only options when no criteria exist`() {
+    @Test
+    fun `findById returns decision with only options when no criteria exist`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val optionRepository = OptionRepositoryImpl(jdbi)
 
@@ -117,7 +121,8 @@ class DecisionRepositoryTest {
         found.options[0].name shouldBe "Option A"
     }
 
-    @Test fun `delete existing decision`() {
+    @Test
+    fun `delete existing decision`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val inserted = decisionRepository.insert(DecisionInput(name = "Decision to delete"))
 
@@ -130,7 +135,8 @@ class DecisionRepositoryTest {
         found shouldBe null
     }
 
-    @Test fun `delete nonexistent decision returns false`() {
+    @Test
+    fun `delete nonexistent decision returns false`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
 
         val deleted = decisionRepository.delete(999L)
@@ -138,7 +144,8 @@ class DecisionRepositoryTest {
         deleted shouldBe false
     }
 
-    @Test fun `insert decision with custom score range`() {
+    @Test
+    fun `insert decision with custom score range`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val inserted = decisionRepository.insert(
             DecisionInput(
@@ -154,7 +161,8 @@ class DecisionRepositoryTest {
         found.maxScore shouldBe 5
     }
 
-    @Test fun `update decision`() {
+    @Test
+    fun `update decision`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val inserted = decisionRepository.insert(DecisionInput(name = "Original decision"))
 
@@ -171,57 +179,61 @@ class DecisionRepositoryTest {
         found.maxScore shouldBe 8
     }
 
-    @Test fun `findDecisions with no filters returns all decisions`() {
+    @Test
+    fun `findDecisions with no filters returns all decisions`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
-        
+
         val decision1 = decisionRepository.insert(DecisionInput(name = "First Decision"), createdBy = "user1")
         val decision2 = decisionRepository.insert(DecisionInput(name = "Second Decision"), createdBy = "user2")
-        
+
         val filters = DecisionSearchFilters()
         val decisions = decisionRepository.findDecisions(filters)
-        
+
         decisions.size shouldBe 2
         decisions.map { it.id } shouldContain decision1.id
         decisions.map { it.id } shouldContain decision2.id
     }
 
-    @Test fun `findDecisions with search filter returns matching decisions`() {
+    @Test
+    fun `findDecisions with search filter returns matching decisions`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
-        
+
         decisionRepository.insert(DecisionInput(name = "Laptop Selection"), createdBy = "user1")
         decisionRepository.insert(DecisionInput(name = "Car Purchase"), createdBy = "user1")
         decisionRepository.insert(DecisionInput(name = "Server Selection"), createdBy = "user2")
-        
+
         val filters = DecisionSearchFilters(search = "Selection")
         val decisions = decisionRepository.findDecisions(filters)
-        
+
         decisions.size shouldBe 2
         decisions.map { it.name }.shouldContainAll("Laptop Selection", "Server Selection")
     }
 
-    @Test fun `findDecisions with involvement filter returns decisions user is involved in`() {
+    @Test
+    fun `findDecisions with involvement filter returns decisions user is involved in`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val userScoreRepository = UserScoreRepositoryImpl(jdbi)
         val optionRepository = OptionRepositoryImpl(jdbi)
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
-        
+
         decisionRepository.insert(DecisionInput(name = "Created By User"), createdBy = "user1")
         val decision2 = decisionRepository.insert(DecisionInput(name = "Scored By User"), createdBy = "user2")
         decisionRepository.insert(DecisionInput(name = "Not Involved"), createdBy = "user3")
-        
+
         // Add option and criteria to decision2 so user1 can score it
         val option = optionRepository.insert(decision2.id, OptionInput(name = "Option"))
         val criteria = criteriaRepository.insert(decision2.id, CriteriaInput(name = "Criteria", weight = 1))
         userScoreRepository.insert(decision2.id, option.id, criteria.id, "user1", UserScoreInput(score = 5))
-        
+
         val filters = DecisionSearchFilters(involvedOnly = true, userId = "user1")
         val decisions = decisionRepository.findDecisions(filters)
-        
+
         decisions.size shouldBe 2
         decisions.map { it.name }.shouldContainAll("Created By User", "Scored By User")
     }
 
-    @Test fun `findDecisions with recent filter returns recent decisions`() {
+    @Test
+    fun `findDecisions with recent filter returns recent decisions`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
 
         decisionRepository.insert(DecisionInput(name = "Recent Decision"), createdBy = "user1")
@@ -232,20 +244,21 @@ class DecisionRepositoryTest {
         decisions.size shouldBe 1
     }
 
-    @Test fun `findDecisions with multiple filters combines them with AND`() {
+    @Test
+    fun `findDecisions with multiple filters combines them with AND`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
 
         decisionRepository.insert(DecisionInput(name = "Team Meeting"), createdBy = "user1")
         decisionRepository.insert(DecisionInput(name = "Personal Meeting"), createdBy = "user2")
         decisionRepository.insert(DecisionInput(name = "Team Project"), createdBy = "user1")
-        
+
         val filters = DecisionSearchFilters(
-            search = "Meeting", 
-            involvedOnly = true, 
+            search = "Meeting",
+            involvedOnly = true,
             userId = "user1"
         )
         val decisions = decisionRepository.findDecisions(filters)
-        
+
         // Only decision1 should match: has "Meeting" in name AND is created by user1
         decisions.size shouldBe 1
         decisions[0].name shouldBe "Team Meeting"

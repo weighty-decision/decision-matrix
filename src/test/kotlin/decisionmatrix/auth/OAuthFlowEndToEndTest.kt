@@ -4,11 +4,16 @@ import decisionmatrix.oauth.MockOAuthServer
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
-import org.http4k.core.*
+import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
+import org.http4k.core.Request
+import org.http4k.core.Response
+import org.http4k.core.Status
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.SEE_OTHER
+import org.http4k.core.Uri
+import org.http4k.core.then
 import org.http4k.filter.ServerFilters
 import org.http4k.routing.ResourceLoader
 import org.http4k.routing.bind

@@ -9,13 +9,13 @@ import decisionmatrix.UserScoreInput
 import decisionmatrix.auth.UserContext
 import decisionmatrix.db.CriteriaRepository
 import decisionmatrix.db.DecisionRepository
+import decisionmatrix.db.DecisionSearchFilters
 import decisionmatrix.db.OptionRepository
 import decisionmatrix.db.UserScoreRepository
 import decisionmatrix.ui.DecisionPages
+import decisionmatrix.ui.IndexPage
 import decisionmatrix.ui.MyScoresPages
 import decisionmatrix.ui.ResultsPage
-import decisionmatrix.ui.IndexPages
-import decisionmatrix.db.DecisionSearchFilters
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -60,12 +60,12 @@ class DecisionRoutes(
 
     private fun home(request: Request): Response {
         val currentUser = UserContext.requireCurrent(request)
-        
+
         // Parse query parameters for search and filters
         val search = request.query("search")?.takeIf { it.isNotBlank() }
         val recent = request.query("recent")?.let { it == "true" } ?: true
         val involved = request.query("involved") == "true"
-        
+
         val filters = DecisionSearchFilters(
             search = search,
             recentOnly = recent,
@@ -75,17 +75,17 @@ class DecisionRoutes(
 
         val decisions = decisionRepository.findDecisions(filters)
 
-        return htmlResponse(IndexPages.indexPage(decisions, currentUser, search, recent, involved))
+        return htmlResponse(IndexPage.indexPage(decisions, currentUser, search, recent, involved))
     }
 
     private fun searchDecisions(request: Request): Response {
         val currentUser = UserContext.requireCurrent(request)
-        
+
         // Parse query parameters for search and filters
         val search = request.query("search")?.takeIf { it.isNotBlank() }
         val recent = request.query("recent")?.let { it == "true" } ?: true
         val involved = request.query("involved") == "true"
-        
+
         val filters = DecisionSearchFilters(
             search = search,
             recentOnly = recent,
@@ -96,9 +96,9 @@ class DecisionRoutes(
         val decisions = decisionRepository.findDecisions(filters)
 
         return if (isHx(request)) {
-            htmlResponse(IndexPages.decisionsTableFragment(decisions, currentUser))
+            htmlResponse(IndexPage.decisionsTableFragment(decisions, currentUser))
         } else {
-            htmlResponse(IndexPages.indexPage(decisions, currentUser, search, recent, involved))
+            htmlResponse(IndexPage.indexPage(decisions, currentUser, search, recent, involved))
         }
     }
 
@@ -112,14 +112,14 @@ class DecisionRoutes(
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Name is required")
-        
+
         val minScore = form["minScore"]?.toIntOrNull() ?: DEFAULT_MIN_SCORE
         val maxScore = form["maxScore"]?.toIntOrNull() ?: DEFAULT_MAX_SCORE
-        
+
         if (minScore >= maxScore) {
             return Response(Status.BAD_REQUEST).body("Min score must be less than max score")
         }
-        
+
         val created = decisionRepository.insert(
             DecisionInput(name = name, minScore = minScore, maxScore = maxScore),
             currentUser.id
@@ -139,15 +139,16 @@ class DecisionRoutes(
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Name is required")
-        
+
         val minScore = form["minScore"]?.toIntOrNull() ?: DEFAULT_MIN_SCORE
         val maxScore = form["maxScore"]?.toIntOrNull() ?: DEFAULT_MAX_SCORE
-        
+
         if (minScore >= maxScore) {
             return Response(Status.BAD_REQUEST).body("Min score must be less than max score")
         }
-        
-        val updated = decisionRepository.update(id, name, minScore, maxScore) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+
+        val updated =
+            decisionRepository.update(id, name, minScore, maxScore) ?: return Response(Status.NOT_FOUND).body("Decision not found")
 
         return if (isHx(request)) {
             htmlResponse(DecisionPages.nameFragment(updated))
@@ -177,7 +178,7 @@ class DecisionRoutes(
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Option name is required")
-        val updated = optionRepository.update(optionId, name) ?: return Response(Status.NOT_FOUND).body("Option not found")
+        optionRepository.update(optionId, name) ?: return Response(Status.NOT_FOUND).body("Option not found")
 
         return if (isHx(request)) {
             val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
@@ -223,7 +224,7 @@ class DecisionRoutes(
         val name = form["name"]?.trim().orEmpty()
         val weight = form["weight"]?.toIntOrNull() ?: 1
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Criteria name is required")
-        val updated = criteriaRepository.update(criteriaId, name, weight) ?: return Response(Status.NOT_FOUND).body("Criteria not found")
+        criteriaRepository.update(criteriaId, name, weight) ?: return Response(Status.NOT_FOUND).body("Criteria not found")
 
         return if (isHx(request)) {
             val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
@@ -285,11 +286,11 @@ class DecisionRoutes(
                 }
 
                 val value = raw.toIntOrNull() ?: continue
-                
+
                 if (value < decision.minScore || value > decision.maxScore) {
                     return Response(Status.BAD_REQUEST).body("Score $value is outside the allowed range of ${decision.minScore}-${decision.maxScore}")
                 }
-                
+
                 if (existing == null) {
                     userScoreRepository.insert(
                         decisionId = decisionId,
@@ -329,11 +330,11 @@ class DecisionRoutes(
 
         val csvContent = buildString {
             appendLine("scoredby,criteria,option,score")
-            
+
             for (score in scores) {
                 val optionName = optionMap[score.optionId]?.name ?: "Unknown Option"
                 val criteriaName = criteriaMap[score.criteriaId]?.name ?: "Unknown Criteria"
-                
+
                 appendLine("${score.scoredBy},${escapeCsv(criteriaName)},${escapeCsv(optionName)},${score.score}")
             }
         }
@@ -367,7 +368,7 @@ class DecisionRoutes(
 
     private fun escapeCsv(value: String): String {
         return if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
-            "\"${value.replace("\"", "\"\"")}\"" 
+            "\"${value.replace("\"", "\"\"")}\""
         } else {
             value
         }

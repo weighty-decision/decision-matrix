@@ -8,7 +8,9 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 interface UserScoreRepository {
-    fun insert(decisionId: Long, optionId: Long, criteriaId: Long, scoredBy: String, score: UserScoreInput): UserScore = throw NotImplementedError()
+    fun insert(decisionId: Long, optionId: Long, criteriaId: Long, scoredBy: String, score: UserScoreInput): UserScore =
+        throw NotImplementedError()
+
     fun findById(id: Long): UserScore? = throw NotImplementedError()
     fun findAllByDecisionId(decisionId: Long): List<UserScore> = throw NotImplementedError()
     fun update(id: Long, score: Int): UserScore? = throw NotImplementedError()
@@ -108,7 +110,7 @@ private fun mapUserScore(rs: ResultSet): UserScore {
         criteriaId = rs.getLong("criteria_id"),
         scoredBy = rs.getString("scored_by"),
         score = rs.getInt("score"),
-        createdAt = rs.getString("created_at")?.let { 
+        createdAt = rs.getString("created_at")?.let {
             LocalDateTime.parse(it.replace(" ", "T")).atOffset(ZoneOffset.UTC).toInstant()
         }
     )

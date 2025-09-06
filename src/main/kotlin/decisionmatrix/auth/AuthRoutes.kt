@@ -73,7 +73,7 @@ class AuthRoutes(
                 log.warn("OAuth callback failed: {}", result.message)
                 Response(Status.BAD_REQUEST).body(result.message)
             }
-            
+
             is StandardsBasedOAuthService.CallbackResult.Success -> {
                 // Create session
                 val user = AuthenticatedUser(

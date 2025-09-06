@@ -1,12 +1,38 @@
 package decisionmatrix.ui
 
 import decisionmatrix.auth.AuthenticatedUser
-import kotlinx.html.*
+import kotlinx.html.ButtonType
+import kotlinx.html.FormMethod
+import kotlinx.html.MAIN
+import kotlinx.html.SCRIPT
+import kotlinx.html.a
+import kotlinx.html.body
+import kotlinx.html.button
+import kotlinx.html.div
+import kotlinx.html.footer
+import kotlinx.html.form
+import kotlinx.html.head
+import kotlinx.html.header
+import kotlinx.html.html
+import kotlinx.html.id
+import kotlinx.html.lang
+import kotlinx.html.link
+import kotlinx.html.main
+import kotlinx.html.meta
+import kotlinx.html.script
+import kotlinx.html.span
 import kotlinx.html.stream.appendHTML
+import kotlinx.html.title
+import kotlinx.html.unsafe
 
 object PageLayout {
 
-    fun page(titleText: String, user: AuthenticatedUser? = null, extraTopLevelScript: (SCRIPT.() -> Unit)? = null, mainContent: MAIN.() -> Unit): String = buildString {
+    fun page(
+        titleText: String,
+        user: AuthenticatedUser? = null,
+        extraTopLevelScript: (SCRIPT.() -> Unit)? = null,
+        mainContent: MAIN.() -> Unit
+    ): String = buildString {
         appendHTML().html {
             lang = "en"
             head {
@@ -66,7 +92,7 @@ object PageLayout {
                         href = "/"
                         +"Decision Matrix"
                     }
-                    
+
                     user?.let { authenticatedUser ->
                         div(classes = "account-dropdown") {
                             button(classes = "account-button") {
@@ -74,16 +100,16 @@ object PageLayout {
                                 type = ButtonType.button
                                 attributes["aria-expanded"] = "false"
                                 attributes["aria-haspopup"] = "true"
-                                
+
                                 span(classes = "account-name") { +(authenticatedUser.name ?: authenticatedUser.email) }
                                 span(classes = "dropdown-arrow") { +"▾" }
                             }
-                            
+
                             div(classes = "account-menu") {
                                 id = "account-menu"
                                 attributes["role"] = "menu"
                                 attributes["style"] = "display: none;"
-                                
+
                                 form {
                                     method = FormMethod.post
                                     action = "/auth/logout"

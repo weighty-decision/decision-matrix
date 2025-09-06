@@ -2,14 +2,39 @@ package decisionmatrix.ui
 
 import decisionmatrix.Decision
 import decisionmatrix.auth.AuthenticatedUser
-import kotlinx.html.*
+import kotlinx.html.ButtonType
+import kotlinx.html.InputType
+import kotlinx.html.a
+import kotlinx.html.button
+import kotlinx.html.div
+import kotlinx.html.form
+import kotlinx.html.id
+import kotlinx.html.input
+import kotlinx.html.p
+import kotlinx.html.script
+import kotlinx.html.section
+import kotlinx.html.span
 import kotlinx.html.stream.appendHTML
+import kotlinx.html.strong
+import kotlinx.html.table
+import kotlinx.html.tbody
+import kotlinx.html.td
+import kotlinx.html.th
+import kotlinx.html.thead
+import kotlinx.html.tr
+import kotlinx.html.unsafe
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-object IndexPages {
+object IndexPage {
 
-    fun indexPage(decisions: List<Decision>, currentUser: AuthenticatedUser, searchTerm: String? = null, recentFilter: Boolean = true, involvedFilter: Boolean = false): String = 
+    fun indexPage(
+        decisions: List<Decision>,
+        currentUser: AuthenticatedUser,
+        searchTerm: String? = null,
+        recentFilter: Boolean = true,
+        involvedFilter: Boolean = false
+    ): String =
         PageLayout.page("Decision Matrix", user = currentUser) {
             section(classes = "card") {
                 div(classes = "row") {
@@ -28,11 +53,11 @@ object IndexPages {
                             attributes["style"] = "width: 100%; padding: 8px 12px;"
                         }
                     }
-                    
+
                     form {
                         id = "search-form"
                         attributes["style"] = "display: contents;"
-                        
+
                         button(classes = if (recentFilter) "btn filter-btn active" else "btn filter-btn") {
                             type = ButtonType.button
                             id = "recent-toggle"
@@ -40,11 +65,14 @@ object IndexPages {
                             attributes["hx-get"] = "/search"
                             attributes["hx-trigger"] = "click"
                             attributes["hx-target"] = "#decisions-table"
-                            attributes["hx-vals"] = "js:{recent: document.querySelector('input[name=\"recent\"]').value === 'true' ? 'false' : 'true', involved: document.querySelector('input[name=\"involved\"]').value, search: document.getElementById('search-input').value}"
+                            attributes["hx-vals"] =
+                                "js:{recent: document.querySelector('input[name=\"recent\"]').value === 'true' ? 'false' : 'true', " +
+                                        "involved: document.querySelector('input[name=\"involved\"]').value, " +
+                                        "search: document.getElementById('search-input').value}"
                             attributes["hx-push-url"] = "true"
                             +"Recent"
                         }
-                        
+
                         button(classes = if (involvedFilter) "btn filter-btn active" else "btn filter-btn") {
                             type = ButtonType.button
                             id = "involved-toggle"
@@ -52,11 +80,14 @@ object IndexPages {
                             attributes["hx-get"] = "/search"
                             attributes["hx-trigger"] = "click"
                             attributes["hx-target"] = "#decisions-table"
-                            attributes["hx-vals"] = "js:{involved: document.querySelector('input[name=\"involved\"]').value === 'true' ? 'false' : 'true', recent: document.querySelector('input[name=\"recent\"]').value, search: document.getElementById('search-input').value}"
+                            attributes["hx-vals"] =
+                                "js:{involved: document.querySelector('input[name=\"involved\"]').value === 'true' ? 'false' : 'true', " +
+                                        "recent: document.querySelector('input[name=\"recent\"]').value, " +
+                                        "search: document.getElementById('search-input').value}"
                             attributes["hx-push-url"] = "true"
                             +"I'm involved in"
                         }
-                        
+
                         // Hidden inputs to track filter state
                         input(type = InputType.hidden) {
                             id = "recent-input"
@@ -65,11 +96,11 @@ object IndexPages {
                         }
                         input(type = InputType.hidden) {
                             id = "involved-input"
-                            name = "involved" 
+                            name = "involved"
                             value = if (involvedFilter) "true" else "false"
                         }
                     }
-                    
+
                     div(classes = "grow") {
                         // Empty div to push button to the right
                     }
@@ -85,7 +116,7 @@ object IndexPages {
                     unsafe { +decisionsTableFragment(decisions, currentUser) }
                 }
             }
-            
+
             script {
                 unsafe {
                     +"""

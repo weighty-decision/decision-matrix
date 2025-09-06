@@ -1,7 +1,18 @@
 package decisionmatrix
 
-import decisionmatrix.auth.*
-import decisionmatrix.db.*
+import decisionmatrix.auth.AuthConfiguration
+import decisionmatrix.auth.AuthRoutes
+import decisionmatrix.auth.OAuthConfiguration
+import decisionmatrix.auth.OAuthServiceInterface
+import decisionmatrix.auth.SessionManager
+import decisionmatrix.auth.StandardsBasedOAuthService
+import decisionmatrix.auth.UserContext
+import decisionmatrix.auth.requireAuth
+import decisionmatrix.db.CriteriaRepositoryImpl
+import decisionmatrix.db.DecisionRepositoryImpl
+import decisionmatrix.db.OptionRepositoryImpl
+import decisionmatrix.db.UserScoreRepositoryImpl
+import decisionmatrix.db.loadDatabase
 import decisionmatrix.oauth.MockOAuthServer
 import decisionmatrix.routes.DecisionRoutes
 import org.http4k.core.HttpHandler
@@ -11,7 +22,11 @@ import org.http4k.core.Status.Companion.OK
 import org.http4k.core.then
 import org.http4k.filter.DebuggingFilters.PrintRequest
 import org.http4k.filter.ServerFilters
-import org.http4k.routing.*
+import org.http4k.routing.ResourceLoader
+import org.http4k.routing.RoutingHttpHandler
+import org.http4k.routing.bind
+import org.http4k.routing.routes
+import org.http4k.routing.static
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
 import org.slf4j.LoggerFactory
@@ -39,7 +54,7 @@ class DevOAuthService : OAuthServiceInterface {
     override fun createAuthorizationUrl(redirectAfterLogin: String): String {
         return "/auth/login"
     }
-    
+
     override fun handleCallback(code: String?, state: String?, error: String?): StandardsBasedOAuthService.CallbackResult {
         return StandardsBasedOAuthService.CallbackResult.Error("Not supported in dev mode")
     }
@@ -70,13 +85,15 @@ val app: RoutingHttpHandler = routes(
     decisionRoutes.routes
 )
 
+private const val SERVER_PORT = 9000
+
 fun main() {
-    val appWithAuth: HttpHandler = PrintRequest()
+    val app: HttpHandler = PrintRequest()
         .then(ServerFilters.InitialiseRequestContext(UserContext.contexts))
         .then(requireAuth(sessionManager, authConfig.devMode, authConfig.devUserId))
         .then(app)
 
-    val server = appWithAuth.asServer(Undertow(9000)).start()
+    val server = app.asServer(Undertow(SERVER_PORT)).start()
 
     log.info("Server started. UI available at http://localhost:${server.port()}")
     if (authConfig.devMode) {
@@ -86,7 +103,7 @@ fun main() {
     } else {
         log.info("OAuth authentication enabled - using standards-based OAuth 2.0")
     }
-    
+
     if (mockOAuthServer != null) {
         log.info("Mock OAuth server running at ${mockOAuthServer.getIssuerUrl()}")
         log.info("Set DM_OAUTH_ISSUER_URL=${mockOAuthServer.getIssuerUrl()} to use it")

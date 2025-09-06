@@ -4,8 +4,26 @@ import decisionmatrix.DEFAULT_MAX_SCORE
 import decisionmatrix.DEFAULT_MIN_SCORE
 import decisionmatrix.Decision
 import decisionmatrix.auth.AuthenticatedUser
-import kotlinx.html.*
+import kotlinx.html.ButtonType
+import kotlinx.html.a
+import kotlinx.html.button
+import kotlinx.html.classes
+import kotlinx.html.div
+import kotlinx.html.form
+import kotlinx.html.h1
+import kotlinx.html.h2
+import kotlinx.html.id
+import kotlinx.html.label
+import kotlinx.html.li
+import kotlinx.html.numberInput
+import kotlinx.html.section
+import kotlinx.html.small
+import kotlinx.html.span
 import kotlinx.html.stream.appendHTML
+import kotlinx.html.style
+import kotlinx.html.textInput
+import kotlinx.html.ul
+import kotlinx.html.unsafe
 
 object DecisionPages {
 
@@ -59,9 +77,10 @@ object DecisionPages {
         }
     }
 
-    fun editPage(decision: Decision, user: AuthenticatedUser): String = PageLayout.page("${decision.name} · edit", user = user, extraTopLevelScript = {
-        unsafe {
-            +"""
+    fun editPage(decision: Decision, user: AuthenticatedUser): String =
+        PageLayout.page("${decision.name} · edit", user = user, extraTopLevelScript = {
+            unsafe {
+                +"""
             document.addEventListener('DOMContentLoaded', function() {
                 document.body.addEventListener('htmx:afterSwap', function(evt) {
                     // Focus on new criteria input after criteria fragment swap
@@ -81,34 +100,34 @@ object DecisionPages {
                 });
             });
             """.trimIndent()
-        }
-    }) {
-        unsafe {
-            // Name form fragment
-            +nameFragment(decision)
-        }
-        div(classes = "grid") {
-            unsafe { +criteriaFragment(decision) }
-            unsafe { +optionsFragment(decision) }
-        }
-        section(classes = "card") {
-            h2 { +"Next steps" }
-            ul {
-                li {
-                    a(classes = "btn") {
-                        href = "/decisions/${decision.id}/my-scores"
-                        +"Enter my scores"
+            }
+        }) {
+            unsafe {
+                // Name form fragment
+                +nameFragment(decision)
+            }
+            div(classes = "grid") {
+                unsafe { +criteriaFragment(decision) }
+                unsafe { +optionsFragment(decision) }
+            }
+            section(classes = "card") {
+                h2 { +"Next steps" }
+                ul {
+                    li {
+                        a(classes = "btn") {
+                            href = "/decisions/${decision.id}/my-scores"
+                            +"Enter my scores"
+                        }
                     }
-                }
-                li {
-                    a(classes = "btn") {
-                        href = "/decisions/${decision.id}/results"
-                        +"View results"
+                    li {
+                        a(classes = "btn") {
+                            href = "/decisions/${decision.id}/results"
+                            +"View results"
+                        }
                     }
                 }
             }
         }
-    }
 
     fun nameFragment(decision: Decision): String = buildString {
         appendHTML().section(classes = "card") {
@@ -152,9 +171,9 @@ object DecisionPages {
                                 required = true
                             }
                         }
-                        small(classes = "muted") { 
+                        small(classes = "muted") {
                             style = "margin-left: 0.5rem; align-self: end; margin-bottom: 0.25rem;"
-                            +"Constrains the range of scores users can give each option" 
+                            +"Constrains the range of scores users can give each option"
                         }
                     }
                 }

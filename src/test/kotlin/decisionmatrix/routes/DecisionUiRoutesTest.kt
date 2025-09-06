@@ -2,7 +2,11 @@ package decisionmatrix.routes
 
 import decisionmatrix.DecisionInput
 import decisionmatrix.auth.withMockAuth
-import decisionmatrix.db.*
+import decisionmatrix.db.CriteriaRepositoryImpl
+import decisionmatrix.db.DecisionRepositoryImpl
+import decisionmatrix.db.OptionRepositoryImpl
+import decisionmatrix.db.UserScoreRepositoryImpl
+import decisionmatrix.db.createTempDatabase
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.http4k.core.Method
@@ -22,7 +26,8 @@ class DecisionUiRoutesTest {
         decisionRepository, optionRepository, criteriaRepository, userScoreRepository
     ).routes.withMockAuth()
 
-    @Test fun `createDecision with custom score range creates decision with correct range`() {
+    @Test
+    fun `createDecision with custom score range creates decision with correct range`() {
         val request = Request(Method.POST, "/decisions")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=Test+Decision&minScore=2&maxScore=8")
@@ -39,7 +44,8 @@ class DecisionUiRoutesTest {
         decision.maxScore shouldBe 8
     }
 
-    @Test fun `createDecision with invalid score range returns error`() {
+    @Test
+    fun `createDecision with invalid score range returns error`() {
         val request = Request(Method.POST, "/decisions")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .body("name=Test+Decision&minScore=8&maxScore=2")
@@ -50,7 +56,8 @@ class DecisionUiRoutesTest {
         response.bodyString() shouldBe "Min score must be less than max score"
     }
 
-    @Test fun `submitMyScores validates score within range`() {
+    @Test
+    fun `submitMyScores validates score within range`() {
         // Create decision with custom score range
         val decision = decisionRepository.insert(
             DecisionInput(name = "Test Decision", minScore = 1, maxScore = 5),
@@ -86,7 +93,8 @@ class DecisionUiRoutesTest {
         invalidLowResponse.bodyString() shouldBe "Score 0 is outside the allowed range of 1-5"
     }
 
-    @Test fun `edit page includes focus behavior for new criteria and options inputs`() {
+    @Test
+    fun `edit page includes focus behavior for new criteria and options inputs`() {
         val decision = decisionRepository.insert(
             DecisionInput(name = "Test Decision", minScore = 1, maxScore = 10),
             createdBy = "test-user"
@@ -97,18 +105,19 @@ class DecisionUiRoutesTest {
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
-        
+
         // Verify the new criteria input has focus behavior
         htmlContent shouldContain "id=\"new-criteria-input\""
         htmlContent shouldContain "htmx:afterSwap"
         htmlContent shouldContain "new-criteria-input"
-        
+
         // Verify the new option input has focus behavior
         htmlContent shouldContain "id=\"new-option-input\""
         htmlContent shouldContain "new-option-input"
     }
 
-    @Test fun `updateDecisionName with score range updates all fields`() {
+    @Test
+    fun `updateDecisionName with score range updates all fields`() {
         val decision = decisionRepository.insert(
             DecisionInput(name = "Original Decision", minScore = 1, maxScore = 10),
             createdBy = "test-user"
@@ -129,7 +138,8 @@ class DecisionUiRoutesTest {
         updatedDecision.maxScore shouldBe 8
     }
 
-    @Test fun `updateDecisionName with invalid score range returns error`() {
+    @Test
+    fun `updateDecisionName with invalid score range returns error`() {
         val decision = decisionRepository.insert(
             DecisionInput(name = "Original Decision", minScore = 1, maxScore = 10),
             createdBy = "test-user"
@@ -146,9 +156,10 @@ class DecisionUiRoutesTest {
         response.bodyString() shouldBe "Min score must be less than max score"
     }
 
-    @Test fun `home page shows decisions user is involved with sorted by created_at desc`() {
+    @Test
+    fun `home page shows decisions user is involved with sorted by created_at desc`() {
         // Create multiple decisions with different users and timestamps
-        val decision1 = decisionRepository.insert(
+        decisionRepository.insert(
             DecisionInput(name = "First Decision"),
             createdBy = "test-user"
         )
@@ -156,7 +167,7 @@ class DecisionUiRoutesTest {
             DecisionInput(name = "Second Decision"),
             createdBy = "other-user"
         )
-        val decision3 = decisionRepository.insert(
+        decisionRepository.insert(
             DecisionInput(name = "Third Decision"),
             createdBy = "test-user"
         )
@@ -171,7 +182,7 @@ class DecisionUiRoutesTest {
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
-        
+
         // Should show decisions user created or participated in
         htmlContent shouldContain "First Decision"
         htmlContent shouldContain "Second Decision"
@@ -179,8 +190,9 @@ class DecisionUiRoutesTest {
         htmlContent shouldContain "Create New Decision"
     }
 
-    @Test fun `home page shows decisions user is involved in without role column`() {
-        val decision1 = decisionRepository.insert(
+    @Test
+    fun `home page shows decisions user is involved in without role column`() {
+        decisionRepository.insert(
             DecisionInput(name = "Created by me"),
             createdBy = "test-user"
         )
@@ -199,13 +211,14 @@ class DecisionUiRoutesTest {
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
-        
+
         // Should show both decisions user is involved in
         htmlContent shouldContain "Created by me"
         htmlContent shouldContain "Participated in"
     }
 
-    @Test fun `home page shows edit link only for decisions created by current user`() {
+    @Test
+    fun `home page shows edit link only for decisions created by current user`() {
         val decision1 = decisionRepository.insert(
             DecisionInput(name = "Created by me"),
             createdBy = "test-user"
@@ -225,7 +238,7 @@ class DecisionUiRoutesTest {
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
-        
+
         // Should show edit link only for decision created by test-user
         htmlContent shouldContain "/decisions/${decision1.id}/edit"
         htmlContent shouldContain "Edit"
@@ -235,33 +248,36 @@ class DecisionUiRoutesTest {
         editLinkCount shouldBe 1
     }
 
-    @Test fun `home page shows empty state when no decisions`() {
+    @Test
+    fun `home page shows empty state when no decisions`() {
         val request = Request(Method.GET, "/")
         val response = routes(request)
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
-        
+
         htmlContent shouldContain "No decisions found"
         htmlContent shouldContain "create your first decision"
         htmlContent shouldContain "Create New Decision"
     }
 
-    @Test fun `home page shows search and filter controls`() {
+    @Test
+    fun `home page shows search and filter controls`() {
         val request = Request(Method.GET, "/")
         val response = routes(request)
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
-        
+
         htmlContent shouldContain "search-input"
         htmlContent shouldContain "Search decisions..."
         htmlContent shouldContain "Recent"
         htmlContent shouldContain "I'm involved in"
     }
 
-    @Test fun `home page with recent filter parameter shows recent decisions`() {
-        val decision = decisionRepository.insert(
+    @Test
+    fun `home page with recent filter parameter shows recent decisions`() {
+        decisionRepository.insert(
             DecisionInput(name = "Recent Decision"),
             createdBy = "other-user"
         )
@@ -271,23 +287,25 @@ class DecisionUiRoutesTest {
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
-        
+
         htmlContent shouldContain "Recent Decision"
         htmlContent shouldContain "btn filter-btn active"
     }
 
-    @Test fun `recent filter shows empty state when no recent decisions`() {
+    @Test
+    fun `recent filter shows empty state when no recent decisions`() {
         val request = Request(Method.GET, "/?recent=true")
         val response = routes(request)
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
-        
+
         htmlContent shouldContain "No decisions found"
         htmlContent shouldContain "btn filter-btn active"
     }
 
-    @Test fun `search endpoint with search query returns filtered decisions`() {
+    @Test
+    fun `search endpoint with search query returns filtered decisions`() {
         decisionRepository.insert(DecisionInput(name = "Laptop Selection"), createdBy = "test-user")
         decisionRepository.insert(DecisionInput(name = "Car Purchase"), createdBy = "test-user")
         decisionRepository.insert(DecisionInput(name = "Server Selection"), createdBy = "test-user")
@@ -297,39 +315,42 @@ class DecisionUiRoutesTest {
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
-        
+
         htmlContent shouldContain "Laptop Selection"
         htmlContent shouldContain "Server Selection"
         htmlContent.contains("Car Purchase") shouldBe false
     }
 
-    @Test fun `search endpoint with involved filter returns decisions user is involved in`() {
-        val decision1 = decisionRepository.insert(DecisionInput(name = "My Decision"), createdBy = "test-user")
-        val decision2 = decisionRepository.insert(DecisionInput(name = "Other Decision"), createdBy = "other-user")
+    @Test
+    fun `search endpoint with involved filter returns decisions user is involved in`() {
+        decisionRepository.insert(DecisionInput(name = "My Decision"), createdBy = "test-user")
+        decisionRepository.insert(DecisionInput(name = "Other Decision"), createdBy = "other-user")
 
         val request = Request(Method.GET, "/search?involved=true")
         val response = routes(request)
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
-        
+
         htmlContent shouldContain "My Decision"
         htmlContent.contains("Other Decision") shouldBe false
     }
 
-    @Test fun `search endpoint with recent filter returns recent decisions`() {
-        val decision = decisionRepository.insert(DecisionInput(name = "Recent Decision"), createdBy = "test-user")
+    @Test
+    fun `search endpoint with recent filter returns recent decisions`() {
+        decisionRepository.insert(DecisionInput(name = "Recent Decision"), createdBy = "test-user")
 
         val request = Request(Method.GET, "/search?recent=true")
         val response = routes(request)
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
-        
+
         htmlContent shouldContain "Recent Decision"
     }
 
-    @Test fun `search endpoint with HX-Request header returns table fragment only`() {
+    @Test
+    fun `search endpoint with HX-Request header returns table fragment only`() {
         decisionRepository.insert(DecisionInput(name = "Test Decision"), createdBy = "test-user")
 
         val request = Request(Method.GET, "/search")
@@ -338,23 +359,24 @@ class DecisionUiRoutesTest {
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
-        
+
         // Should contain table elements but not the full page structure
         htmlContent shouldContain "Test Decision"
         htmlContent.contains("Decision Matrix") shouldBe false // Page title shouldn't be there
     }
 
-    @Test fun `search endpoint with multiple filters combines them`() {
-        val decision1 = decisionRepository.insert(DecisionInput(name = "Team Meeting"), createdBy = "test-user")
-        val decision2 = decisionRepository.insert(DecisionInput(name = "Personal Meeting"), createdBy = "other-user")
-        val decision3 = decisionRepository.insert(DecisionInput(name = "Team Project"), createdBy = "test-user")
+    @Test
+    fun `search endpoint with multiple filters combines them`() {
+        decisionRepository.insert(DecisionInput(name = "Team Meeting"), createdBy = "test-user")
+        decisionRepository.insert(DecisionInput(name = "Personal Meeting"), createdBy = "other-user")
+        decisionRepository.insert(DecisionInput(name = "Team Project"), createdBy = "test-user")
 
         val request = Request(Method.GET, "/search?search=Meeting&involved=true")
         val response = routes(request)
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
-        
+
         // Only Team Meeting should match (has "Meeting" AND created by test-user)
         htmlContent shouldContain "Team Meeting"
         htmlContent.contains("Personal Meeting") shouldBe false

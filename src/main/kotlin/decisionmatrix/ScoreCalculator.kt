@@ -24,41 +24,41 @@ data class CriteriaOptionScore(
 
 
 fun Decision.calculateOptionScores(userScores: List<UserScore>): ScoreReport {
-        require(options.isNotEmpty()) { "Missing required options" }
-        require(criteria.isNotEmpty()) { "Missing required criteria" }
-        require(userScores.isNotEmpty()) { "Missing required scores" }
+    require(options.isNotEmpty()) { "Missing required options" }
+    require(criteria.isNotEmpty()) { "Missing required criteria" }
+    require(userScores.isNotEmpty()) { "Missing required scores" }
 
-        val optionScores = mutableListOf<CriteriaOptionScore>()
-        val totalScores = LinkedHashMap<Option, BigDecimal>()
+    val optionScores = mutableListOf<CriteriaOptionScore>()
+    val totalScores = LinkedHashMap<Option, BigDecimal>()
 
-        for (option in options) {
-            var optionTotal = BigDecimal.ZERO
+    for (option in options) {
+        var optionTotal = BigDecimal.ZERO
 
-            for (criterion in criteria) {
-                val scores = userScores.filter { it.optionId == option.id && it.criteriaId == criterion.id }
+        for (criterion in criteria) {
+            val scores = userScores.filter { it.optionId == option.id && it.criteriaId == criterion.id }
 
-                val weightedScore = if (scores.isNotEmpty()) {
-                    val sum = scores.fold(BigDecimal.ZERO) { acc, s -> acc + BigDecimal(s.score) }
-                    val average = sum.divide(BigDecimal(scores.size), 2, RoundingMode.HALF_UP)
-                    average.multiply(BigDecimal(criterion.weight))
-                } else {
-                    BigDecimal.ZERO
-                }
-
-                optionScores.add(
-                    CriteriaOptionScore(
-                        criteriaName = criterion.name,
-                        criteriaWeight = criterion.weight,
-                        optionName = option.name,
-                        optionScore = weightedScore
-                    )
-                )
-                
-                optionTotal = optionTotal.add(weightedScore)
+            val weightedScore = if (scores.isNotEmpty()) {
+                val sum = scores.fold(BigDecimal.ZERO) { acc, s -> acc + BigDecimal(s.score) }
+                val average = sum.divide(BigDecimal(scores.size), 2, RoundingMode.HALF_UP)
+                average.multiply(BigDecimal(criterion.weight))
+            } else {
+                BigDecimal.ZERO
             }
 
-            totalScores[option] = optionTotal
+            optionScores.add(
+                CriteriaOptionScore(
+                    criteriaName = criterion.name,
+                    criteriaWeight = criterion.weight,
+                    optionName = option.name,
+                    optionScore = weightedScore
+                )
+            )
+
+            optionTotal = optionTotal.add(weightedScore)
         }
 
-        return ScoreReport(optionScores = optionScores, totalScores = totalScores)
+        totalScores[option] = optionTotal
     }
+
+    return ScoreReport(optionScores = optionScores, totalScores = totalScores)
+}

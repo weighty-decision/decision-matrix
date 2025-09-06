@@ -1,8 +1,8 @@
 package decisionmatrix.db
 
-import decisionmatrix.DecisionInput
 import decisionmatrix.Criteria
 import decisionmatrix.Decision
+import decisionmatrix.DecisionInput
 import decisionmatrix.Option
 import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
@@ -124,7 +124,8 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
 
             // Recent filter (1 month)
             if (filters.recentOnly) {
-                conditions.add("(d.created_at >= datetime('now', '-1 month') OR EXISTS (SELECT 1 FROM user_scores us WHERE us.decision_id = d.id AND us.created_at >= datetime('now', '-1 month')))")
+                conditions.add("(d.created_at >= datetime('now', '-1 month') " +
+                        "OR EXISTS (SELECT 1 FROM user_scores us WHERE us.decision_id = d.id AND us.created_at >= datetime('now', '-1 month')))")
             }
 
             // Involvement filter
@@ -168,7 +169,7 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
 
             // Group rows by decision_id
             val decisionGroups = rows.groupBy { (it["decision_id"] as Number).toLong() }
-            
+
             decisionGroups.map { (_, decisionRows) ->
                 mapDecisionWithRelations(decisionRows)
             }
@@ -183,14 +184,14 @@ fun mapDecision(rs: ResultSet): Decision {
         minScore = rs.getInt("min_score"),
         maxScore = rs.getInt("max_score"),
         createdBy = rs.getString("created_by"),
-        createdAt = rs.getString("created_at")?.let { 
+        createdAt = rs.getString("created_at")?.let {
             LocalDateTime.parse(it.replace(" ", "T")).atOffset(ZoneOffset.UTC).toInstant()
         }
     )
 }
 
 fun mapDecisionWithRelations(rows: List<Map<String, Any>>): Decision {
-    if (rows.isEmpty()) throw IllegalArgumentException("Cannot map empty rows to Decision")
+    require(rows.isNotEmpty()) { "Cannot map empty rows to Decision" }
 
     val firstRow = rows.first()
     val decisionId = (firstRow["decision_id"] as Number).toLong()
@@ -198,7 +199,7 @@ fun mapDecisionWithRelations(rows: List<Map<String, Any>>): Decision {
     val decisionMinScore = (firstRow["decision_min_score"] as Number).toInt()
     val decisionMaxScore = (firstRow["decision_max_score"] as Number).toInt()
     val decisionCreatedBy = firstRow["decision_created_by"] as? String
-    val decisionCreatedAt = (firstRow["decision_created_at"] as? String)?.let { 
+    val decisionCreatedAt = (firstRow["decision_created_at"] as? String)?.let {
         LocalDateTime.parse(it.replace(" ", "T")).atOffset(ZoneOffset.UTC).toInstant()
     }
 

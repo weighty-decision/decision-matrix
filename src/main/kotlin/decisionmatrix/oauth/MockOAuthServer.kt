@@ -10,9 +10,11 @@ import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import org.http4k.core.*
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
+import org.http4k.core.Request
+import org.http4k.core.Response
+import org.http4k.core.Status
 import org.http4k.core.Status.Companion.FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.routing.bind
@@ -22,7 +24,6 @@ import org.http4k.server.Undertow
 import org.http4k.server.asServer
 import java.time.Instant
 import java.util.*
-import java.util.Base64
 
 @Serializable
 data class OpenIdConfiguration(
@@ -49,7 +50,9 @@ data class TestUser(
     val name: String
 )
 
-class MockOAuthServer(private val port: Int = 8081) {
+private const val MOCK_OAUTH_SERVER_PORT = 8081
+
+class MockOAuthServer(private val port: Int = MOCK_OAUTH_SERVER_PORT) {
     private val baseUrl = "http://localhost:$port"
     private val rsaKey: RSAKey = RSAKeyGenerator(2048)
         .keyID("test-key")
@@ -64,7 +67,7 @@ class MockOAuthServer(private val port: Int = 8081) {
     )
 
     private val authCodes = mutableMapOf<String, String>() // code -> userId
-    
+
     private fun extractClientId(request: Request, params: Map<String, String>): String? {
         // Try Basic auth first (Authorization header)
         val authHeader = request.header("Authorization")
@@ -74,7 +77,7 @@ class MockOAuthServer(private val port: Int = 8081) {
             val (clientId, _) = decoded.split(":", limit = 2)
             return clientId
         }
-        
+
         // Fall back to form parameters
         return params["client_id"]
     }
@@ -166,10 +169,10 @@ class MockOAuthServer(private val port: Int = 8081) {
                 key to java.net.URLDecoder.decode(value, "UTF-8")
             }
             val code = params["code"]
-            
+
             // Handle client authentication - either from Authorization header (Basic auth) or form params
             val clientId = extractClientId(request, params)
-            
+
             if (code != null && clientId != null && authCodes.containsKey(code)) {
                 val userId = authCodes.remove(code)!!
                 val user = testUsers.first { it.id == userId }

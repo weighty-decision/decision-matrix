@@ -1,6 +1,11 @@
 package decisionmatrix.auth
 
-import org.http4k.core.*
+import org.http4k.core.Filter
+import org.http4k.core.HttpHandler
+import org.http4k.core.Request
+import org.http4k.core.Response
+import org.http4k.core.Status
+import org.http4k.core.Uri
 import org.slf4j.LoggerFactory
 
 class AuthenticationFilter(
@@ -55,7 +60,7 @@ class AuthenticationFilter(
         }
 
         // No valid session, redirect to login
-        val loginUrl = "/auth/login?redirect=${Uri.of(request.uri.toString()).toString()}"
+        val loginUrl = "/auth/login?redirect=${Uri.of(request.uri.toString())}"
         return Response(Status.SEE_OTHER)
             .header("Location", loginUrl)
     }

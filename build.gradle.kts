@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version libs.versions.kotlin.core
     kotlin("plugin.serialization") version libs.versions.kotlin.core
+    alias(libs.plugins.detekt)
     application
 }
 
@@ -49,4 +50,3 @@ dependencies {
     testImplementation(libs.bundles.testing)
     testImplementation(libs.bundles.http4k.testing)
 }
-

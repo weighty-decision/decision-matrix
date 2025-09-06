@@ -1,7 +1,11 @@
 package decisionmatrix
 
 import decisionmatrix.auth.withMockAuth
-import decisionmatrix.db.*
+import decisionmatrix.db.CriteriaRepositoryImpl
+import decisionmatrix.db.DecisionRepositoryImpl
+import decisionmatrix.db.OptionRepositoryImpl
+import decisionmatrix.db.UserScoreRepositoryImpl
+import decisionmatrix.db.createTempDatabase
 import decisionmatrix.routes.DecisionRoutes
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -18,7 +22,7 @@ import org.http4k.routing.static
 import org.junit.jupiter.api.Test
 
 class AppTest {
-    
+
     private val jdbi = createTempDatabase()
     private val decisionRepository = DecisionRepositoryImpl(jdbi)
     private val optionRepository = OptionRepositoryImpl(jdbi)
@@ -40,11 +44,13 @@ class AppTest {
         decisionRoutes.routes
     ).withMockAuth()
 
-    @Test fun `Ping test`() {
+    @Test
+    fun `Ping test`() {
         testApp(Request(GET, "/ping")) shouldBe Response(OK).body("pong")
     }
 
-    @Test fun `Create decision with custom score range`() {
+    @Test
+    fun `Create decision with custom score range`() {
         // Test decision creation with custom score range
         val createDecisionRequest = Request(POST, "/decisions")
             .header("Content-Type", "application/x-www-form-urlencoded")
@@ -65,7 +71,8 @@ class AppTest {
         editPageBody shouldContain "value=\"5\""  // maxScore
     }
 
-    @Test fun `Update decision score range through UI`() {
+    @Test
+    fun `Update decision score range through UI`() {
         // Step 1: Create decision with default score range
         val createDecisionRequest = Request(POST, "/decisions")
             .header("Content-Type", "application/x-www-form-urlencoded")
