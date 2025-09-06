@@ -7,6 +7,11 @@ This project supports the creation of weighted decision matrices when multiple p
 - If you're having trouble with something, it's ok to stop and ask for help.
 - Focus on getting working, tested code before optimizing or adding features.
 
+## Quick Reference Commands
+- **Run app in dev mode**: `DM_DEV_MODE=true ./gradlew run`
+- **Run tests**: `./gradlew test`
+- **Run with mock OAuth**: `DM_DEV_MODE=false DM_MOCK_OAUTH_SERVER=true DM_OAUTH_ISSUER_URL=http://localhost:8081 DM_OAUTH_CLIENT_ID=test-client DM_OAUTH_CLIENT_SECRET=test-secret DM_OAUTH_REDIRECT_URI=http://localhost:9000/auth/callback ./gradlew run`
+
 ## Architecture & Technology Stack
 
 **Backend & UI**
@@ -23,6 +28,16 @@ This project supports the creation of weighted decision matrices when multiple p
 **Testing**
 - Kotest assertions for test assertions
 - JUnit as the test runner
+
+## Code Structure
+- `src/main/kotlin/decisionmatrix/` - Main application code
+  - `auth/` - Authentication & OAuth handling
+  - `db/` - Database repositories and models
+  - `ui/` - HTML page generation (kotlinx.html)
+  - `routes/` - HTTP route handlers
+  - `oauth/` - Mock OAuth server for testing
+- `Domain.kt` - Core domain models (Decision, Option, Criteria, UserScore)
+- `App.kt` - Main application entry point
 
 ## Development Principles
 
@@ -110,6 +125,13 @@ When working on decision matrix features, remember:
 - Calculations should be transparent and auditable
 - Results should be easy to understand and export
 
+## Database Schema
+SQLite with these main entities:
+- **decisions** - Decision matrices
+- **options** - Choices being evaluated
+- **criteria** - Evaluation factors with weights
+- **user_scores** - Individual user ratings per option/criteria pair
+
 ### Authentication
 The application uses OAuth for authentication with pluggable provider support.
 
@@ -165,3 +187,10 @@ The application uses standards-based OAuth 2.0 with PKCE and OpenID Connect, sup
 - Sessions are stored in memory (suitable for single-instance deployments)
 - Session timeout is 24 hours by default
 - Sessions are automatically cleaned up on expiry
+
+## Development Patterns in This Codebase
+- Repository pattern with `*Repository` interfaces and `*RepositoryImpl` implementations
+- HTML generation using kotlinx.html DSL, not templates
+- HTMX for frontend interactivity (see existing `.hx-*` attributes)
+- All routes return http4k `Response` objects
+- Authentication via `UserContext` extracted from sessions
