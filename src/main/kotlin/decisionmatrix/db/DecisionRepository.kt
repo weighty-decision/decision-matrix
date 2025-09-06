@@ -9,6 +9,13 @@ import java.sql.ResultSet
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
+data class DecisionSearchFilters(
+    val search: String? = null,
+    val recentOnly: Boolean = false,
+    val involvedOnly: Boolean = false,
+    val userId: String? = null
+)
+
 interface DecisionRepository {
     fun insert(decision: DecisionInput, createdBy: String = "unknown"): Decision = throw NotImplementedError()
     fun findById(id: Long): Decision? = throw NotImplementedError()
@@ -17,6 +24,7 @@ interface DecisionRepository {
     fun delete(id: Long): Boolean = throw NotImplementedError()
     fun findAllInvolvedDecisions(userId: String): List<Decision> = throw NotImplementedError()
     fun findAllRecentDecisions(): List<Decision> = throw NotImplementedError()
+    fun findDecisions(filters: DecisionSearchFilters): List<Decision> = throw NotImplementedError()
 }
 
 class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
@@ -194,6 +202,70 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
             )
                 .mapToMap()
                 .list()
+
+            if (rows.isEmpty()) {
+                return@withHandle emptyList()
+            }
+
+            // Group rows by decision_id
+            val decisionGroups = rows.groupBy { (it["decision_id"] as Number).toLong() }
+            
+            decisionGroups.map { (_, decisionRows) ->
+                mapDecisionWithRelations(decisionRows)
+            }
+        }
+    }
+
+    override fun findDecisions(filters: DecisionSearchFilters): List<Decision> {
+        return jdbi.withHandle<List<Decision>, Exception> { handle ->
+            val conditions = mutableListOf<String>()
+            val parameters = mutableMapOf<String, Any>()
+
+            // Search by decision name
+            filters.search?.let { searchTerm ->
+                conditions.add("d.name LIKE :search")
+                parameters["search"] = "%$searchTerm%"
+            }
+
+            // Recent filter (1 month)
+            if (filters.recentOnly) {
+                conditions.add("(d.created_at >= datetime('now', '-1 month') OR EXISTS (SELECT 1 FROM user_scores us WHERE us.decision_id = d.id AND us.created_at >= datetime('now', '-1 month')))")
+            }
+
+            // Involvement filter
+            if (filters.involvedOnly && filters.userId != null) {
+                conditions.add("(d.created_by = :userId OR d.id IN (SELECT DISTINCT decision_id FROM user_scores WHERE scored_by = :userId))")
+                parameters["userId"] = filters.userId
+            }
+
+            val whereClause = if (conditions.isEmpty()) "" else "WHERE ${conditions.joinToString(" AND ")}"
+
+            val query = """
+                SELECT 
+                    d.id as decision_id, 
+                    d.name as decision_name,
+                    d.min_score as decision_min_score,
+                    d.max_score as decision_max_score,
+                    d.created_by as decision_created_by,
+                    d.created_at as decision_created_at,
+                    c.id as criteria_id,
+                    c.name as criteria_name,
+                    c.weight as criteria_weight,
+                    o.id as option_id,
+                    o.name as option_name
+                FROM decisions d
+                LEFT JOIN criteria c ON d.id = c.decision_id
+                LEFT JOIN options o ON d.id = o.decision_id
+                $whereClause
+                ORDER BY d.created_at DESC
+                """.trimIndent()
+
+            var queryBuilder = handle.createQuery(query)
+            for ((key, value) in parameters) {
+                queryBuilder = queryBuilder.bind(key, value)
+            }
+
+            val rows = queryBuilder.mapToMap().list()
 
             if (rows.isEmpty()) {
                 return@withHandle emptyList()

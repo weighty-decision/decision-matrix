@@ -242,48 +242,49 @@ class DecisionUiRoutesTest {
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
         
-        htmlContent shouldContain "No decisions yet"
-        htmlContent shouldContain "Create your first decision"
+        htmlContent shouldContain "No decisions found"
+        htmlContent shouldContain "create your first decision"
         htmlContent shouldContain "Create New Decision"
     }
 
-    @Test fun `home page defaults to involved view mode`() {
+    @Test fun `home page shows search and filter controls`() {
         val request = Request(Method.GET, "/")
         val response = routes(request)
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
         
-        htmlContent shouldContain "view-mode-select"
-        htmlContent shouldContain "Decisions you're involved in"
-        htmlContent shouldContain "Recent decisions"
-        htmlContent shouldContain "selected=\"selected\">Decisions you're involved in"
+        htmlContent shouldContain "search-input"
+        htmlContent shouldContain "Search decisions..."
+        htmlContent shouldContain "Recent"
+        htmlContent shouldContain "I'm involved in"
     }
 
-    @Test fun `home page with recent view mode parameter shows recent decisions`() {
+    @Test fun `home page with recent filter parameter shows recent decisions`() {
         val decision = decisionRepository.insert(
             DecisionInput(name = "Recent Decision"),
             createdBy = "other-user"
         )
 
-        val request = Request(Method.GET, "/?view=recent")
+        val request = Request(Method.GET, "/?recent=true")
         val response = routes(request)
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
         
         htmlContent shouldContain "Recent Decision"
-        htmlContent shouldContain "selected=\"selected\">Recent decisions"
+        htmlContent shouldContain "btn filter-btn active"
     }
 
-    @Test fun `home page with invalid view mode parameter defaults to involved`() {
-        val request = Request(Method.GET, "/?view=invalid")
+    @Test fun `home page with invalid parameters ignores them`() {
+        val request = Request(Method.GET, "/?invalid=true")
         val response = routes(request)
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
         
-        htmlContent shouldContain "selected=\"selected\">Decisions you're involved in"
+        htmlContent shouldContain "search-input"
+        htmlContent.contains("btn filter-btn active") shouldBe false
     }
 
     @Test fun `home page does not show role column anymore`() {
@@ -320,14 +321,88 @@ class DecisionUiRoutesTest {
         htmlContent.contains(">My Scores<") shouldBe false
     }
 
-    @Test fun `recent view shows empty state when no recent decisions`() {
-        val request = Request(Method.GET, "/?view=recent")
+    @Test fun `recent filter shows empty state when no recent decisions`() {
+        val request = Request(Method.GET, "/?recent=true")
         val response = routes(request)
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
         
-        htmlContent shouldContain "No recent decisions found"
-        htmlContent shouldContain "selected=\"selected\">Recent decisions"
+        htmlContent shouldContain "No decisions found"
+        htmlContent shouldContain "btn filter-btn active"
+    }
+
+    @Test fun `search endpoint with search query returns filtered decisions`() {
+        decisionRepository.insert(DecisionInput(name = "Laptop Selection"), createdBy = "test-user")
+        decisionRepository.insert(DecisionInput(name = "Car Purchase"), createdBy = "test-user")
+        decisionRepository.insert(DecisionInput(name = "Server Selection"), createdBy = "test-user")
+
+        val request = Request(Method.GET, "/search?search=Selection")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        htmlContent shouldContain "Laptop Selection"
+        htmlContent shouldContain "Server Selection"
+        htmlContent.contains("Car Purchase") shouldBe false
+    }
+
+    @Test fun `search endpoint with involved filter returns decisions user is involved in`() {
+        val decision1 = decisionRepository.insert(DecisionInput(name = "My Decision"), createdBy = "test-user")
+        val decision2 = decisionRepository.insert(DecisionInput(name = "Other Decision"), createdBy = "other-user")
+
+        val request = Request(Method.GET, "/search?involved=true")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        htmlContent shouldContain "My Decision"
+        htmlContent.contains("Other Decision") shouldBe false
+    }
+
+    @Test fun `search endpoint with recent filter returns recent decisions`() {
+        val decision = decisionRepository.insert(DecisionInput(name = "Recent Decision"), createdBy = "test-user")
+
+        val request = Request(Method.GET, "/search?recent=true")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        htmlContent shouldContain "Recent Decision"
+    }
+
+    @Test fun `search endpoint with HX-Request header returns table fragment only`() {
+        decisionRepository.insert(DecisionInput(name = "Test Decision"), createdBy = "test-user")
+
+        val request = Request(Method.GET, "/search")
+            .header("HX-Request", "true")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        // Should contain table elements but not the full page structure
+        htmlContent shouldContain "Test Decision"
+        htmlContent.contains("Decision Matrix") shouldBe false // Page title shouldn't be there
+    }
+
+    @Test fun `search endpoint with multiple filters combines them`() {
+        val decision1 = decisionRepository.insert(DecisionInput(name = "Team Meeting"), createdBy = "test-user")
+        val decision2 = decisionRepository.insert(DecisionInput(name = "Personal Meeting"), createdBy = "other-user")
+        val decision3 = decisionRepository.insert(DecisionInput(name = "Team Project"), createdBy = "test-user")
+
+        val request = Request(Method.GET, "/search?search=Meeting&involved=true")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+        
+        // Only Team Meeting should match (has "Meeting" AND created by test-user)
+        htmlContent shouldContain "Team Meeting"
+        htmlContent.contains("Personal Meeting") shouldBe false
+        htmlContent.contains("Team Project") shouldBe false
     }
 }

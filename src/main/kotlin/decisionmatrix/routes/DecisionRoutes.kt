@@ -15,7 +15,7 @@ import decisionmatrix.ui.DecisionPages
 import decisionmatrix.ui.MyScoresPages
 import decisionmatrix.ui.ResultsPage
 import decisionmatrix.ui.IndexPages
-import decisionmatrix.ui.ViewMode
+import decisionmatrix.db.DecisionSearchFilters
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -36,6 +36,7 @@ class DecisionRoutes(
 
     val routes: RoutingHttpHandler = routes(
         "/" bind Method.GET to ::home,
+        "/search" bind Method.GET to ::searchDecisions,
         "/decisions/new" bind Method.GET to ::newDecisionForm,
         "/decisions" bind Method.POST to ::createDecision,
         "/decisions/{id}/edit" bind Method.GET to ::editDecision,
@@ -59,15 +60,46 @@ class DecisionRoutes(
 
     private fun home(request: Request): Response {
         val currentUser = UserContext.requireCurrent(request)
-        val viewModeParam = request.query("view") ?: ViewMode.INVOLVED.paramValue
-        val viewMode = ViewMode.entries.find { it.paramValue == viewModeParam } ?: ViewMode.INVOLVED
+        
+        // Parse query parameters for search and filters
+        val search = request.query("search")?.takeIf { it.isNotBlank() }
+        val recent = request.query("recent") == "true"
+        val involved = request.query("involved") == "true"
+        
+        val filters = DecisionSearchFilters(
+            search = search,
+            recentOnly = recent,
+            involvedOnly = involved,
+            userId = currentUser.id
+        )
 
-        val decisions = when (viewMode) {
-            ViewMode.INVOLVED -> decisionRepository.findAllInvolvedDecisions(currentUser.id)
-            ViewMode.RECENT -> decisionRepository.findAllRecentDecisions()
+        val decisions = decisionRepository.findDecisions(filters)
+
+        return htmlResponse(IndexPages.indexPage(decisions, currentUser, search, recent, involved))
+    }
+
+    private fun searchDecisions(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
+        
+        // Parse query parameters for search and filters
+        val search = request.query("search")?.takeIf { it.isNotBlank() }
+        val recent = request.query("recent") == "true"
+        val involved = request.query("involved") == "true"
+        
+        val filters = DecisionSearchFilters(
+            search = search,
+            recentOnly = recent,
+            involvedOnly = involved,
+            userId = currentUser.id
+        )
+
+        val decisions = decisionRepository.findDecisions(filters)
+
+        return if (isHx(request)) {
+            htmlResponse(IndexPages.decisionsTableFragment(decisions, currentUser))
+        } else {
+            htmlResponse(IndexPages.indexPage(decisions, currentUser, search, recent, involved))
         }
-
-        return htmlResponse(IndexPages.indexPage(decisions, currentUser, viewMode))
     }
 
     private fun newDecisionForm(request: Request): Response {

@@ -6,6 +6,8 @@ import decisionmatrix.OptionInput
 import decisionmatrix.UserScoreInput
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
@@ -397,5 +399,95 @@ class DecisionRepositoryTest {
         foundDecision.options.size shouldBe 1
         foundDecision.options[0].id shouldBe insertedOption.id
         foundDecision.options[0].name shouldBe "Option A"
+    }
+
+    @Test fun `findDecisions with no filters returns all decisions`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        
+        val decision1 = decisionRepository.insert(DecisionInput(name = "First Decision"), createdBy = "user1")
+        val decision2 = decisionRepository.insert(DecisionInput(name = "Second Decision"), createdBy = "user2")
+        
+        val filters = DecisionSearchFilters()
+        val decisions = decisionRepository.findDecisions(filters)
+        
+        decisions.size shouldBe 2
+        decisions.map { it.id } shouldContain decision1.id
+        decisions.map { it.id } shouldContain decision2.id
+    }
+
+    @Test fun `findDecisions with search filter returns matching decisions`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        
+        decisionRepository.insert(DecisionInput(name = "Laptop Selection"), createdBy = "user1")
+        decisionRepository.insert(DecisionInput(name = "Car Purchase"), createdBy = "user1")
+        decisionRepository.insert(DecisionInput(name = "Server Selection"), createdBy = "user2")
+        
+        val filters = DecisionSearchFilters(search = "Selection")
+        val decisions = decisionRepository.findDecisions(filters)
+        
+        decisions.size shouldBe 2
+        decisions.map { it.name }.shouldContainAll("Laptop Selection", "Server Selection")
+    }
+
+    @Test fun `findDecisions with involvement filter returns decisions user is involved in`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+        val optionRepository = OptionRepositoryImpl(jdbi)
+        val criteriaRepository = CriteriaRepositoryImpl(jdbi)
+        
+        val decision1 = decisionRepository.insert(DecisionInput(name = "Created By User"), createdBy = "user1")
+        val decision2 = decisionRepository.insert(DecisionInput(name = "Scored By User"), createdBy = "user2")
+        val decision3 = decisionRepository.insert(DecisionInput(name = "Not Involved"), createdBy = "user3")
+        
+        // Add option and criteria to decision2 so user1 can score it
+        val option = optionRepository.insert(decision2.id, OptionInput(name = "Option"))
+        val criteria = criteriaRepository.insert(decision2.id, CriteriaInput(name = "Criteria", weight = 1))
+        userScoreRepository.insert(decision2.id, option.id, criteria.id, "user1", UserScoreInput(score = 5))
+        
+        val filters = DecisionSearchFilters(involvedOnly = true, userId = "user1")
+        val decisions = decisionRepository.findDecisions(filters)
+        
+        decisions.size shouldBe 2
+        decisions.map { it.name }.shouldContainAll("Created By User", "Scored By User")
+    }
+
+    @Test fun `findDecisions with recent filter returns recent decisions`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+        val optionRepository = OptionRepositoryImpl(jdbi)
+        val criteriaRepository = CriteriaRepositoryImpl(jdbi)
+        
+        // Create a decision that's not recent (we can't easily create an old decision, 
+        // so we'll test with recent decisions and verify the SQL is correct)
+        val decision1 = decisionRepository.insert(DecisionInput(name = "Recent Decision"), createdBy = "user1")
+        val decision2 = decisionRepository.insert(DecisionInput(name = "Also Recent"), createdBy = "user2")
+        
+        val filters = DecisionSearchFilters(recentOnly = true)
+        val decisions = decisionRepository.findDecisions(filters)
+        
+        // Both decisions should be recent since they were just created
+        decisions.size shouldBe 2
+    }
+
+    @Test fun `findDecisions with multiple filters combines them with AND`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+        val optionRepository = OptionRepositoryImpl(jdbi)
+        val criteriaRepository = CriteriaRepositoryImpl(jdbi)
+        
+        val decision1 = decisionRepository.insert(DecisionInput(name = "Team Meeting"), createdBy = "user1")
+        val decision2 = decisionRepository.insert(DecisionInput(name = "Personal Meeting"), createdBy = "user2")
+        val decision3 = decisionRepository.insert(DecisionInput(name = "Team Project"), createdBy = "user1")
+        
+        val filters = DecisionSearchFilters(
+            search = "Meeting", 
+            involvedOnly = true, 
+            userId = "user1"
+        )
+        val decisions = decisionRepository.findDecisions(filters)
+        
+        // Only decision1 should match: has "Meeting" in name AND is created by user1
+        decisions.size shouldBe 1
+        decisions[0].name shouldBe "Team Meeting"
     }
 }
