@@ -13,9 +13,11 @@ slf4j = "2.0.16"
 logback = "1.5.12"
 nimbus-oauth2 = "11.20.1"
 nimbus-jose-jwt = "9.47"
+hikari = "5.1.0"
 
 [libraries]
 jdbi-core = { module = "org.jdbi:jdbi3-core", version.ref = "jdbi" }
+hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
 http4k-bom = { module = "org.http4k:http4k-bom", version.ref = "http4k" }
 http4k-client-okhttp = { module = "org.http4k:http4k-client-okhttp" }
 http4k-core = { module = "org.http4k:http4k-core" }

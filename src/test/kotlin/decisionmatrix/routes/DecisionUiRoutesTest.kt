@@ -6,17 +6,19 @@ import decisionmatrix.db.CriteriaRepositoryImpl
 import decisionmatrix.db.DecisionRepositoryImpl
 import decisionmatrix.db.OptionRepositoryImpl
 import decisionmatrix.db.UserScoreRepositoryImpl
-import decisionmatrix.db.createTempDatabase
+import decisionmatrix.db.cleanTestDatabase
+import decisionmatrix.db.getTestJdbi
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Status
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
 class DecisionUiRoutesTest {
 
-    private val jdbi = createTempDatabase()
+    private val jdbi = getTestJdbi()
     private val decisionRepository = DecisionRepositoryImpl(jdbi)
     private val optionRepository = OptionRepositoryImpl(jdbi)
     private val criteriaRepository = CriteriaRepositoryImpl(jdbi)
@@ -25,6 +27,11 @@ class DecisionUiRoutesTest {
     private val routes = DecisionRoutes(
         decisionRepository, optionRepository, criteriaRepository, userScoreRepository
     ).routes.withMockAuth()
+
+    @AfterEach
+    fun cleanup() {
+        cleanTestDatabase()
+    }
 
     @Test
     fun `createDecision with custom score range creates decision with correct range`() {

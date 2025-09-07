@@ -5,7 +5,7 @@ import decisionmatrix.db.CriteriaRepositoryImpl
 import decisionmatrix.db.DecisionRepositoryImpl
 import decisionmatrix.db.OptionRepositoryImpl
 import decisionmatrix.db.UserScoreRepositoryImpl
-import decisionmatrix.db.createTempDatabase
+import decisionmatrix.db.getTestJdbi
 import decisionmatrix.routes.DecisionRoutes
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test
 
 class ScoreRangeEndToEndTest {
 
-    private val jdbi = createTempDatabase()
+    private val jdbi = getTestJdbi()
     private val decisionRepository = DecisionRepositoryImpl(jdbi)
     private val optionRepository = OptionRepositoryImpl(jdbi)
     private val criteriaRepository = CriteriaRepositoryImpl(jdbi)

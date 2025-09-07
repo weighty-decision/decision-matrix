@@ -10,11 +10,17 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
 class DecisionRepositoryTest {
 
-    val jdbi = createTempDatabase()
+    val jdbi = getTestJdbi()
+
+    @AfterEach
+    fun cleanup() {
+        cleanTestDatabase()
+    }
 
     @Test
     fun `insert and findById`() {

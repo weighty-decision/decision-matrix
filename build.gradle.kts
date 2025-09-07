@@ -40,12 +40,12 @@ tasks {
 }
 
 dependencies {
-
     implementation(platform(libs.http4k.bom))
     implementation(libs.bundles.http4k)
     implementation(libs.bundles.logging)
     implementation(libs.kotlinx.html)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.hikari)
     implementation(libs.jdbi.core)
     implementation(libs.postgresql)
     implementation(libs.flyway.core)
@@ -57,8 +57,9 @@ dependencies {
 }
 
 flyway {
+    baselineOnMigrate = true
+    baselineVersion = "0"
     url = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/decision_matrix"
     user = System.getenv("DB_USER") ?: "decision_matrix"
     password = System.getenv("DB_PASSWORD") ?: "decision_matrix_password"
-    locations = arrayOf("filesystem:src/main/resources/db/migration")
 }

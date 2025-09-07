@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 
 class CriteriaRepositoryTest {
 
-    val jdbi = createTempDatabase()
+    val jdbi = getTestJdbi()
 
     @Test
     fun `insert and findById`() {

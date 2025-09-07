@@ -12,7 +12,7 @@ import decisionmatrix.db.CriteriaRepositoryImpl
 import decisionmatrix.db.DecisionRepositoryImpl
 import decisionmatrix.db.OptionRepositoryImpl
 import decisionmatrix.db.UserScoreRepositoryImpl
-import decisionmatrix.db.loadDatabase
+import decisionmatrix.db.loadJdbi
 import decisionmatrix.oauth.MockOAuthServer
 import decisionmatrix.routes.DecisionRoutes
 import org.http4k.core.HttpHandler
@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("DecisionMatrix")
 
-val jdbi = loadDatabase()
+val jdbi = loadJdbi()
 
 val decisionRepository = DecisionRepositoryImpl(jdbi)
 val optionRepository = OptionRepositoryImpl(jdbi)

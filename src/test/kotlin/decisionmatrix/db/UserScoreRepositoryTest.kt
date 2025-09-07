@@ -13,7 +13,7 @@ class UserScoreRepositoryTest {
 
     @Test
     fun `insert and findById`() {
-        val jdbi = createTempDatabase()
+        val jdbi = getTestJdbi()
 
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
@@ -44,7 +44,7 @@ class UserScoreRepositoryTest {
 
     @Test
     fun `update existing option score`() {
-        val jdbi = createTempDatabase()
+        val jdbi = getTestJdbi()
 
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
@@ -81,7 +81,7 @@ class UserScoreRepositoryTest {
 
     @Test
     fun `update nonexistent option score returns null`() {
-        val jdbi = createTempDatabase()
+        val jdbi = getTestJdbi()
         val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
         val updated = userScoreRepository.update(999L, 10)
@@ -91,7 +91,7 @@ class UserScoreRepositoryTest {
 
     @Test
     fun `delete existing option score`() {
-        val jdbi = createTempDatabase()
+        val jdbi = getTestJdbi()
 
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
@@ -122,7 +122,7 @@ class UserScoreRepositoryTest {
 
     @Test
     fun `delete nonexistent option score returns false`() {
-        val jdbi = createTempDatabase()
+        val jdbi = getTestJdbi()
         val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
         val deleted = userScoreRepository.delete(999L)
@@ -132,7 +132,7 @@ class UserScoreRepositoryTest {
 
     @Test
     fun `findAllByDecisionId returns all scores for decision`() {
-        val jdbi = createTempDatabase()
+        val jdbi = getTestJdbi()
 
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision1 = decisionRepository.insert(DecisionInput(name = "Decision 1"))
@@ -206,7 +206,7 @@ class UserScoreRepositoryTest {
 
     @Test
     fun `findAllByDecisionId returns empty list when no scores exist`() {
-        val jdbi = createTempDatabase()
+        val jdbi = getTestJdbi()
 
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val decision = decisionRepository.insert(DecisionInput(name = "My decision"))
