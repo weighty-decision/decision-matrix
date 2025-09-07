@@ -10,9 +10,14 @@ fun loadJdbi(
     port: String = System.getenv("DB_PORT") ?: "5432",
     database: String = System.getenv("DB_NAME") ?: "decision_matrix",
     username: String = System.getenv("DB_USER") ?: "decision_matrix",
-    password: String = System.getenv("DB_PASSWORD") ?: "decision_matrix_password"
+    password: String = System.getenv("DB_PASSWORD") ?: "decision_matrix_password",
+    connectionParams: String = System.getenv("DB_CONNECTION_PARAMS") ?: ""
 ): Jdbi {
-    val jdbcUrl = "jdbc:postgresql://$host:$port/$database"
+    val jdbcUrl = if (connectionParams.isNotEmpty()) {
+        "jdbc:postgresql://$host:$port/$database?$connectionParams"
+    } else {
+        "jdbc:postgresql://$host:$port/$database"
+    }
     
     Flyway.configure()
         .dataSource(jdbcUrl, username, password)
@@ -26,9 +31,6 @@ fun loadJdbi(
     config.password = password
     config.maximumPoolSize = 10
     config.minimumIdle = 2
-    config.connectionTimeout = 30000
-    config.idleTimeout = 600000
-    config.maxLifetime = 1800000
 
     val dataSource = HikariDataSource(config)
     val jdbi = Jdbi.create(dataSource)
