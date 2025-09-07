@@ -1,3 +1,6 @@
+.DS_Store
+.playwright-mcp
+
 # Compiled class file
 *.class
 
