@@ -112,7 +112,7 @@ object DecisionPages {
             }
             section(classes = "card") {
                 h2 { +"Next steps" }
-                ul {
+                ul(classes = "list") {
                     li {
                         a(classes = "btn") {
                             href = "/decisions/${decision.id}/my-scores"

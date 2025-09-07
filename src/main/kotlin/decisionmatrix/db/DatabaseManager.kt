@@ -8,7 +8,7 @@ import org.jdbi.v3.core.Jdbi
 fun loadJdbi(
     host: String = System.getenv("DB_HOST") ?: "localhost",
     port: String = System.getenv("DB_PORT") ?: "5432",
-    database: String = System.getenv("DB_NAME") ?: "decision_matrix_test",
+    database: String = System.getenv("DB_NAME") ?: "decision_matrix",
     username: String = System.getenv("DB_USER") ?: "decision_matrix",
     password: String = System.getenv("DB_PASSWORD") ?: "decision_matrix_password"
 ): Jdbi {
