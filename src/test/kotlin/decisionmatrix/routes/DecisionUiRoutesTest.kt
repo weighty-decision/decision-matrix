@@ -2,6 +2,7 @@ package decisionmatrix.routes
 
 import decisionmatrix.DecisionInput
 import decisionmatrix.auth.withMockAuth
+import decisionmatrix.auth.AuthorizationService
 import decisionmatrix.db.CriteriaRepositoryImpl
 import decisionmatrix.db.DecisionRepositoryImpl
 import decisionmatrix.db.OptionRepositoryImpl
@@ -24,8 +25,10 @@ class DecisionUiRoutesTest {
     private val criteriaRepository = CriteriaRepositoryImpl(jdbi)
     private val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
+    private val authorizationService = AuthorizationService(decisionRepository)
+    
     private val routes = DecisionRoutes(
-        decisionRepository, optionRepository, criteriaRepository, userScoreRepository
+        decisionRepository, optionRepository, criteriaRepository, userScoreRepository, authorizationService
     ).routes.withMockAuth()
 
     @AfterEach

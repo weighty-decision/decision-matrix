@@ -24,7 +24,14 @@ data class Decision(
     @Contextual val createdAt: Instant? = null,
     val criteria: List<Criteria> = emptyList(),
     val options: List<Option> = emptyList(),
-)
+) {
+    /**
+     * Checks if a user can modify a decision when you already have a hydrated Decision object.
+     */
+    fun canBeModifiedBy(userId: String): Boolean {
+        return createdBy == userId
+    }
+}
 
 @Serializable
 data class CriteriaInput(
@@ -66,4 +73,8 @@ data class UserScore(
     val scoredBy: String,
     @Contextual val createdAt: Instant? = null,
     val score: Int,
-)
+) {
+    fun canModifyUserScore(userId: String): Boolean {
+        return scoredBy == userId
+    }
+}

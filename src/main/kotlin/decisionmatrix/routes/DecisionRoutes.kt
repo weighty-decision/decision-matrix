@@ -16,6 +16,7 @@ import decisionmatrix.ui.DecisionPages
 import decisionmatrix.ui.IndexPage
 import decisionmatrix.ui.MyScoresPages
 import decisionmatrix.ui.ResultsPage
+import decisionmatrix.auth.AuthorizationService
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -31,7 +32,8 @@ class DecisionRoutes(
     private val decisionRepository: DecisionRepository,
     private val optionRepository: OptionRepository,
     private val criteriaRepository: CriteriaRepository,
-    private val userScoreRepository: UserScoreRepository
+    private val userScoreRepository: UserScoreRepository,
+    private val authorizationService: AuthorizationService
 ) {
 
     val routes: RoutingHttpHandler = routes(
@@ -131,11 +133,22 @@ class DecisionRoutes(
         val currentUser = UserContext.requireCurrent(request)
         val id = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
         val decision = decisionRepository.findById(id) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+
+        if (!decision.canBeModifiedBy(currentUser.id)) {
+            return Response(Status.FORBIDDEN).body("You don't have permission to modify this decision")
+        }
+
         return htmlResponse(DecisionPages.editPage(decision, currentUser))
     }
 
     private fun updateDecisionName(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
         val id = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
+        
+        if (!authorizationService.canModifyDecision(id, currentUser.id)) {
+            return Response(Status.FORBIDDEN).body("You don't have permission to modify this decision")
+        }
+        
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Name is required")
@@ -158,7 +171,13 @@ class DecisionRoutes(
     }
 
     private fun createOption(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
+        
+        if (!authorizationService.canModifyOption(decisionId, currentUser.id)) {
+            return Response(Status.FORBIDDEN).body("You don't have permission to modify options for this decision")
+        }
+        
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Option name is required")
@@ -173,8 +192,14 @@ class DecisionRoutes(
     }
 
     private fun updateOption(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
         val optionId = request.path("optionId")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing optionId")
+        
+        if (!authorizationService.canModifyOption(decisionId, currentUser.id)) {
+            return Response(Status.FORBIDDEN).body("You don't have permission to modify options for this decision")
+        }
+        
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Option name is required")
@@ -189,8 +214,14 @@ class DecisionRoutes(
     }
 
     private fun deleteOption(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
         val optionId = request.path("optionId")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing optionId")
+        
+        if (!authorizationService.canModifyOption(decisionId, currentUser.id)) {
+            return Response(Status.FORBIDDEN).body("You don't have permission to modify options for this decision")
+        }
+        
         optionRepository.delete(optionId)
 
         return if (isHx(request)) {
@@ -202,7 +233,13 @@ class DecisionRoutes(
     }
 
     private fun createCriteria(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
+        
+        if (!authorizationService.canModifyCriteria(decisionId, currentUser.id)) {
+            return Response(Status.FORBIDDEN).body("You don't have permission to modify criteria for this decision")
+        }
+        
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         val weight = form["weight"]?.toIntOrNull() ?: 1
@@ -218,8 +255,14 @@ class DecisionRoutes(
     }
 
     private fun updateCriteria(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
         val criteriaId = request.path("criteriaId")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing criteriaId")
+        
+        if (!authorizationService.canModifyCriteria(decisionId, currentUser.id)) {
+            return Response(Status.FORBIDDEN).body("You don't have permission to modify criteria for this decision")
+        }
+        
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
         val weight = form["weight"]?.toIntOrNull() ?: 1
@@ -235,8 +278,14 @@ class DecisionRoutes(
     }
 
     private fun deleteCriteria(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
         val criteriaId = request.path("criteriaId")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing criteriaId")
+        
+        if (!authorizationService.canModifyCriteria(decisionId, currentUser.id)) {
+            return Response(Status.FORBIDDEN).body("You don't have permission to modify criteria for this decision")
+        }
+        
         criteriaRepository.delete(criteriaId)
 
         return if (isHx(request)) {
@@ -248,7 +297,13 @@ class DecisionRoutes(
     }
 
     private fun deleteDecision(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
+        
+        if (!authorizationService.canModifyDecision(decisionId, currentUser.id)) {
+            return Response(Status.FORBIDDEN).body("You don't have permission to delete this decision")
+        }
+        
         decisionRepository.delete(decisionId)
 
         return Response(Status.SEE_OTHER).header("Location", "/")

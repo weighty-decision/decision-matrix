@@ -1,6 +1,7 @@
 package decisionmatrix
 
 import decisionmatrix.auth.withMockAuth
+import decisionmatrix.auth.AuthorizationService
 import decisionmatrix.db.CriteriaRepositoryImpl
 import decisionmatrix.db.DecisionRepositoryImpl
 import decisionmatrix.db.OptionRepositoryImpl
@@ -31,11 +32,14 @@ class ScoreRangeEndToEndTest {
     private val criteriaRepository = CriteriaRepositoryImpl(jdbi)
     private val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
+    private val authorizationService = AuthorizationService(decisionRepository)
+    
     private val decisionRoutes = DecisionRoutes(
         decisionRepository = decisionRepository,
         optionRepository = optionRepository,
         criteriaRepository = criteriaRepository,
-        userScoreRepository = userScoreRepository
+        userScoreRepository = userScoreRepository,
+        authorizationService = authorizationService
     )
 
     private val testApp = routes(

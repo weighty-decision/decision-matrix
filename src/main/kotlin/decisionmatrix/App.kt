@@ -8,6 +8,7 @@ import decisionmatrix.auth.SessionManager
 import decisionmatrix.auth.StandardsBasedOAuthService
 import decisionmatrix.auth.UserContext
 import decisionmatrix.auth.requireAuth
+import decisionmatrix.auth.AuthorizationService
 import decisionmatrix.db.CriteriaRepositoryImpl
 import decisionmatrix.db.DecisionRepositoryImpl
 import decisionmatrix.db.OptionRepositoryImpl
@@ -71,11 +72,14 @@ val oauthService = if (!authConfig.devMode) {
 
 val authRoutes = AuthRoutes(oauthService, sessionManager)
 
+val authorizationService = AuthorizationService(decisionRepository)
+
 val decisionRoutes = DecisionRoutes(
     decisionRepository = decisionRepository,
     optionRepository = optionRepository,
     criteriaRepository = criteriaRepository,
-    userScoreRepository = userScoreRepository
+    userScoreRepository = userScoreRepository,
+    authorizationService = authorizationService
 )
 
 val app: RoutingHttpHandler = routes(

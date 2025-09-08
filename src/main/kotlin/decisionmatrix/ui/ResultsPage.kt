@@ -3,6 +3,7 @@ package decisionmatrix.ui
 import decisionmatrix.Decision
 import decisionmatrix.UserScore
 import decisionmatrix.auth.AuthenticatedUser
+import decisionmatrix.auth.AuthorizationService
 import decisionmatrix.calculateOptionScores
 import kotlinx.html.a
 import kotlinx.html.div
@@ -75,9 +76,11 @@ object ResultsPage {
                         href = "/decisions/${decision.id}/user-scores.csv"
                         +"Download User Scores (CSV)"
                     }
-                    a(classes = "btn") {
-                        href = "/decisions/${decision.id}/edit"
-                        +"Back to edit"
+                    if (decision.canBeModifiedBy(user.id)) {
+                        a(classes = "btn") {
+                            href = "/decisions/${decision.id}/edit"
+                            +"Back to edit"
+                        }
                     }
                 }
             }
