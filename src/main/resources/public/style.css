@@ -336,3 +336,20 @@ header.container {
     background: rgba(239, 68, 68, 0.1);
     color: var(--danger);
 }
+
+.error-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(0deg, #5c1111, #a61d1d);
+    color: var(--text);
+    padding: 12px 16px;
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    box-shadow: 0 0 0 1px #0b1220 inset,
+                0 10px 30px rgba(0, 0, 0, .35);
+    z-index: 2000;
+    max-width: 400px;
+    font-size: 14px;
+    line-height: 1.4;
+}

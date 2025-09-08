@@ -12,14 +12,14 @@ CREATE TABLE criteria (
     decision_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     weight INTEGER NOT NULL,
-    FOREIGN KEY(decision_id) REFERENCES decisions(id)
+    FOREIGN KEY (decision_id) REFERENCES decisions(id) ON DELETE CASCADE
 );
 
 CREATE TABLE options (
     id SERIAL PRIMARY KEY,
     decision_id INTEGER NOT NULL,
     name TEXT NOT NULL,
-    FOREIGN KEY(decision_id) REFERENCES decisions(id)
+    FOREIGN KEY (decision_id) REFERENCES decisions(id) ON DELETE CASCADE
 );
 
 CREATE TABLE user_scores (
@@ -30,7 +30,7 @@ CREATE TABLE user_scores (
     score INTEGER NOT NULL,
     scored_by TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(decision_id) REFERENCES decisions(id),
-    FOREIGN KEY(option_id) REFERENCES options(id),
-    FOREIGN KEY(criteria_id) REFERENCES criteria(id)
+    FOREIGN KEY (decision_id) REFERENCES decisions(id) ON DELETE CASCADE,
+    FOREIGN KEY(option_id) REFERENCES options(id) ON DELETE CASCADE,
+    FOREIGN KEY(criteria_id) REFERENCES criteria(id) ON DELETE CASCADE
 );

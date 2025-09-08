@@ -18,6 +18,8 @@ import decisionmatrix.routes.DecisionRoutes
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Response
+import org.http4k.core.Status.Companion.BAD_REQUEST
+import org.http4k.core.Status.Companion.INTERNAL_SERVER_ERROR
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.then
 import org.http4k.filter.DebuggingFilters.PrintRequest
@@ -89,6 +91,18 @@ private const val SERVER_PORT = 9000
 
 fun main() {
     val app: HttpHandler = PrintRequest()
+        .then(ServerFilters.CatchAll { throwable ->
+            log.error("Uncaught exception in request processing", throwable)
+            Response(INTERNAL_SERVER_ERROR)
+                .header("content-type", "text/html")
+                .body("Internal server error")
+        })
+        .then(ServerFilters.CatchLensFailure { lensFailure ->
+            log.warn("Request validation failed: ${lensFailure.message}")
+            Response(BAD_REQUEST)
+                .header("content-type", "text/html")
+                .body("Invalid request: ${lensFailure.message}")
+        })
         .then(ServerFilters.InitialiseRequestContext(UserContext.contexts))
         .then(requireAuth(sessionManager, authConfig.devMode, authConfig.devUserId))
         .then(app)

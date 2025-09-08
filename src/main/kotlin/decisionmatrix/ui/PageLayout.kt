@@ -77,6 +77,47 @@ object PageLayout {
                                 });
                             }
                         });
+                        
+                        document.body.addEventListener('htmx:afterRequest', function(evt) {
+                            if (evt.detail.successful) {
+                                // Clear any existing error messages on success
+                                const errorContainer = document.getElementById('error-notifications');
+                                if (errorContainer) {
+                                    errorContainer.innerHTML = '';
+                                    errorContainer.style.display = 'none';
+                                }
+                            } else if (evt.detail.failed && evt.detail.xhr) {
+                                // Handle server errors (4xx/5xx)
+                                const xhr = evt.detail.xhr;
+                                const path = evt.detail.requestConfig.path || '';
+                                
+                                let message = 'Operation failed. Please try again.';
+                                
+                                if (xhr.status >= 500) {
+                                    message = 'Server error occurred. Please try again later.';
+                                } else if (xhr.status >= 400) {
+                                    message = 'Request failed. Please check your input and try again.';
+                                }
+                                
+                                showErrorNotification(message);
+                            } else {
+                                // Handle network errors
+                                showErrorNotification('Connection error. Please check your internet connection and try again.');
+                            }
+                        });
+                        
+                        function showErrorNotification(message) {
+                            const errorContainer = document.getElementById('error-notifications');
+                            if (errorContainer) {
+                                errorContainer.innerHTML = message;
+                                errorContainer.style.display = 'block';
+                                
+                                // Auto-hide after 5 seconds
+                                setTimeout(function() {
+                                    errorContainer.style.display = 'none';
+                                }, 5000);
+                            }
+                        }
                         """.trimIndent()
                     }
                 }
@@ -124,6 +165,11 @@ object PageLayout {
                 }
                 main(classes = "container") {
                     mainContent()
+                }
+                div {
+                    id = "error-notifications"
+                    attributes["class"] = "error-toast"
+                    attributes["style"] = "display: none;"
                 }
                 footer(classes = "container muted") {
                 }

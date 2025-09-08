@@ -269,4 +269,66 @@ class DecisionRepositoryTest {
         decisions.size shouldBe 1
         decisions[0].name shouldBe "Team Meeting"
     }
+
+    @Test
+    fun `delete decision cascades to all related data`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val optionRepository = OptionRepositoryImpl(jdbi)
+        val criteriaRepository = CriteriaRepositoryImpl(jdbi)
+        val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+        
+        // Create test data
+        val decision = decisionRepository.insert(DecisionInput(name = "Test Decision"))
+        val option1 = optionRepository.insert(decision.id, OptionInput(name = "Option 1"))
+        val option2 = optionRepository.insert(decision.id, OptionInput(name = "Option 2"))
+        val criteria1 = criteriaRepository.insert(decision.id, CriteriaInput(name = "Criteria 1", weight = 3))
+        val criteria2 = criteriaRepository.insert(decision.id, CriteriaInput(name = "Criteria 2", weight = 5))
+        
+        // Create user scores for the decision
+        val userScore1 = userScoreRepository.insert(
+            decisionId = decision.id,
+            optionId = option1.id,
+            criteriaId = criteria1.id,
+            scoredBy = "user1",
+            score = UserScoreInput(score = 3)
+        )
+        val userScore2 = userScoreRepository.insert(
+            decisionId = decision.id,
+            optionId = option1.id,
+            criteriaId = criteria2.id,
+            scoredBy = "user1",
+            score = UserScoreInput(score = 4)
+        )
+        val userScore3 = userScoreRepository.insert(
+            decisionId = decision.id,
+            optionId = option2.id,
+            criteriaId = criteria1.id,
+            scoredBy = "user2",
+            score = UserScoreInput(score = 5)
+        )
+        
+        // Verify all data exists
+        decisionRepository.findById(decision.id) shouldNotBe null
+        optionRepository.findById(option1.id) shouldNotBe null
+        optionRepository.findById(option2.id) shouldNotBe null
+        criteriaRepository.findById(criteria1.id) shouldNotBe null
+        criteriaRepository.findById(criteria2.id) shouldNotBe null
+        userScoreRepository.findById(userScore1.id) shouldNotBe null
+        userScoreRepository.findById(userScore2.id) shouldNotBe null
+        userScoreRepository.findById(userScore3.id) shouldNotBe null
+        
+        // Delete the decision
+        val deleted = decisionRepository.delete(decision.id)
+        deleted.shouldBeTrue()
+        
+        // Verify everything is deleted (cascaded)
+        decisionRepository.findById(decision.id) shouldBe null
+        optionRepository.findById(option1.id) shouldBe null
+        optionRepository.findById(option2.id) shouldBe null
+        criteriaRepository.findById(criteria1.id) shouldBe null
+        criteriaRepository.findById(criteria2.id) shouldBe null
+        userScoreRepository.findById(userScore1.id) shouldBe null
+        userScoreRepository.findById(userScore2.id) shouldBe null
+        userScoreRepository.findById(userScore3.id) shouldBe null
+    }
 }
