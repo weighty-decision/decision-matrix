@@ -23,6 +23,58 @@ class DecisionRepositoryTest {
     }
 
     @Test
+    fun `getDecision returns decision when it exists`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val inserted = decisionRepository.insert(
+            DecisionInput(
+                name = "My decision",
+                minScore = 2,
+                maxScore = 8
+            ),
+            createdBy = "test-user"
+        )
+        
+        val found = requireNotNull(decisionRepository.getDecision(inserted.id))
+        
+        assertSoftly(found) {
+            id shouldBe inserted.id
+            name shouldBe "My decision"
+            minScore shouldBe 2
+            maxScore shouldBe 8
+            createdBy shouldBe "test-user"
+            createdAt shouldNotBe null
+        }
+    }
+
+    @Test
+    fun `getDecision returns null for non-existent decision`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        
+        val found = decisionRepository.getDecision(999L)
+        
+        found shouldBe null
+    }
+
+    @Test
+    fun `getDecision returns decision with default values`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val inserted = decisionRepository.insert(
+            DecisionInput(name = "Default values decision")
+        )
+        
+        val found = requireNotNull(decisionRepository.getDecision(inserted.id))
+        
+        assertSoftly(found) {
+            id shouldBe inserted.id
+            name shouldBe "Default values decision"
+            minScore shouldBe 1
+            maxScore shouldBe 10
+            createdBy shouldBe "unknown"
+            createdAt shouldNotBe null
+        }
+    }
+
+    @Test
     fun `insert and findById`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val inserted = decisionRepository.insert(
@@ -30,7 +82,7 @@ class DecisionRepositoryTest {
                 name = "My decision",
             )
         )
-        val found = requireNotNull(decisionRepository.findById(inserted.id))
+        val found = requireNotNull(decisionRepository.getDecisionAggregate(inserted.id))
         assertSoftly(found) {
             id shouldBe inserted.id
             name shouldBe "My decision"
@@ -65,7 +117,7 @@ class DecisionRepositoryTest {
         val insertedOption2 = optionRepository.insert(decisionId = insertedDecision.id, OptionInput(name = "Toyota Camry"))
 
         // Retrieve the fully hydrated decision
-        val found = requireNotNull(decisionRepository.findById(insertedDecision.id))
+        val found = requireNotNull(decisionRepository.getDecisionAggregate(insertedDecision.id))
         found.name shouldBe "Choose a car"
         found.id shouldBe insertedDecision.id
 
@@ -96,7 +148,7 @@ class DecisionRepositoryTest {
         val insertedCriteria = criteriaRepository.insert(decisionId = insertedDecision.id, CriteriaInput(name = "Budget", weight = 4))
 
         // Retrieve the decision
-        val found = requireNotNull(decisionRepository.findById(insertedDecision.id))
+        val found = requireNotNull(decisionRepository.getDecisionAggregate(insertedDecision.id))
 
         found.name shouldBe "Criteria only decision"
         found.criteria.size shouldBe 1
@@ -118,7 +170,7 @@ class DecisionRepositoryTest {
         val insertedOption = optionRepository.insert(decisionId = insertedDecision.id, OptionInput(name = "Option A"))
 
         // Retrieve the decision
-        val found = requireNotNull(decisionRepository.findById(insertedDecision.id))
+        val found = requireNotNull(decisionRepository.getDecisionAggregate(insertedDecision.id))
 
         found.name shouldBe "Options only decision"
         found.criteria.size shouldBe 0
@@ -137,7 +189,7 @@ class DecisionRepositoryTest {
         deleted.shouldBeTrue()
 
         // Verify the decision is deleted
-        val found = decisionRepository.findById(inserted.id)
+        val found = decisionRepository.getDecisionAggregate(inserted.id)
         found shouldBe null
     }
 
@@ -160,7 +212,7 @@ class DecisionRepositoryTest {
                 maxScore = 5
             )
         )
-        val found = requireNotNull(decisionRepository.findById(inserted.id))
+        val found = requireNotNull(decisionRepository.getDecisionAggregate(inserted.id))
 
         found.name shouldBe "Custom score range decision"
         found.minScore shouldBe 0
@@ -179,7 +231,7 @@ class DecisionRepositoryTest {
         updated.id shouldBe inserted.id
 
         // Verify the update persisted
-        val found = requireNotNull(decisionRepository.findById(inserted.id))
+        val found = requireNotNull(decisionRepository.getDecisionAggregate(inserted.id))
         found.name shouldBe "Updated decision"
         found.minScore shouldBe 2
         found.maxScore shouldBe 8
@@ -308,7 +360,7 @@ class DecisionRepositoryTest {
         )
         
         // Verify all data exists
-        decisionRepository.findById(decision.id) shouldNotBe null
+        decisionRepository.getDecisionAggregate(decision.id) shouldNotBe null
         optionRepository.findById(option1.id) shouldNotBe null
         optionRepository.findById(option2.id) shouldNotBe null
         criteriaRepository.findById(criteria1.id) shouldNotBe null
@@ -322,7 +374,7 @@ class DecisionRepositoryTest {
         deleted.shouldBeTrue()
         
         // Verify everything is deleted (cascaded)
-        decisionRepository.findById(decision.id) shouldBe null
+        decisionRepository.getDecisionAggregate(decision.id) shouldBe null
         optionRepository.findById(option1.id) shouldBe null
         optionRepository.findById(option2.id) shouldBe null
         criteriaRepository.findById(criteria1.id) shouldBe null

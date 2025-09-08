@@ -3,6 +3,7 @@ package decisionmatrix.ui
 import decisionmatrix.DEFAULT_MAX_SCORE
 import decisionmatrix.DEFAULT_MIN_SCORE
 import decisionmatrix.Decision
+import decisionmatrix.DecisionAggregate
 import decisionmatrix.auth.AuthenticatedUser
 import kotlinx.html.ButtonType
 import kotlinx.html.a
@@ -77,8 +78,8 @@ object DecisionPages {
         }
     }
 
-    fun editPage(decision: Decision, user: AuthenticatedUser): String =
-        PageLayout.page("${decision.name} · edit", user = user, extraTopLevelScript = {
+    fun editPage(decisionAggregate: DecisionAggregate, user: AuthenticatedUser): String =
+        PageLayout.page("${decisionAggregate.name} · edit", user = user, extraTopLevelScript = {
             unsafe {
                 +"""
             document.addEventListener('DOMContentLoaded', function() {
@@ -104,24 +105,24 @@ object DecisionPages {
         }) {
             unsafe {
                 // Name form fragment
-                +nameFragment(decision)
+                +decisionFragment(decisionAggregate.decision)
             }
             div(classes = "grid") {
-                unsafe { +criteriaFragment(decision) }
-                unsafe { +optionsFragment(decision) }
+                unsafe { +criteriaFragment(decisionAggregate) }
+                unsafe { +optionsFragment(decisionAggregate) }
             }
             section(classes = "card") {
                 h2 { +"Next steps" }
                 ul(classes = "list") {
                     li {
                         a(classes = "btn") {
-                            href = "/decisions/${decision.id}/my-scores"
+                            href = "/decisions/${decisionAggregate.id}/my-scores"
                             +"Enter my scores"
                         }
                     }
                     li {
                         a(classes = "btn") {
-                            href = "/decisions/${decision.id}/results"
+                            href = "/decisions/${decisionAggregate.id}/results"
                             +"View results"
                         }
                     }
@@ -129,7 +130,7 @@ object DecisionPages {
             }
         }
 
-    fun nameFragment(decision: Decision): String = buildString {
+    fun decisionFragment(decision: Decision): String = buildString {
         appendHTML().section(classes = "card") {
             id = "decision-name-fragment"
             h1 { +"Edit decision" }
@@ -197,16 +198,16 @@ object DecisionPages {
         }
     }
 
-    fun optionsFragment(decision: Decision): String = buildString {
+    fun optionsFragment(decisionAggregate: DecisionAggregate): String = buildString {
         appendHTML().section(classes = "card") {
             id = "options-fragment"
             h2 { +"Options" }
             ul(classes = "list") {
-                decision.options.forEach { opt ->
+                decisionAggregate.options.forEach { opt ->
                     li(classes = "row") {
                         form(classes = "row grow") {
                             // Update option inline
-                            attributes["hx-post"] = "/decisions/${decision.id}/options/${opt.id}/update"
+                            attributes["hx-post"] = "/decisions/${decisionAggregate.id}/options/${opt.id}/update"
                             attributes["hx-target"] = "#options-fragment"
                             attributes["hx-swap"] = "outerHTML"
                             textInput(classes = "grow") {
@@ -221,7 +222,7 @@ object DecisionPages {
                         }
                         form {
                             // Delete option inline
-                            attributes["hx-post"] = "/decisions/${decision.id}/options/${opt.id}/delete"
+                            attributes["hx-post"] = "/decisions/${decisionAggregate.id}/options/${opt.id}/delete"
                             attributes["hx-target"] = "#options-fragment"
                             attributes["hx-swap"] = "outerHTML"
                             attributes["hx-confirm"] = "Are you sure you want to delete the option '${opt.name}'? This action cannot be undone."
@@ -235,7 +236,7 @@ object DecisionPages {
             }
             form(classes = "row") {
                 // Create option inline
-                attributes["hx-post"] = "/decisions/${decision.id}/options"
+                attributes["hx-post"] = "/decisions/${decisionAggregate.id}/options"
                 attributes["hx-target"] = "#options-fragment"
                 attributes["hx-swap"] = "outerHTML"
                 textInput {
@@ -252,16 +253,16 @@ object DecisionPages {
         }
     }
 
-    fun criteriaFragment(decision: Decision): String = buildString {
+    fun criteriaFragment(decisionAggregate: DecisionAggregate): String = buildString {
         appendHTML().section(classes = "card") {
             id = "criteria-fragment"
             h2 { +"Criteria" }
             ul(classes = "list") {
-                decision.criteria.forEach { c ->
+                decisionAggregate.criteria.forEach { c ->
                     li(classes = "row") {
                         form(classes = "row grow") {
                             // Update criteria inline
-                            attributes["hx-post"] = "/decisions/${decision.id}/criteria/${c.id}/update"
+                            attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${c.id}/update"
                             attributes["hx-target"] = "#criteria-fragment"
                             attributes["hx-swap"] = "outerHTML"
                             textInput(classes = "grow") {
@@ -281,7 +282,7 @@ object DecisionPages {
                         }
                         form {
                             // Delete criteria inline
-                            attributes["hx-post"] = "/decisions/${decision.id}/criteria/${c.id}/delete"
+                            attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${c.id}/delete"
                             attributes["hx-target"] = "#criteria-fragment"
                             attributes["hx-swap"] = "outerHTML"
                             attributes["hx-confirm"] = "Are you sure you want to delete the criteria '${c.name}'? This action cannot be undone."
@@ -295,7 +296,7 @@ object DecisionPages {
             }
             form(classes = "row") {
                 // Create criteria inline
-                attributes["hx-post"] = "/decisions/${decision.id}/criteria"
+                attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria"
                 attributes["hx-target"] = "#criteria-fragment"
                 attributes["hx-swap"] = "outerHTML"
                 textInput {

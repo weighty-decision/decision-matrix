@@ -1,9 +1,8 @@
 package decisionmatrix.ui
 
-import decisionmatrix.Decision
+import decisionmatrix.DecisionAggregate
 import decisionmatrix.UserScore
 import decisionmatrix.auth.AuthenticatedUser
-import decisionmatrix.auth.AuthorizationService
 import decisionmatrix.calculateOptionScores
 import kotlinx.html.a
 import kotlinx.html.div
@@ -20,33 +19,33 @@ import java.math.RoundingMode
 
 object ResultsPage {
 
-    fun resultsPage(decision: Decision, scores: List<UserScore>, user: AuthenticatedUser): String =
-        PageLayout.page("${decision.name} · results", user = user) {
+    fun resultsPage(decisionAggregate: DecisionAggregate, scores: List<UserScore>, user: AuthenticatedUser): String =
+        PageLayout.page("${decisionAggregate.name} · results", user = user) {
             section(classes = "card") {
-                h1 { +"Results for '${decision.name}'" }
+                h1 { +"Results for '${decisionAggregate.name}'" }
 
-                if (decision.options.isEmpty() || decision.criteria.isEmpty()) {
+                if (decisionAggregate.options.isEmpty() || decisionAggregate.criteria.isEmpty()) {
                     p { +"Add options and criteria first on the edit page." }
                 } else if (scores.isEmpty()) {
                     p { +"No scores yet. Ask participants to submit their scores." }
                 } else {
-                    val scoreReport = decision.calculateOptionScores(scores)
+                    val scoreReport = decisionAggregate.calculateOptionScores(scores)
 
                     table {
                         thead {
                             tr {
                                 th { +"Criteria" }
-                                decision.options.forEach { option ->
+                                decisionAggregate.options.forEach { option ->
                                     th { +option.name }
                                 }
                             }
                         }
                         tbody {
                             // Create rows for each criterion
-                            decision.criteria.forEach { criterion ->
+                            decisionAggregate.criteria.forEach { criterion ->
                                 tr {
                                     td { +"${criterion.name} (×${criterion.weight})" }
-                                    decision.options.forEach { option ->
+                                    decisionAggregate.options.forEach { option ->
                                         val score = scoreReport.optionScores.find {
                                             it.criteriaName == criterion.name && it.optionName == option.name
                                         }?.optionScore ?: java.math.BigDecimal.ZERO
@@ -57,7 +56,7 @@ object ResultsPage {
 
                             tr(classes = "total-row") {
                                 td { +"Total" }
-                                decision.options.forEach { option ->
+                                decisionAggregate.options.forEach { option ->
                                     val totalScore = scoreReport.totalScores[option] ?: java.math.BigDecimal.ZERO
                                     td { +totalScore.setScale(2, RoundingMode.HALF_UP).toPlainString() }
                                 }
@@ -73,12 +72,12 @@ object ResultsPage {
 
                 div(classes = "actions") {
                     a(classes = "btn btn-secondary") {
-                        href = "/decisions/${decision.id}/user-scores.csv"
+                        href = "/decisions/${decisionAggregate.id}/user-scores.csv"
                         +"Download User Scores (CSV)"
                     }
-                    if (decision.canBeModifiedBy(user.id)) {
+                    if (decisionAggregate.canBeModifiedBy(user.id)) {
                         a(classes = "btn") {
-                            href = "/decisions/${decision.id}/edit"
+                            href = "/decisions/${decisionAggregate.id}/edit"
                             +"Back to edit"
                         }
                     }

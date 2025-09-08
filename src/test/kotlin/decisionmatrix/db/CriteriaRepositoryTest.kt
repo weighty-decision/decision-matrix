@@ -127,7 +127,7 @@ class CriteriaRepositoryTest {
         userScoreRepository.findById(userScore2.id) shouldBe null
         
         // Verify other data is unaffected
-        decisionRepository.findById(decision.id) shouldNotBe null
+        decisionRepository.getDecisionAggregate(decision.id) shouldNotBe null
         optionRepository.findById(option.id) shouldNotBe null
     }
 }

@@ -23,7 +23,7 @@ data class CriteriaOptionScore(
 )
 
 
-fun Decision.calculateOptionScores(userScores: List<UserScore>): ScoreReport {
+fun DecisionAggregate.calculateOptionScores(userScores: List<UserScore>): ScoreReport {
     require(options.isNotEmpty()) { "Missing required options" }
     require(criteria.isNotEmpty()) { "Missing required criteria" }
     require(userScores.isNotEmpty()) { "Missing required scores" }

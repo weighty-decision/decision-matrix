@@ -16,7 +16,7 @@ class AuthorizationService(
      * Future: will also allow modification with a secret code.
      */
     fun canModifyDecision(decisionId: Long, userId: String): Boolean {
-        val decision = decisionRepository.findById(decisionId) ?: return false
+        val decision = decisionRepository.getDecision(decisionId) ?: return false
         return decision.canBeModifiedBy(userId)
     }
     

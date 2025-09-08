@@ -132,7 +132,7 @@ class DecisionRoutes(
     private fun editDecision(request: Request): Response {
         val currentUser = UserContext.requireCurrent(request)
         val id = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
-        val decision = decisionRepository.findById(id) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+        val decision = decisionRepository.getDecisionAggregate(id) ?: return Response(Status.NOT_FOUND).body("Decision not found")
 
         if (!decision.canBeModifiedBy(currentUser.id)) {
             return Response(Status.FORBIDDEN).body("You don't have permission to modify this decision")
@@ -164,7 +164,7 @@ class DecisionRoutes(
             decisionRepository.update(id, name, minScore, maxScore) ?: return Response(Status.NOT_FOUND).body("Decision not found")
 
         return if (isHx(request)) {
-            htmlResponse(DecisionPages.nameFragment(updated))
+            htmlResponse(DecisionPages.decisionFragment(updated))
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/${updated.id}/edit")
         }
@@ -184,7 +184,7 @@ class DecisionRoutes(
         optionRepository.insert(decisionId, OptionInput(name))
 
         return if (isHx(request)) {
-            val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+            val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.optionsFragment(decision))
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
@@ -206,7 +206,7 @@ class DecisionRoutes(
         optionRepository.update(optionId, name) ?: return Response(Status.NOT_FOUND).body("Option not found")
 
         return if (isHx(request)) {
-            val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+            val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.optionsFragment(decision))
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
@@ -225,7 +225,7 @@ class DecisionRoutes(
         optionRepository.delete(optionId)
 
         return if (isHx(request)) {
-            val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+            val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.optionsFragment(decision))
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
@@ -247,7 +247,7 @@ class DecisionRoutes(
         criteriaRepository.insert(decisionId, CriteriaInput(name = name, weight = weight))
 
         return if (isHx(request)) {
-            val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+            val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.criteriaFragment(decision))
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
@@ -270,7 +270,7 @@ class DecisionRoutes(
         criteriaRepository.update(criteriaId, name, weight) ?: return Response(Status.NOT_FOUND).body("Criteria not found")
 
         return if (isHx(request)) {
-            val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+            val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.criteriaFragment(decision))
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
@@ -289,7 +289,7 @@ class DecisionRoutes(
         criteriaRepository.delete(criteriaId)
 
         return if (isHx(request)) {
-            val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+            val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.criteriaFragment(decision))
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
@@ -313,7 +313,7 @@ class DecisionRoutes(
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
         val currentUser = UserContext.requireCurrent(request)
 
-        val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+        val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
         val userScores = userScoreRepository.findAllByDecisionId(decisionId)
             .filter { it.scoredBy == currentUser.id }
 
@@ -322,7 +322,7 @@ class DecisionRoutes(
 
     private fun submitMyScores(request: Request): Response {
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
-        val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+        val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
         val currentUser = UserContext.requireCurrent(request)
 
         val form = parseForm(request)
@@ -373,7 +373,7 @@ class DecisionRoutes(
 
     private fun calculateScores(request: Request): Response {
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
-        val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+        val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
 
         val scores = userScoreRepository.findAllByDecisionId(decisionId)
 
@@ -383,7 +383,7 @@ class DecisionRoutes(
 
     private fun downloadUserScoresCsv(request: Request): Response {
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
-        val decision = decisionRepository.findById(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+        val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
 
         val scores = userScoreRepository.findAllByDecisionId(decisionId)
 

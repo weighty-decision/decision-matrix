@@ -1,6 +1,6 @@
 package decisionmatrix.ui
 
-import decisionmatrix.Decision
+import decisionmatrix.DecisionAggregate
 import decisionmatrix.auth.AuthenticatedUser
 import kotlinx.html.ButtonType
 import kotlinx.html.InputType
@@ -29,7 +29,7 @@ import java.time.format.FormatStyle
 object IndexPage {
 
     fun indexPage(
-        decisions: List<Decision>,
+        decisionAggregates: List<DecisionAggregate>,
         currentUser: AuthenticatedUser,
         searchTerm: String? = null,
         recentFilter: Boolean = true,
@@ -113,7 +113,7 @@ object IndexPage {
 
                 div {
                     id = "decisions-table"
-                    unsafe { +decisionsTableFragment(decisions, currentUser) }
+                    unsafe { +decisionsTableFragment(decisionAggregates, currentUser) }
                 }
             }
 
@@ -162,8 +162,8 @@ object IndexPage {
             }
         }
 
-    fun decisionsTableFragment(decisions: List<Decision>, currentUser: AuthenticatedUser): String = buildString {
-        if (decisions.isEmpty()) {
+    fun decisionsTableFragment(decisionAggregates: List<DecisionAggregate>, currentUser: AuthenticatedUser): String = buildString {
+        if (decisionAggregates.isEmpty()) {
             appendHTML().p(classes = "muted") {
                 +"No decisions found. Try adjusting your search or filters, or create your first decision to get started."
             }
@@ -177,7 +177,7 @@ object IndexPage {
                     }
                 }
                 tbody {
-                    decisions.forEach { decision ->
+                    decisionAggregates.forEach { decision ->
                         tr {
                             td {
                                 strong { +decision.name }

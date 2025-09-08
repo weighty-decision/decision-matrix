@@ -22,8 +22,6 @@ data class Decision(
     val maxScore: Int = DEFAULT_MAX_SCORE,
     val createdBy: String? = null,
     @Contextual val createdAt: Instant? = null,
-    val criteria: List<Criteria> = emptyList(),
-    val options: List<Option> = emptyList(),
 ) {
     /**
      * Checks if a user can modify a decision when you already have a hydrated Decision object.
@@ -31,6 +29,23 @@ data class Decision(
     fun canBeModifiedBy(userId: String): Boolean {
         return createdBy == userId
     }
+}
+
+@Serializable
+data class DecisionAggregate(
+    val decision: Decision,
+    val criteria: List<Criteria> = emptyList(),
+    val options: List<Option> = emptyList(),
+) {
+    // Delegate properties to the composed Decision
+    val id: Long get() = decision.id
+    val name: String get() = decision.name
+    val minScore: Int get() = decision.minScore
+    val maxScore: Int get() = decision.maxScore
+    val createdBy: String? get() = decision.createdBy
+    val createdAt: Instant? get() = decision.createdAt
+
+    fun canBeModifiedBy(userId: String): Boolean = decision.canBeModifiedBy(userId)
 }
 
 @Serializable

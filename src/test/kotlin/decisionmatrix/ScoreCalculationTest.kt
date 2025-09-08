@@ -12,9 +12,8 @@ class ScoreCalculationTest {
     fun `calculateOptionScores should calculate correct weighted scores for single option and criterion`() {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
-        val decision = Decision(
-            id = 1L,
-            name = "Test Decision",
+        val decisionAggregate = DecisionAggregate(
+            decision = Decision(id = 1L, name = "Test Decision"),
             criteria = listOf(criterion),
             options = listOf(option)
         )
@@ -30,7 +29,7 @@ class ScoreCalculationTest {
             )
         )
 
-        val result = decision.calculateOptionScores(scores)
+        val result = decisionAggregate.calculateOptionScores(scores)
 
         result.totalScores[option] shouldBe BigDecimal(15).setScale(2, RoundingMode.HALF_UP)
     }
@@ -45,9 +44,8 @@ class ScoreCalculationTest {
             Option(id = 1L, decisionId = 1L, name = "Option A"),
             Option(id = 2L, decisionId = 1L, name = "Option B")
         )
-        val decision = Decision(
-            id = 1L,
-            name = "Test Decision",
+        val decisionAggregate = DecisionAggregate(
+            decision = Decision(id = 1L, name = "Test Decision"),
             criteria = criteria,
             options = options
         )
@@ -58,7 +56,7 @@ class ScoreCalculationTest {
             UserScore(4L, 1L, 2L, 2L, "user1", null, 4)  // Option B, Quality: 4
         )
 
-        val result = decision.calculateOptionScores(scores)
+        val result = decisionAggregate.calculateOptionScores(scores)
 
         result.totalScores[options[0]] shouldBe BigDecimal(22).setScale(2, RoundingMode.HALF_UP)
         result.totalScores[options[1]] shouldBe BigDecimal(17).setScale(2, RoundingMode.HALF_UP)
@@ -68,9 +66,8 @@ class ScoreCalculationTest {
     fun `calculateOptionScores should average multiple scores for same option-criterion combination`() {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 2)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
-        val decision = Decision(
-            id = 1L,
-            name = "Test Decision",
+        val decisionAggregate = DecisionAggregate(
+            decision = Decision(id = 1L, name = "Test Decision"),
             criteria = listOf(criterion),
             options = listOf(option)
         )
@@ -80,7 +77,7 @@ class ScoreCalculationTest {
             UserScore(3L, 1L, 1L, 1L, "user3", null, 4)
         )
 
-        val result = decision.calculateOptionScores(scores)
+        val result = decisionAggregate.calculateOptionScores(scores)
 
         // Average: (3 + 5 + 4) / 3 = 4, Weighted: 4 * 2 = 8
         result.totalScores[option] shouldBe BigDecimal(8).setScale(2, RoundingMode.HALF_UP)
@@ -90,9 +87,8 @@ class ScoreCalculationTest {
     fun `calculateOptionScores should handle decimal averages with proper rounding`() {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
-        val decision = Decision(
-            id = 1L,
-            name = "Test Decision",
+        val decisionAggregate = DecisionAggregate(
+            decision = Decision(id = 1L, name = "Test Decision"),
             criteria = listOf(criterion),
             options = listOf(option)
         )
@@ -101,7 +97,7 @@ class ScoreCalculationTest {
             UserScore(2L, 1L, 1L, 1L, "user2", null, 2)
         )
 
-        val result = decision.calculateOptionScores(scores)
+        val result = decisionAggregate.calculateOptionScores(scores)
 
         // Average: (1 + 2) / 2 = 1.5, Weighted: 1.5 * 3 = 4.5
         result.totalScores[option] shouldBe BigDecimal("4.50")
@@ -111,9 +107,8 @@ class ScoreCalculationTest {
     fun `calculateOptionScores should handle zero weight criteria`() {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 0)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
-        val decision = Decision(
-            id = 1L,
-            name = "Test Decision",
+        val decisionAggregate = DecisionAggregate(
+            decision = Decision(id = 1L, name = "Test Decision"),
             criteria = listOf(criterion),
             options = listOf(option)
         )
@@ -121,7 +116,7 @@ class ScoreCalculationTest {
             UserScore(1L, 1L, 1L, 1L, "user1", null, 5)
         )
 
-        val result = decision.calculateOptionScores(scores)
+        val result = decisionAggregate.calculateOptionScores(scores)
 
         result.totalScores[option] shouldBe BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)
     }
@@ -133,9 +128,8 @@ class ScoreCalculationTest {
             Criteria(id = 2L, decisionId = 1L, name = "Quality", weight = 2)
         )
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
-        val decision = Decision(
-            id = 1L,
-            name = "Test Decision",
+        val decisionAggregate = DecisionAggregate(
+            decision = Decision(id = 1L, name = "Test Decision"),
             criteria = criteria,
             options = listOf(option)
         )
@@ -143,7 +137,7 @@ class ScoreCalculationTest {
             UserScore(1L, 1L, 1L, 1L, "user1", null, 4) // Only Cost score, no Quality score
         )
 
-        val result = decision.calculateOptionScores(scores)
+        val result = decisionAggregate.calculateOptionScores(scores)
 
         // Only Cost contributes: 4 * 3 = 12, Quality contributes 0 (no scores)
         result.totalScores[option] shouldBe BigDecimal(12).setScale(2, RoundingMode.HALF_UP)
@@ -156,9 +150,8 @@ class ScoreCalculationTest {
             Option(id = 1L, decisionId = 1L, name = "Option A"),
             Option(id = 2L, decisionId = 1L, name = "Option B")
         )
-        val decision = Decision(
-            id = 1L,
-            name = "Test Decision",
+        val decisionAggregate = DecisionAggregate(
+            decision = Decision(id = 1L, name = "Test Decision"),
             criteria = listOf(criterion),
             options = options
         )
@@ -166,7 +159,7 @@ class ScoreCalculationTest {
             UserScore(1L, 1L, 1L, 1L, "user1", null, 4) // Only for Option A
         )
 
-        val result = decision.calculateOptionScores(scores)
+        val result = decisionAggregate.calculateOptionScores(scores)
 
         result.totalScores[options[0]] shouldBe BigDecimal(12).setScale(2, RoundingMode.HALF_UP)
         result.totalScores[options[1]] shouldBe BigDecimal.ZERO
@@ -175,9 +168,8 @@ class ScoreCalculationTest {
     @Test
     fun `calculateOptionScores should throw exception when options are empty`() {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3)
-        val decision = Decision(
-            id = 1L,
-            name = "Test Decision",
+        val decisionAggregate = DecisionAggregate(
+            decision = Decision(id = 1L, name = "Test Decision"),
             criteria = listOf(criterion),
             options = emptyList()
         )
@@ -187,7 +179,7 @@ class ScoreCalculationTest {
 
         // When & Then
         val exception = shouldThrow<IllegalArgumentException> {
-            decision.calculateOptionScores(scores)
+            decisionAggregate.calculateOptionScores(scores)
         }
         exception.message shouldBe "Missing required options"
     }
@@ -195,9 +187,8 @@ class ScoreCalculationTest {
     @Test
     fun `calculateOptionScores should throw exception when criteria are empty`() {
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
-        val decision = Decision(
-            id = 1L,
-            name = "Test Decision",
+        val decisionAggregate = DecisionAggregate(
+            decision = Decision(id = 1L, name = "Test Decision"),
             criteria = emptyList(),
             options = listOf(option)
         )
@@ -206,7 +197,7 @@ class ScoreCalculationTest {
         )
 
         val exception = shouldThrow<IllegalArgumentException> {
-            decision.calculateOptionScores(scores)
+            decisionAggregate.calculateOptionScores(scores)
         }
         exception.message shouldBe "Missing required criteria"
     }
@@ -216,15 +207,14 @@ class ScoreCalculationTest {
         // Given
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
-        val decision = Decision(
-            id = 1L,
-            name = "Test Decision",
+        val decisionAggregate = DecisionAggregate(
+            decision = Decision(id = 1L, name = "Test Decision"),
             criteria = listOf(criterion),
             options = listOf(option)
         )
 
         val exception = shouldThrow<IllegalArgumentException> {
-            decision.calculateOptionScores(emptyList())
+            decisionAggregate.calculateOptionScores(emptyList())
         }
         exception.message shouldBe "Missing required scores"
     }
@@ -237,9 +227,8 @@ class ScoreCalculationTest {
             Option(id = 1L, decisionId = 1L, name = "Option A"),
             Option(id = 2L, decisionId = 1L, name = "Option B")
         )
-        val decision = Decision(
-            id = 1L,
-            name = "Test Decision",
+        val decisionAggregate = DecisionAggregate(
+            decision = Decision(id = 1L, name = "Test Decision"),
             criteria = listOf(criterion),
             options = options
         )
@@ -249,7 +238,7 @@ class ScoreCalculationTest {
             UserScore(3L, 1L, 2L, 1L, "user1", null, 2)
         )
 
-        val result = decision.calculateOptionScores(scores)
+        val result = decisionAggregate.calculateOptionScores(scores)
 
         result.totalScores.keys.toList() shouldBe options
     }

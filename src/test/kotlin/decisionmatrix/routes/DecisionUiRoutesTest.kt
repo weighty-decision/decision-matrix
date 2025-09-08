@@ -48,7 +48,7 @@ class DecisionUiRoutesTest {
         val location = response.header("Location")
         val decisionId = location!!.split("/")[2].toLong()
 
-        val decision = decisionRepository.findById(decisionId)
+        val decision = decisionRepository.getDecisionAggregate(decisionId)
         decision!!.name shouldBe "Test Decision"
         decision.minScore shouldBe 2
         decision.maxScore shouldBe 8
@@ -142,7 +142,7 @@ class DecisionUiRoutesTest {
 
         response.status shouldBe Status.OK
 
-        val updatedDecision = decisionRepository.findById(decision.id)
+        val updatedDecision = decisionRepository.getDecisionAggregate(decision.id)
         updatedDecision!!.name shouldBe "Updated Decision"
         updatedDecision.minScore shouldBe 2
         updatedDecision.maxScore shouldBe 8

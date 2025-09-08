@@ -1,6 +1,6 @@
 package decisionmatrix.ui
 
-import decisionmatrix.Decision
+import decisionmatrix.DecisionAggregate
 import decisionmatrix.UserScore
 import decisionmatrix.auth.AuthenticatedUser
 import kotlinx.html.ButtonType
@@ -25,12 +25,12 @@ import kotlinx.html.ul
 
 object MyScoresPages {
 
-    fun myScoresPage(decision: Decision, user: AuthenticatedUser, scores: List<UserScore>): String =
-        PageLayout.page("${decision.name} · My scores", user = user) {
+    fun myScoresPage(decisionAggregate: DecisionAggregate, user: AuthenticatedUser, scores: List<UserScore>): String =
+        PageLayout.page("${decisionAggregate.name} · My scores", user = user) {
             section(classes = "card") {
-                h1 { +"My scores for '${decision.name}'" }
+                h1 { +"My scores for '${decisionAggregate.name}'" }
 
-                if (decision.options.isEmpty() || decision.criteria.isEmpty()) {
+                if (decisionAggregate.options.isEmpty() || decisionAggregate.criteria.isEmpty()) {
                     p {
                         +"Add options and criteria first on the edit page."
                     }
@@ -40,14 +40,14 @@ object MyScoresPages {
 
                     form {
                         attributes["method"] = "post"
-                        attributes["action"] = "/decisions/${decision.id}/my-scores"
+                        attributes["action"] = "/decisions/${decisionAggregate.id}/my-scores"
                         classes = setOf("stack")
 
                         table {
                             thead {
                                 tr {
                                     th { }
-                                    decision.options.forEach { opt ->
+                                    decisionAggregate.options.forEach { opt ->
                                         th {
                                             +opt.name
                                         }
@@ -55,17 +55,17 @@ object MyScoresPages {
                                 }
                             }
                             tbody {
-                                decision.criteria.forEach { c ->
+                                decisionAggregate.criteria.forEach { c ->
                                     tr {
                                         th { +c.name }
-                                        decision.options.forEach { opt ->
+                                        decisionAggregate.options.forEach { opt ->
                                             val existing = scoreMap[opt.id to c.id]
                                             td {
                                                 numberInput {
                                                     name = "score_${opt.id}_${c.id}"
-                                                    placeholder = "Score (${decision.minScore}-${decision.maxScore})"
-                                                    min = decision.minScore.toString()
-                                                    max = decision.maxScore.toString()
+                                                    placeholder = "Score (${decisionAggregate.minScore}-${decisionAggregate.maxScore})"
+                                                    min = decisionAggregate.minScore.toString()
+                                                    max = decisionAggregate.maxScore.toString()
                                                     if (existing != null) {
                                                         value = existing.score.toString()
                                                     }
@@ -91,7 +91,7 @@ object MyScoresPages {
                 ul {
                     li {
                         a(classes = "btn") {
-                            href = "/decisions/${decision.id}/results"
+                            href = "/decisions/${decisionAggregate.id}/results"
                             +"View results"
                         }
                     }

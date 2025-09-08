@@ -2,6 +2,7 @@ package decisionmatrix.db
 
 import decisionmatrix.Criteria
 import decisionmatrix.Decision
+import decisionmatrix.DecisionAggregate
 import decisionmatrix.DecisionInput
 import decisionmatrix.Option
 import org.jdbi.v3.core.Jdbi
@@ -16,10 +17,11 @@ data class DecisionSearchFilters(
 
 interface DecisionRepository {
     fun insert(decision: DecisionInput, createdBy: String = "unknown"): Decision = throw NotImplementedError()
-    fun findById(id: Long): Decision? = throw NotImplementedError()
+    fun getDecision(id: Long): Decision? = throw NotImplementedError()
+    fun getDecisionAggregate(id: Long): DecisionAggregate? = throw NotImplementedError()
     fun update(id: Long, name: String, minScore: Int, maxScore: Int): Decision? = throw NotImplementedError()
     fun delete(id: Long): Boolean = throw NotImplementedError()
-    fun findDecisions(filters: DecisionSearchFilters): List<Decision> = throw NotImplementedError()
+    fun findDecisions(filters: DecisionSearchFilters): List<DecisionAggregate> = throw NotImplementedError()
 }
 
 class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
@@ -41,8 +43,25 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
         }
     }
 
-    override fun findById(id: Long): Decision? {
+    override fun getDecision(id: Long): Decision? {
+
         return jdbi.withHandle<Decision?, Exception> { handle ->
+            handle.createQuery(
+                """
+                SELECT id, name, min_score, max_score, created_by, created_at
+                FROM decisions d
+                WHERE d.id = :id
+                """.trimIndent()
+            )
+                .bind("id", id)
+                .map { rs, _ -> mapDecision(rs) }
+                .findOne()
+                .orElse(null)
+        }
+    }
+
+    override fun getDecisionAggregate(id: Long): DecisionAggregate? {
+        return jdbi.withHandle<DecisionAggregate?, Exception> { handle ->
             val rows = handle.createQuery(
                 """
                 SELECT 
@@ -71,7 +90,7 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
                 return@withHandle null
             }
 
-            mapDecisionWithRelations(rows)
+            mapDecisionAggregate(rows)
         }
     }
 
@@ -109,8 +128,8 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
         }
     }
 
-    override fun findDecisions(filters: DecisionSearchFilters): List<Decision> {
-        return jdbi.withHandle<List<Decision>, Exception> { handle ->
+    override fun findDecisions(filters: DecisionSearchFilters): List<DecisionAggregate> {
+        return jdbi.withHandle<List<DecisionAggregate>, Exception> { handle ->
             val conditions = mutableListOf<String>()
             val parameters = mutableMapOf<String, Any>()
 
@@ -169,7 +188,7 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
             val decisionGroups = rows.groupBy { (it["decision_id"] as Number).toLong() }
 
             decisionGroups.map { (_, decisionRows) ->
-                mapDecisionWithRelations(decisionRows)
+                mapDecisionAggregate(decisionRows)
             }
         }
     }
@@ -186,7 +205,7 @@ fun mapDecision(rs: ResultSet): Decision {
     )
 }
 
-fun mapDecisionWithRelations(rows: List<Map<String, Any>>): Decision {
+fun mapDecisionAggregate(rows: List<Map<String, Any>>): DecisionAggregate {
     require(rows.isNotEmpty()) { "Cannot map empty rows to Decision" }
 
     val firstRow = rows.first()
@@ -223,13 +242,15 @@ fun mapDecisionWithRelations(rows: List<Map<String, Any>>): Decision {
         }
     }
 
-    return Decision(
-        id = decisionId,
-        name = decisionName,
-        minScore = decisionMinScore,
-        maxScore = decisionMaxScore,
-        createdBy = decisionCreatedBy,
-        createdAt = decisionCreatedAt,
+    return DecisionAggregate(
+        decision = Decision(
+            id = decisionId,
+            name = decisionName,
+            minScore = decisionMinScore,
+            maxScore = decisionMaxScore,
+            createdBy = decisionCreatedBy,
+            createdAt = decisionCreatedAt,
+        ),
         criteria = criteriaMap.values.toList(),
         options = optionsMap.values.toList()
     )

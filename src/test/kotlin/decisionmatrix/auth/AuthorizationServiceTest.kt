@@ -17,7 +17,7 @@ class AuthorizationServiceTest {
             createdAt = Instant.now()
         )
         
-        override fun findById(id: Long): Decision? {
+        override fun getDecision(id: Long): Decision? {
             return if (id == 1L) testDecision else null
         }
     }
