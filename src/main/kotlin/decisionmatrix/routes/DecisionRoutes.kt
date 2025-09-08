@@ -41,8 +41,8 @@ class DecisionRoutes(
         "/decisions" bind Method.POST to ::createDecision,
         "/decisions/{id}/edit" bind Method.GET to ::editDecision,
 
-        // htmx-backed POST endpoints (using POST for simplicity)
         "/decisions/{id}/name" bind Method.POST to ::updateDecisionName,
+        "/decisions/{id}/delete" bind Method.POST to ::deleteDecision,
 
         "/decisions/{id}/options" bind Method.POST to ::createOption,
         "/decisions/{id}/options/{optionId}/update" bind Method.POST to ::updateOption,
@@ -245,6 +245,13 @@ class DecisionRoutes(
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
         }
+    }
+
+    private fun deleteDecision(request: Request): Response {
+        val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
+        decisionRepository.delete(decisionId)
+
+        return Response(Status.SEE_OTHER).header("Location", "/")
     }
 
     private fun viewMyScores(request: Request): Response {

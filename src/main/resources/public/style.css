@@ -245,7 +245,6 @@ table tbody tr:last-child td {
     border-bottom: none;
 }
 
-/* Special styling for the total row */
 table tr.total-row {
     background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
     border-top: 2px solid rgba(59, 130, 246, 0.3);
