@@ -78,32 +78,34 @@ object PageLayout {
                             }
                         });
                         
-                        document.body.addEventListener('htmx:afterRequest', function(evt) {
-                            if (evt.detail.successful) {
-                                // Clear any existing error messages on success
-                                const errorContainer = document.getElementById('error-notifications');
-                                if (errorContainer) {
-                                    errorContainer.innerHTML = '';
-                                    errorContainer.style.display = 'none';
+                        document.addEventListener('DOMContentLoaded', function() {
+                            document.body.addEventListener('htmx:afterRequest', function(evt) {
+                                if (evt.detail.successful) {
+                                    // Clear any existing error messages on success
+                                    const errorContainer = document.getElementById('error-notifications');
+                                    if (errorContainer) {
+                                        errorContainer.innerHTML = '';
+                                        errorContainer.style.display = 'none';
+                                    }
+                                } else if (evt.detail.failed && evt.detail.xhr) {
+                                    // Handle server errors (4xx/5xx)
+                                    const xhr = evt.detail.xhr;
+                                    const path = evt.detail.requestConfig.path || '';
+                                    
+                                    let message = 'Operation failed. Please try again.';
+                                    
+                                    if (xhr.status >= 500) {
+                                        message = 'Server error occurred. Please try again later.';
+                                    } else if (xhr.status >= 400) {
+                                        message = 'Request failed. Please check your input and try again.';
+                                    }
+                                    
+                                    showErrorNotification(message);
+                                } else {
+                                    // Handle network errors
+                                    showErrorNotification('Connection error. Please check your internet connection and try again.');
                                 }
-                            } else if (evt.detail.failed && evt.detail.xhr) {
-                                // Handle server errors (4xx/5xx)
-                                const xhr = evt.detail.xhr;
-                                const path = evt.detail.requestConfig.path || '';
-                                
-                                let message = 'Operation failed. Please try again.';
-                                
-                                if (xhr.status >= 500) {
-                                    message = 'Server error occurred. Please try again later.';
-                                } else if (xhr.status >= 400) {
-                                    message = 'Request failed. Please check your input and try again.';
-                                }
-                                
-                                showErrorNotification(message);
-                            } else {
-                                // Handle network errors
-                                showErrorNotification('Connection error. Please check your internet connection and try again.');
-                            }
+                            });
                         });
                         
                         function showErrorNotification(message) {
