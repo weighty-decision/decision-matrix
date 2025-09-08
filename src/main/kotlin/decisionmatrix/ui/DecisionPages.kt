@@ -214,6 +214,7 @@ object DecisionPages {
                             attributes["hx-post"] = "/decisions/${decision.id}/options/${opt.id}/delete"
                             attributes["hx-target"] = "#options-fragment"
                             attributes["hx-swap"] = "outerHTML"
+                            attributes["hx-confirm"] = "Are you sure you want to delete the option '${opt.name}'? This action cannot be undone."
                             button(classes = "btn danger small") {
                                 type = ButtonType.submit
                                 +"Delete"
@@ -273,6 +274,7 @@ object DecisionPages {
                             attributes["hx-post"] = "/decisions/${decision.id}/criteria/${c.id}/delete"
                             attributes["hx-target"] = "#criteria-fragment"
                             attributes["hx-swap"] = "outerHTML"
+                            attributes["hx-confirm"] = "Are you sure you want to delete the criteria '${c.name}'? This action cannot be undone."
                             button(classes = "btn danger small") {
                                 type = ButtonType.submit
                                 +"Delete"
