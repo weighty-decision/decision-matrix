@@ -1,12 +1,11 @@
 :root {
-    --bg: #1a1c1a;
-    --surface: #242622;
-    --muted: #8b9688;
-    --text: #f4f1e8;
-    --primary: #b85c4a;
-    --accent: #6b8a73;
-    --danger: #a44b39;
-    --border: #3a3d36;
+    --bg: #0b0e14;
+    --surface: #11161f;
+    --muted: #9aa4b2;
+    --text: #e5e7eb;
+    --primary: #3b82f6;
+    --danger: #ef4444;
+    --border: #1f2937;
     --radius: 10px;
     --gap: 12px;
 }
@@ -23,7 +22,7 @@ body {
     margin: 0;
     font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, Apple Color Emoji, Segoe UI Emoji;
     color: var(--text);
-    background: radial-gradient(1200px 800px at 10% 0%, #252821 0%, var(--bg) 60%);
+    background: radial-gradient(1200px 800px at 10% 0%, #121826 0%, var(--bg) 60%);
 }
 
 .container {
@@ -62,11 +61,11 @@ main.container {
 }
 
 .card {
-    background: linear-gradient(180deg, #2a2c27, var(--surface));
+    background: linear-gradient(180deg, #0f1420, var(--surface));
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 18px;
-    box-shadow: 0 0 0 1px #1d1f1c inset,
+    box-shadow: 0 0 0 1px #0b1220 inset,
     0 10px 30px rgba(0, 0, 0, .35);
 }
 
@@ -97,7 +96,7 @@ input, button {
 }
 
 input[type="text"], input[type="number"], input[type="search"], select {
-    background: #1d1f1c;
+    background: #0b1220;
     border: 1px solid var(--border);
     color: var(--text);
     border-radius: 8px;
@@ -112,8 +111,8 @@ select {
 }
 
 input[type="text"]:focus, input[type="number"]:focus, input[type="search"]:focus, select:focus {
-    border-color: #5a6b5a;
-    box-shadow: 0 0 0 3px rgba(107, 138, 115, .15);
+    border-color: #2a3a5c;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .15);
 }
 
 label > span {
@@ -131,7 +130,7 @@ label > span {
 }
 
 .btn {
-    background: #2c2f28;
+    background: #172036;
     color: var(--text);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -140,12 +139,12 @@ label > span {
 }
 
 .btn:hover {
-    background: #34372e;
+    background: #1a2744;
 }
 
 .btn.primary {
-    background: linear-gradient(0deg, #8a4a3a, #b85c4a);
-    border-color: var(--primary);
+    background: linear-gradient(0deg, #1b3b75, #2a5bbf);
+    border-color: #3b82f6;
 }
 
 .btn.primary:hover {
@@ -153,8 +152,8 @@ label > span {
 }
 
 .btn.danger {
-    background: linear-gradient(0deg, #7a3129, #a44b39);
-    border-color: var(--danger);
+    background: linear-gradient(0deg, #5c1111, #a61d1d);
+    border-color: #ef4444;
 }
 
 .btn.small {
@@ -163,8 +162,8 @@ label > span {
 }
 
 .btn.filter-btn.active {
-    background: linear-gradient(0deg, #5a6b57, #6b8a73);
-    border-color: var(--accent);
+    background: linear-gradient(0deg, #1b3b75, #2a5bbf);
+    border-color: #3b82f6;
     color: var(--text);
 }
 
@@ -183,7 +182,7 @@ ul.list > li {
     align-items: center;
     gap: var(--gap);
     padding: 8px 0;
-    border-bottom: 1px dashed #33362e;
+    border-bottom: 1px dashed #1a2333;
 }
 
 ul.list > li:last-child {
@@ -203,16 +202,16 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin: 18px 0;
-    background: linear-gradient(180deg, rgba(29, 31, 28, 0.6), rgba(36, 38, 34, 0.8));
+    background: linear-gradient(180deg, rgba(15, 20, 32, 0.6), rgba(17, 22, 31, 0.8));
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
-    box-shadow: 0 0 0 1px rgba(26, 28, 26, 0.8) inset,
+    box-shadow: 0 0 0 1px rgba(11, 18, 32, 0.8) inset,
     0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 table th {
-    background: linear-gradient(180deg, #34372e, #2a2c27);
+    background: linear-gradient(180deg, #1a2744, #0f1420);
     color: var(--text);
     font-weight: 600;
     text-align: left;
@@ -229,17 +228,17 @@ table th:not(:last-child) {
 
 table td {
     padding: 12px 16px;
-    border-bottom: 1px solid rgba(58, 61, 54, 0.5);
+    border-bottom: 1px solid rgba(31, 41, 55, 0.5);
     color: var(--text);
     font-variant-numeric: tabular-nums;
 }
 
 table td:not(:last-child) {
-    border-right: 1px solid rgba(58, 61, 54, 0.3);
+    border-right: 1px solid rgba(31, 41, 55, 0.3);
 }
 
 table tbody tr:hover {
-    background: rgba(107, 138, 115, 0.05);
+    background: rgba(59, 130, 246, 0.05);
 }
 
 table tbody tr:last-child td {
@@ -248,8 +247,8 @@ table tbody tr:last-child td {
 
 /* Special styling for the total row */
 table tr.total-row {
-    background: linear-gradient(90deg, rgba(184, 92, 74, 0.1), rgba(184, 92, 74, 0.05));
-    border-top: 2px solid rgba(184, 92, 74, 0.3);
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+    border-top: 2px solid rgba(59, 130, 246, 0.3);
 }
 
 table tr.total-row td {
