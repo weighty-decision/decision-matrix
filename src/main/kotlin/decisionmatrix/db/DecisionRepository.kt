@@ -21,7 +21,7 @@ interface DecisionRepository {
     fun getDecisionAggregate(id: Long): DecisionAggregate? = throw NotImplementedError()
     fun update(id: Long, name: String, minScore: Int, maxScore: Int): Decision? = throw NotImplementedError()
     fun delete(id: Long): Boolean = throw NotImplementedError()
-    fun findDecisions(filters: DecisionSearchFilters): List<DecisionAggregate> = throw NotImplementedError()
+    fun findDecisions(filters: DecisionSearchFilters): List<Decision> = throw NotImplementedError()
 }
 
 class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
@@ -128,8 +128,8 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
         }
     }
 
-    override fun findDecisions(filters: DecisionSearchFilters): List<DecisionAggregate> {
-        return jdbi.withHandle<List<DecisionAggregate>, Exception> { handle ->
+    override fun findDecisions(filters: DecisionSearchFilters): List<Decision> {
+        return jdbi.withHandle<List<Decision>, Exception> { handle ->
             val conditions = mutableListOf<String>()
             val parameters = mutableMapOf<String, Any>()
 
@@ -154,21 +154,8 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
             val whereClause = if (conditions.isEmpty()) "" else "WHERE ${conditions.joinToString(" AND ")}"
 
             val query = """
-                SELECT 
-                    d.id as decision_id, 
-                    d.name as decision_name,
-                    d.min_score as decision_min_score,
-                    d.max_score as decision_max_score,
-                    d.created_by as decision_created_by,
-                    d.created_at as decision_created_at,
-                    c.id as criteria_id,
-                    c.name as criteria_name,
-                    c.weight as criteria_weight,
-                    o.id as option_id,
-                    o.name as option_name
+                SELECT DISTINCT d.id, d.name, d.min_score, d.max_score, d.created_by, d.created_at
                 FROM decisions d
-                LEFT JOIN criteria c ON d.id = c.decision_id
-                LEFT JOIN options o ON d.id = o.decision_id
                 $whereClause
                 ORDER BY d.created_at DESC
                 """.trimIndent()
@@ -178,18 +165,7 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
                 queryBuilder = queryBuilder.bind(key, value)
             }
 
-            val rows = queryBuilder.mapToMap().list()
-
-            if (rows.isEmpty()) {
-                return@withHandle emptyList()
-            }
-
-            // Group rows by decision_id
-            val decisionGroups = rows.groupBy { (it["decision_id"] as Number).toLong() }
-
-            decisionGroups.map { (_, decisionRows) ->
-                mapDecisionAggregate(decisionRows)
-            }
+            queryBuilder.map { rs, _ -> mapDecision(rs) }.list()
         }
     }
 }
