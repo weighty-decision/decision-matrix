@@ -161,14 +161,24 @@ label > span {
     font-size: 14px;
 }
 
+.btn.filter-btn {
+    transition: all 0.1s ease;
+    position: relative;
+}
+
 .btn.filter-btn.active {
-    background: linear-gradient(0deg, #1b3b75, #2a5bbf);
+    background: linear-gradient(180deg, #2563eb, #1d4ed8);
     border-color: #3b82f6;
-    color: var(--text);
+    color: #ffffff;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2),
+                0 0 0 2px rgba(59, 130, 246, 0.3);
+    transform: translateY(1px);
 }
 
 .btn.filter-btn.active:hover {
-    filter: brightness(1.05);
+    background: linear-gradient(180deg, #2563eb, #1e40af);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2),
+                0 0 0 2px rgba(59, 130, 246, 0.4);
 }
 
 ul.list {
