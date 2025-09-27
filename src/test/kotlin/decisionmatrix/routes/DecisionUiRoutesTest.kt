@@ -392,4 +392,72 @@ class DecisionUiRoutesTest {
         htmlContent.contains("Personal Meeting") shouldBe false
         htmlContent.contains("Team Project") shouldBe false
     }
+
+    @Test
+    fun `updateDecisionName can lock a decision`() {
+        val decision = decisionRepository.insert(DecisionInput(name = "Test Decision"), createdBy = "test-user")
+
+        val request = Request(Method.POST, "/decisions/${decision.id}/name")
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .header("HX-Request", "true")
+            .body("name=Locked+Decision&minScore=1&maxScore=10&locked=on")
+
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val updatedDecision = requireNotNull(decisionRepository.getDecision(decision.id))
+        updatedDecision.name shouldBe "Locked Decision"
+        updatedDecision.locked shouldBe true
+    }
+
+    @Test
+    fun `updateDecisionName can unlock a decision`() {
+        val decision = decisionRepository.insert(DecisionInput(name = "Test Decision", locked = true), createdBy = "test-user")
+
+        val request = Request(Method.POST, "/decisions/${decision.id}/name")
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .header("HX-Request", "true")
+            .body("name=Unlocked+Decision&minScore=1&maxScore=10")
+
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val updatedDecision = requireNotNull(decisionRepository.getDecision(decision.id))
+        updatedDecision.name shouldBe "Unlocked Decision"
+        updatedDecision.locked shouldBe false
+    }
+
+    @Test
+    fun `submitMyScores fails when decision is locked`() {
+        val decision = decisionRepository.insert(DecisionInput(name = "Locked Decision", locked = true))
+        val option = optionRepository.insert(decision.id, decisionmatrix.OptionInput(name = "Option 1"))
+        val criteria = criteriaRepository.insert(decision.id, decisionmatrix.CriteriaInput(name = "Criteria 1", weight = 1))
+
+        val request = Request(Method.POST, "/decisions/${decision.id}/my-scores")
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body("score_${option.id}_${criteria.id}=5")
+
+        val response = routes(request)
+
+        response.status shouldBe Status.FORBIDDEN
+        response.bodyString() shouldContain "locked"
+    }
+
+    @Test
+    fun `submitMyScores succeeds when decision is unlocked`() {
+        val decision = decisionRepository.insert(DecisionInput(name = "Unlocked Decision", locked = false))
+        val option = optionRepository.insert(decision.id, decisionmatrix.OptionInput(name = "Option 1"))
+        val criteria = criteriaRepository.insert(decision.id, decisionmatrix.CriteriaInput(name = "Criteria 1", weight = 1))
+
+        val request = Request(Method.POST, "/decisions/${decision.id}/my-scores")
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body("score_${option.id}_${criteria.id}=5")
+
+        val response = routes(request)
+
+        response.status shouldBe Status.SEE_OTHER
+        val scores = userScoreRepository.findAllByDecisionId(decision.id)
+        scores.size shouldBe 1
+        scores[0].score shouldBe 5
+    }
 }

@@ -41,6 +41,7 @@ class DecisionRepositoryTest {
             name shouldBe "My decision"
             minScore shouldBe 2
             maxScore shouldBe 8
+            locked shouldBe false
             createdBy shouldBe "test-user"
             createdAt shouldNotBe null
         }
@@ -69,6 +70,7 @@ class DecisionRepositoryTest {
             name shouldBe "Default values decision"
             minScore shouldBe 1
             maxScore shouldBe 10
+            locked shouldBe false
             createdBy shouldBe "unknown"
             createdAt shouldNotBe null
         }
@@ -224,10 +226,11 @@ class DecisionRepositoryTest {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val inserted = decisionRepository.insert(DecisionInput(name = "Original decision"))
 
-        val updated = requireNotNull(decisionRepository.update(inserted.id, "Updated decision", 2, 8))
+        val updated = requireNotNull(decisionRepository.update(inserted.id, "Updated decision", 2, 8, false))
         updated.name shouldBe "Updated decision"
         updated.minScore shouldBe 2
         updated.maxScore shouldBe 8
+        updated.locked shouldBe false
         updated.id shouldBe inserted.id
 
         // Verify the update persisted
@@ -235,6 +238,7 @@ class DecisionRepositoryTest {
         found.name shouldBe "Updated decision"
         found.minScore shouldBe 2
         found.maxScore shouldBe 8
+        found.locked shouldBe false
     }
 
     @Test
@@ -382,5 +386,49 @@ class DecisionRepositoryTest {
         userScoreRepository.findById(userScore1.id) shouldBe null
         userScoreRepository.findById(userScore2.id) shouldBe null
         userScoreRepository.findById(userScore3.id) shouldBe null
+    }
+
+    @Test
+    fun `insert decision with locked field defaults to false`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val inserted = decisionRepository.insert(DecisionInput(name = "Unlocked decision"))
+
+        val found = requireNotNull(decisionRepository.getDecision(inserted.id))
+        found.locked shouldBe false
+    }
+
+    @Test
+    fun `insert decision with locked field set to true`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val inserted = decisionRepository.insert(DecisionInput(name = "Locked decision", locked = true))
+
+        val found = requireNotNull(decisionRepository.getDecision(inserted.id))
+        found.locked shouldBe true
+    }
+
+    @Test
+    fun `update decision locked field to true`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val inserted = decisionRepository.insert(DecisionInput(name = "Decision to lock"))
+
+        val updated = requireNotNull(decisionRepository.update(inserted.id, "Decision to lock", 1, 10, true))
+        updated.locked shouldBe true
+
+        // Verify the update persisted
+        val found = requireNotNull(decisionRepository.getDecisionAggregate(inserted.id))
+        found.locked shouldBe true
+    }
+
+    @Test
+    fun `update decision locked field to false`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val inserted = decisionRepository.insert(DecisionInput(name = "Locked decision", locked = true))
+
+        val updated = requireNotNull(decisionRepository.update(inserted.id, "Unlocked decision", 1, 10, false))
+        updated.locked shouldBe false
+
+        // Verify the update persisted
+        val found = requireNotNull(decisionRepository.getDecisionAggregate(inserted.id))
+        found.locked shouldBe false
     }
 }

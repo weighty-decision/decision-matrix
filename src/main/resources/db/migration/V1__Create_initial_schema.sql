@@ -3,6 +3,7 @@ CREATE TABLE decisions (
     name TEXT NOT NULL,
     min_score INTEGER NOT NULL,
     max_score INTEGER NOT NULL,
+    locked BOOLEAN NOT NULL,
     created_by TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

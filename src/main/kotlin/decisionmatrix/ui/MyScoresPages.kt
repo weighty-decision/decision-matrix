@@ -30,7 +30,11 @@ object MyScoresPages {
             section(classes = "card") {
                 h1 { +"My scores for '${decisionAggregate.name}'" }
 
-                if (decisionAggregate.options.isEmpty() || decisionAggregate.criteria.isEmpty()) {
+                if (decisionAggregate.locked) {
+                    p {
+                        +"This decision is locked and cannot be scored."
+                    }
+                } else if (decisionAggregate.options.isEmpty() || decisionAggregate.criteria.isEmpty()) {
                     p {
                         +"Add options and criteria first on the edit page."
                     }

@@ -155,13 +155,13 @@ class DecisionRoutes(
 
         val minScore = form["minScore"]?.toIntOrNull() ?: DEFAULT_MIN_SCORE
         val maxScore = form["maxScore"]?.toIntOrNull() ?: DEFAULT_MAX_SCORE
+        val locked = form["locked"] == "on"
 
         if (minScore >= maxScore) {
             return Response(Status.BAD_REQUEST).body("Min score must be less than max score")
         }
 
-        val updated =
-            decisionRepository.update(id, name, minScore, maxScore) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+        val updated = decisionRepository.update(id, name, minScore, maxScore, locked) ?: return Response(Status.NOT_FOUND).body("Decision not found")
 
         return if (isHx(request)) {
             htmlResponse(DecisionPages.decisionFragment(updated))
@@ -324,6 +324,10 @@ class DecisionRoutes(
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
         val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
         val currentUser = UserContext.requireCurrent(request)
+
+        if (decision.locked) {
+            return Response(Status.FORBIDDEN).body("This decision is locked and cannot be scored")
+        }
 
         val form = parseForm(request)
         val userId = currentUser.id

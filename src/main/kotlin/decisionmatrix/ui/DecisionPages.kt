@@ -8,6 +8,7 @@ import decisionmatrix.auth.AuthenticatedUser
 import kotlinx.html.ButtonType
 import kotlinx.html.a
 import kotlinx.html.button
+import kotlinx.html.checkBoxInput
 import kotlinx.html.classes
 import kotlinx.html.div
 import kotlinx.html.form
@@ -115,9 +116,15 @@ object DecisionPages {
                 h2 { +"Next steps" }
                 ul(classes = "list") {
                     li {
-                        a(classes = "btn") {
-                            href = "/decisions/${decisionAggregate.id}/my-scores"
-                            +"Enter my scores"
+                        if (decisionAggregate.locked) {
+                            span(classes = "btn disabled") {
+                                +"Decision is locked"
+                            }
+                        } else {
+                            a(classes = "btn") {
+                                href = "/decisions/${decisionAggregate.id}/my-scores"
+                                +"Enter my scores"
+                            }
                         }
                     }
                     li {
@@ -176,6 +183,23 @@ object DecisionPages {
                             style = "margin-left: 0.5rem; align-self: end; margin-bottom: 0.25rem;"
                             +"Constrains the range of scores users can give each option"
                         }
+                    }
+                }
+
+                div(classes = "row") {
+                    label {
+                        checkBoxInput {
+                            name = "locked"
+                            checked = decision.locked
+                        }
+                        span {
+                            style = "margin-left: 0.5rem;"
+                            +"Lock decision from being scored"
+                        }
+                    }
+                    small(classes = "muted") {
+                        style = "margin-left: 0.5rem; align-self: end; margin-bottom: 0.25rem;"
+                        +"When locked, users cannot enter or modify scores"
                     }
                 }
             }

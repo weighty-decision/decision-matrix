@@ -12,6 +12,7 @@ data class DecisionInput(
     val name: String,
     val minScore: Int = DEFAULT_MIN_SCORE,
     val maxScore: Int = DEFAULT_MAX_SCORE,
+    val locked: Boolean = false,
 )
 
 @Serializable
@@ -20,6 +21,7 @@ data class Decision(
     val name: String,
     val minScore: Int = DEFAULT_MIN_SCORE,
     val maxScore: Int = DEFAULT_MAX_SCORE,
+    val locked: Boolean = false,
     val createdBy: String? = null,
     @Contextual val createdAt: Instant? = null,
 ) {
@@ -42,6 +44,7 @@ data class DecisionAggregate(
     val name: String get() = decision.name
     val minScore: Int get() = decision.minScore
     val maxScore: Int get() = decision.maxScore
+    val locked: Boolean get() = decision.locked
     val createdBy: String? get() = decision.createdBy
     val createdAt: Instant? get() = decision.createdAt
 

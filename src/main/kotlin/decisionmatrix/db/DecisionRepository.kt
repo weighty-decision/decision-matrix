@@ -19,7 +19,7 @@ interface DecisionRepository {
     fun insert(decision: DecisionInput, createdBy: String = "unknown"): Decision = throw NotImplementedError()
     fun getDecision(id: Long): Decision? = throw NotImplementedError()
     fun getDecisionAggregate(id: Long): DecisionAggregate? = throw NotImplementedError()
-    fun update(id: Long, name: String, minScore: Int, maxScore: Int): Decision? = throw NotImplementedError()
+    fun update(id: Long, name: String, minScore: Int, maxScore: Int, locked: Boolean): Decision? = throw NotImplementedError()
     fun delete(id: Long): Boolean = throw NotImplementedError()
     fun findDecisions(filters: DecisionSearchFilters): List<Decision> = throw NotImplementedError()
 }
@@ -29,14 +29,15 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
         return jdbi.withHandle<Decision, Exception> { handle ->
             handle.createQuery(
                 """
-                INSERT INTO decisions (name, min_score, max_score, created_by) 
-                VALUES (:name, :minScore, :maxScore, :createdBy)
+                INSERT INTO decisions (name, min_score, max_score, locked, created_by)
+                VALUES (:name, :minScore, :maxScore, :locked, :createdBy)
                 RETURNING *
                 """.trimIndent()
             )
                 .bind("name", decision.name)
                 .bind("minScore", decision.minScore)
                 .bind("maxScore", decision.maxScore)
+                .bind("locked", decision.locked)
                 .bind("createdBy", createdBy)
                 .map { rs, _ -> mapDecision(rs) }
                 .one()
@@ -48,7 +49,7 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
         return jdbi.withHandle<Decision?, Exception> { handle ->
             handle.createQuery(
                 """
-                SELECT id, name, min_score, max_score, created_by, created_at
+                SELECT id, name, min_score, max_score, locked, created_by, created_at
                 FROM decisions d
                 WHERE d.id = :id
                 """.trimIndent()
@@ -64,11 +65,12 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
         return jdbi.withHandle<DecisionAggregate?, Exception> { handle ->
             val rows = handle.createQuery(
                 """
-                SELECT 
-                    d.id as decision_id, 
+                SELECT
+                    d.id as decision_id,
                     d.name as decision_name,
                     d.min_score as decision_min_score,
                     d.max_score as decision_max_score,
+                    d.locked as decision_locked,
                     d.created_by as decision_created_by,
                     d.created_at as decision_created_at,
                     c.id as criteria_id,
@@ -94,12 +96,12 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
         }
     }
 
-    override fun update(id: Long, name: String, minScore: Int, maxScore: Int): Decision? {
+    override fun update(id: Long, name: String, minScore: Int, maxScore: Int, locked: Boolean): Decision? {
         return jdbi.withHandle<Decision?, Exception> { handle ->
             handle.createQuery(
                 """
                 UPDATE decisions
-                SET name = :name, min_score = :minScore, max_score = :maxScore
+                SET name = :name, min_score = :minScore, max_score = :maxScore, locked = :locked
                 WHERE id = :id
                 RETURNING *
                 """.trimIndent()
@@ -108,6 +110,7 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
                 .bind("name", name)
                 .bind("minScore", minScore)
                 .bind("maxScore", maxScore)
+                .bind("locked", locked)
                 .map { rs, _ -> mapDecision(rs) }
                 .findOne()
                 .orElse(null)
@@ -154,7 +157,7 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
             val whereClause = if (conditions.isEmpty()) "" else "WHERE ${conditions.joinToString(" AND ")}"
 
             val query = """
-                SELECT DISTINCT d.id, d.name, d.min_score, d.max_score, d.created_by, d.created_at
+                SELECT DISTINCT d.id, d.name, d.min_score, d.max_score, d.locked, d.created_by, d.created_at
                 FROM decisions d
                 $whereClause
                 ORDER BY d.created_at DESC
@@ -176,6 +179,7 @@ fun mapDecision(rs: ResultSet): Decision {
         name = rs.getString("name"),
         minScore = rs.getInt("min_score"),
         maxScore = rs.getInt("max_score"),
+        locked = rs.getBoolean("locked"),
         createdBy = rs.getString("created_by"),
         createdAt = rs.getTimestamp("created_at")?.toInstant()
     )
@@ -189,6 +193,7 @@ fun mapDecisionAggregate(rows: List<Map<String, Any>>): DecisionAggregate {
     val decisionName = firstRow["decision_name"] as String
     val decisionMinScore = (firstRow["decision_min_score"] as Number).toInt()
     val decisionMaxScore = (firstRow["decision_max_score"] as Number).toInt()
+    val decisionLocked = firstRow["decision_locked"] as Boolean
     val decisionCreatedBy = firstRow["decision_created_by"] as? String
     val decisionCreatedAt = (firstRow["decision_created_at"] as? java.sql.Timestamp)?.toInstant()
 
@@ -224,6 +229,7 @@ fun mapDecisionAggregate(rows: List<Map<String, Any>>): DecisionAggregate {
             name = decisionName,
             minScore = decisionMinScore,
             maxScore = decisionMaxScore,
+            locked = decisionLocked,
             createdBy = decisionCreatedBy,
             createdAt = decisionCreatedAt,
         ),
