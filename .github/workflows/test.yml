@@ -10,22 +10,13 @@ jobs:
     permissions:
       contents: read
 
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_DB: decision_matrix
-          POSTGRES_USER: decision_matrix
-          POSTGRES_PASSWORD: decision_matrix_password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
+      - name: Start PostgreSQL
+        run: |
+          sudo systemctl start postgresql
+          sudo -u postgres createuser -s decision_matrix
+          sudo -u postgres createdb -O decision_matrix decision_matrix
+          sudo -u postgres psql -c "ALTER USER decision_matrix PASSWORD 'decision_matrix_password';"
       - name: Checkout repository
         uses: actions/checkout@v4
 
