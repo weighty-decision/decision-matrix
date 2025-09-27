@@ -68,7 +68,7 @@ val decisionRoutes = DecisionRoutes(
 
 
 fun main() {
-    val httpServer = HttpServer(
+    HttpServer(
         authRoutes = authRoutes,
         decisionRoutes = decisionRoutes,
         sessionManager = sessionManager,
