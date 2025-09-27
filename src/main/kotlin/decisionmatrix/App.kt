@@ -92,7 +92,7 @@ private const val SERVER_PORT = 9000
 
 fun main() {
     val app: HttpHandler = ResponseFilters.ReportHttpTransaction { tx ->
-        log.atInfo().log { "uri=${tx.request.uri} status=${tx.response.status} elapsed_ms=${tx.duration.toMillis()}" }
+        log.atDebug().log { "uri=${tx.request.uri} status=${tx.response.status} elapsed_ms=${tx.duration.toMillis()}" }
     }.then(ServerFilters.CatchAll { throwable ->
         log.error("Uncaught exception in request processing", throwable)
         Response(INTERNAL_SERVER_ERROR).header("content-type", "text/html").body("Internal server error")
