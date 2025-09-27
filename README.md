@@ -85,7 +85,7 @@ For a quick test with development mode:
 docker run -d --name postgres \
   -e POSTGRES_DB=decision_matrix \
   -e POSTGRES_USER=decision_matrix \
-  -e POSTGRES_PASSWORD=your_password \
+  -e POSTGRES_PASSWORD=decision_matrix_password \
   -p 5432:5432 \
   postgres:16
 
@@ -96,7 +96,7 @@ docker run -p 8080:8080 \
   -e DM_DEV_MODE=true \
   -e DB_HOST=host.docker.internal \
   -e DB_USER=decision_matrix \
-  -e DB_PASSWORD=your_password \
+  -e DB_PASSWORD=decision_matrix_password \
   -e DB_NAME=decision_matrix \
   ghcr.io/weighty-decision/decision-matrix:latest
 ```
@@ -143,7 +143,7 @@ DB_HOST=localhost                    # PostgreSQL host
 DB_PORT=5432                        # PostgreSQL port (default: 5432)
 DB_NAME=decision_matrix             # Database name
 DB_USER=decision_matrix             # Database username
-DB_PASSWORD=your_password           # Database password
+DB_PASSWORD=decision_matrix_password           # Database password
 DB_CONNECTION_PARAMS=""             # Additional connection parameters
 ```
 

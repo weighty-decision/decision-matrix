@@ -14,14 +14,12 @@ import org.http4k.core.Status.Companion.OK
 import org.http4k.core.then
 import org.http4k.filter.ResponseFilters
 import org.http4k.filter.ServerFilters
-import org.http4k.hotreload.HotReloadServer
 import org.http4k.hotreload.HotReloadable
 import org.http4k.routing.ResourceLoader
 import org.http4k.routing.RoutingHttpHandler
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.routing.static
-import org.http4k.server.SunHttp
 import org.http4k.server.Undertow
 import org.http4k.server.asServer
 import org.slf4j.LoggerFactory
@@ -57,13 +55,13 @@ class HttpServer(
         .then(appRoutes())
 
     fun start(port: Int) {
-        if (devMode) {
-            log.info("Running HTTP server in hot reload mode")
-            HotReloadServer.http<ReloadableHttpApp>(serverConfig = SunHttp(port)).start()
-        } else {
-            log.info("Running HTTP server in production mode")
-            createHttpHandler().asServer(Undertow(port)).start()
-        }
+//        if (devMode) {
+//            log.info("Running HTTP server in hot reload mode")
+//            HotReloadServer.http<ReloadableHttpApp>(serverConfig = SunHttp(port)).start()
+//        } else {
+        log.info("Running HTTP server in production mode")
+        createHttpHandler().asServer(Undertow(port)).start()
+//        }
         log.info("Server started. UI available at http://localhost:$port")
     }
 }
