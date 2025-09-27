@@ -180,26 +180,19 @@ object DecisionPages {
                             }
                         }
                         small(classes = "muted") {
-                            style = "margin-left: 0.5rem; align-self: end; margin-bottom: 0.25rem;"
-                            +"Constrains the range of scores users can give each option"
+                            style = "align-self: end; margin-bottom: 0.25rem;"
+                            +"Constrain the range of scores users can give each option"
                         }
                     }
                 }
 
-                div(classes = "row") {
-                    label {
-                        checkBoxInput {
-                            name = "locked"
-                            checked = decision.locked
-                        }
-                        span {
-                            style = "margin-left: 0.5rem;"
-                            +"Lock decision from being scored"
-                        }
+                label(classes = "row") {
+                    checkBoxInput {
+                        name = "locked"
+                        checked = decision.locked
                     }
-                    small(classes = "muted") {
-                        style = "margin-left: 0.5rem; align-self: end; margin-bottom: 0.25rem;"
-                        +"When locked, users cannot enter or modify scores"
+                    span {
+                        +"Lock decision to prevent users from creating or modifying scores"
                     }
                 }
             }
