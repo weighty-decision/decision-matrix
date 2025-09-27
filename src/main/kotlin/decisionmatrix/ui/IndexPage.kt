@@ -195,9 +195,15 @@ object IndexPage {
                                         +"Edit"
                                     }
                                 }
-                                a(classes = "btn small") {
-                                    href = "/decisions/${decision.id}/my-scores"
-                                    +"Score"
+                                if (decision.locked) {
+                                    span(classes = "btn small disabled") {
+                                        +"Locked"
+                                    }
+                                } else {
+                                    a(classes = "btn small") {
+                                        href = "/decisions/${decision.id}/my-scores"
+                                        +"Score"
+                                    }
                                 }
                                 a(classes = "btn small") {
                                     href = "/decisions/${decision.id}/results"

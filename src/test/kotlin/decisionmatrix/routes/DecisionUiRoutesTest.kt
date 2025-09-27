@@ -460,4 +460,26 @@ class DecisionUiRoutesTest {
         scores.size shouldBe 1
         scores[0].score shouldBe 5
     }
+
+    @Test
+    fun `home page shows locked indicator instead of score link for locked decisions`() {
+        val unlockedDecision = decisionRepository.insert(DecisionInput(name = "Unlocked Decision", locked = false), createdBy = "test-user")
+        val lockedDecision = decisionRepository.insert(DecisionInput(name = "Locked Decision", locked = true), createdBy = "test-user")
+
+        val request = Request(Method.GET, "/")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+
+        // Should show Score link for unlocked decision
+        htmlContent shouldContain "Unlocked Decision"
+        htmlContent shouldContain "/decisions/${unlockedDecision.id}/my-scores"
+        htmlContent shouldContain ">Score<"
+
+        // Should show Locked indicator instead of Score link for locked decision
+        htmlContent shouldContain "Locked Decision"
+        htmlContent shouldContain ">Locked<"
+        htmlContent.contains("/decisions/${lockedDecision.id}/my-scores") shouldBe false
+    }
 }
