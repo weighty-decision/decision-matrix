@@ -65,7 +65,7 @@ val decisionRoutes = DecisionRoutes(
     authorizationService = authorizationService
 )
 
-private const val SERVER_PORT = 9000
+private const val SERVER_PORT = 8080
 
 fun main() {
     val httpServer = HttpServer(

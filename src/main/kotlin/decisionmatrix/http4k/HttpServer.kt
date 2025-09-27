@@ -56,7 +56,7 @@ class HttpServer(
         .then(requireAuth(sessionManager, devMode, devUserId))
         .then(appRoutes())
 
-    fun start(port: Int = 9000) {
+    fun start(port: Int = 8080) {
         if (devMode) {
             log.info("Running HTTP server in hot reload mode")
             HotReloadServer.http<ReloadableHttpApp>(serverConfig = SunHttp(port)).start()

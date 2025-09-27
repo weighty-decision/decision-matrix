@@ -10,7 +10,7 @@ This project supports the creation of weighted decision matrices when multiple p
 ## Quick Reference Commands
 - **Run app in dev mode**: `DM_DEV_MODE=true ./gradlew run`
 - **Run tests**: `./gradlew test`
-- **Run with mock OAuth**: `DM_DEV_MODE=false DM_MOCK_OAUTH_SERVER=true DM_OAUTH_ISSUER_URL=http://localhost:8081 DM_OAUTH_CLIENT_ID=test-client DM_OAUTH_CLIENT_SECRET=test-secret DM_OAUTH_REDIRECT_URI=http://localhost:9000/auth/callback ./gradlew run`
+- **Run with mock OAuth**: `DM_DEV_MODE=false DM_MOCK_OAUTH_SERVER=true DM_OAUTH_ISSUER_URL=http://localhost:8081 DM_OAUTH_CLIENT_ID=test-client DM_OAUTH_CLIENT_SECRET=test-secret DM_OAUTH_REDIRECT_URI=http://localhost:8080/auth/callback ./gradlew run`
 
 ## Architecture & Technology Stack
 
@@ -155,7 +155,7 @@ export DM_MOCK_OAUTH_SERVER=true
 export DM_OAUTH_ISSUER_URL=http://localhost:8081
 export DM_OAUTH_CLIENT_ID=test-client
 export DM_OAUTH_CLIENT_SECRET=test-secret
-export DM_OAUTH_REDIRECT_URI=http://localhost:9000/auth/callback
+export DM_OAUTH_REDIRECT_URI=http://localhost:8080/auth/callback
 ```
 
 The mock OAuth server provides:

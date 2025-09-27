@@ -41,7 +41,7 @@ class OAuthFlowEndToEndTest {
             issuerUrl = "http://localhost:8081",
             clientId = "test-client",
             clientSecret = "test-secret",
-            redirectUri = "http://localhost:9000/auth/callback",
+            redirectUri = "http://localhost:8080/auth/callback",
             scopes = setOf("openid", "profile", "email")
         )
 
@@ -98,7 +98,7 @@ class OAuthFlowEndToEndTest {
             key to value
         }
         val clientId = queryParams["client_id"]!!
-        val redirectUri = "http://localhost:9000/auth/callback"
+        val redirectUri = "http://localhost:8080/auth/callback"
         val state = queryParams["state"]!!
 
         // Step 4: Simulate user clicking "Login as Alice" on the mock OAuth server

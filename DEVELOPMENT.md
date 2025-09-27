@@ -10,7 +10,7 @@ docker-compose up -d
 ./gradlew build
 ```
 
-This will start the app, listening on port 9000.
+This will start the app, listening on port 8080.
 On startup, if the database does not exist, it will be created. 
 
-The UI is located at http://localhost:9000/
+The UI is located at http://localhost:8080/
