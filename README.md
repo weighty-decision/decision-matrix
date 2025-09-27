@@ -1,36 +1,148 @@
-# decision-matrix
-Weighted decision matrix that supports multiple users. 
-When calculating each option's weighted score, it uses the average of each user's score.
-It stores the data in a PostgreSQL database. 
+# Decision Matrix
 
-# This tool in early development mode!
-I'm just building the 1.0 version now, so it's not ready for production use yet.
+Weighted decision matrix that supports multiple users. When calculating each option's weighted score, it uses the average of each user's score.
 
-## Setup
+## Quick Start with Docker
 
-### Prerequisites
-- Java 21 or higher
-- PostgreSQL database
+The easiest way to run Decision Matrix is using Docker with the pre-built images from GitHub Container Registry.
 
-### Database Configuration
-The application uses PostgreSQL for data storage. Configure your database connection using environment variables:
+### Using Docker Compose (Recommended)
 
-#### Basic Configuration
+1. Create a `docker-compose.yml` file:
+   ```yaml
+   services:
+     postgres:
+       image: postgres:16
+       environment:
+         POSTGRES_DB: decision_matrix
+         POSTGRES_USER: decision_matrix
+         POSTGRES_PASSWORD: your_secure_password_here
+       ports:
+         - "5432:5432"
+       volumes:
+         - postgres_data:/var/lib/postgresql/data
+       healthcheck:
+         test: ["CMD-SHELL", "pg_isready -U decision_matrix -d decision_matrix"]
+         interval: 10s
+         timeout: 5s
+         retries: 5
+
+     decision-matrix:
+       image: ghcr.io/weighty-decision/decision-matrix:latest # use a specific version in production for version stability
+       ports:
+         - "8080:8080"
+       environment:
+         # You can set the DM_HTTP_SERVER_PORT environment variable to change the HTTP server port
+   
+         # Database configuration
+         - DB_HOST=postgres
+         - DB_PORT=5432
+         - DB_USER=decision_matrix
+         - DB_PASSWORD=your_secure_password_here
+         - DB_NAME=decision_matrix
+         # Additional connection parameters if needed
+         #- DB_CONNECTION_PARAMS="sslmode=require"
+
+         # Authentication (choose one of the options below)
+
+         # Option 1: Development mode (no authentication required)
+         - DM_DEV_MODE=true
+
+         # Option 2: Production OAuth (uncomment and configure)
+         # - DM_DEV_MODE=false
+         # - DM_OAUTH_ISSUER_URL=https://your-oauth-provider.com
+         # - DM_OAUTH_CLIENT_ID=your-client-id
+         # - DM_OAUTH_CLIENT_SECRET=your-client-secret
+         # - DM_OAUTH_REDIRECT_URI=http://localhost:8080/auth/callback
+
+         # Option 3: Mock OAuth for testing (uncomment to use)
+         # - DM_DEV_MODE=false
+         # - DM_MOCK_OAUTH_SERVER=true
+         # - DM_OAUTH_ISSUER_URL=http://localhost:8081
+         # - DM_OAUTH_CLIENT_ID=test-client
+         # - DM_OAUTH_CLIENT_SECRET=test-secret
+         # - DM_OAUTH_REDIRECT_URI=http://localhost:8080/auth/callback
+       depends_on:
+         postgres:
+           condition: service_healthy
+
+   volumes:
+     postgres_data:
+   ```
+
+2. Start the application:
+   ```bash
+   docker-compose up -d
+   ```
+
+3. Access the application at http://localhost:8080
+
+### Using Docker Run
+
+For a quick test with development mode:
 ```bash
-export DB_HOST=localhost          # Default: localhost
-export DB_PORT=5432              # Default: 5432
-export DB_NAME=decision_matrix   # Default: decision_matrix
-export DB_USER=your_username     # Default: decision_matrix
-export DB_PASSWORD=your_password # Default: decision_matrix_password
+# Start PostgreSQL
+docker run -d --name postgres \
+  -e POSTGRES_DB=decision_matrix \
+  -e POSTGRES_USER=decision_matrix \
+  -e POSTGRES_PASSWORD=your_password \
+  -p 5432:5432 \
+  postgres:16
+
+# Start Decision Matrix
+docker run -p 8080:8080 \
+  -e DM_DEV_MODE=true \
+  -e DB_HOST=host.docker.internal \
+  -e DB_USER=decision_matrix \
+  -e DB_PASSWORD=your_password \
+  -e DB_NAME=decision_matrix \
+  ghcr.io/weighty-decision/decision-matrix:latest
 ```
 
-#### Advanced PostgreSQL Configuration
-For additional PostgreSQL connection parameters (SSL, timeouts, etc.), use:
+## Configuration
+
+### Authentication Options
+
+#### Development Mode (No Authentication)
+For testing and development:
+```bash
+DM_DEV_MODE=true
+DM_DEV_USER_ID=your-username  # Optional, defaults to "dev-user"
+```
+
+#### Production OAuth
+For production deployment with any OAuth 2.0/OpenID Connect provider:
+```bash
+DM_DEV_MODE=false
+DM_OAUTH_ISSUER_URL=https://your-oauth-provider.com
+DM_OAUTH_CLIENT_ID=your-client-id
+DM_OAUTH_CLIENT_SECRET=your-client-secret
+DM_OAUTH_REDIRECT_URI=https://your-domain.com/auth/callback
+DM_OAUTH_SCOPES=openid,profile,email  # Optional, this is the default
+```
+
+#### Mock OAuth (Testing)
+For testing OAuth flows without external dependencies:
+```bash
+DM_DEV_MODE=false
+DM_MOCK_OAUTH_SERVER=true
+DM_OAUTH_ISSUER_URL=http://localhost:8081
+DM_OAUTH_CLIENT_ID=test-client
+DM_OAUTH_CLIENT_SECRET=test-secret
+DM_OAUTH_REDIRECT_URI=http://localhost:8080/auth/callback
+```
+
+Test users available: Alice Test (user1), Bob Test (user2), Admin User (admin)
+
+### Database Configuration
 
 ```bash
-export DB_CONNECTION_PARAMS="sslmode=require"
-# or multiple parameters:
-export DB_CONNECTION_PARAMS="sslmode=require&connectTimeout=10&socketTimeout=30"
+DB_HOST=localhost                    # PostgreSQL host
+DB_PORT=5432                        # PostgreSQL port (default: 5432)
+DB_NAME=decision_matrix             # Database name
+DB_USER=decision_matrix             # Database username
+DB_PASSWORD=your_password           # Database password
+DB_CONNECTION_PARAMS=""             # Additional connection parameters
 ```
 
 Common connection parameters:
@@ -38,15 +150,12 @@ Common connection parameters:
 - `sslmode=disable` - Disable SSL
 - `connectTimeout=10` - Connection timeout in seconds
 - `socketTimeout=30` - Socket timeout in seconds
-- `prepareThreshold=0` - Disable prepared statement caching
 
-### Running the Application
+### Server Configuration
+
 ```bash
-./gradlew run
+DM_HTTP_SERVER_PORT=8080            # HTTP server port (default: 8080)
 ```
-
-### Authentication Setup
-See [CLAUDE.md](CLAUDE.md) for authentication configuration options including development mode and OAuth setup.
 
 ## Screenshots
 ### Home
@@ -59,5 +168,21 @@ See [CLAUDE.md](CLAUDE.md) for authentication configuration options including de
 ![Results](docs/resources/results.png)
 
 ## Development
-See [DEVELOPMENT.md](DEVELOPMENT.md) for development prerequisites.  
-See [CLAUDE.md](CLAUDE.md) for development guidelines, including how to configure authentication for development.
+
+For developers who want to build and run the application from source:
+
+### Prerequisites
+- Java 21 or higher
+- PostgreSQL database
+
+### Running with Gradle
+```bash
+./gradlew run
+```
+
+### Running Tests
+```bash
+./gradlew test
+```
+
+See [CLAUDE.md](CLAUDE.md) for more development guidelines, coding standards, and development environment setup.

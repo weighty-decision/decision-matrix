@@ -12,6 +12,46 @@ This project supports the creation of weighted decision matrices when multiple p
 - **Run tests**: `./gradlew test`
 - **Run with mock OAuth**: `DM_DEV_MODE=false DM_MOCK_OAUTH_SERVER=true DM_OAUTH_ISSUER_URL=http://localhost:8081 DM_OAUTH_CLIENT_ID=test-client DM_OAUTH_CLIENT_SECRET=test-secret DM_OAUTH_REDIRECT_URI=http://localhost:8080/auth/callback ./gradlew run`
 
+## Development Setup
+
+### Prerequisites
+- Java 21 or higher
+- PostgreSQL database
+
+### Database Configuration for Development
+
+The application uses PostgreSQL for data storage. Configure your database connection using environment variables:
+
+#### Basic Configuration
+```bash
+export DB_HOST=localhost          # Default: localhost
+export DB_PORT=5432              # Default: 5432
+export DB_NAME=decision_matrix   # Default: decision_matrix
+export DB_USER=your_username     # Default: decision_matrix
+export DB_PASSWORD=your_password # Default: decision_matrix_password
+```
+
+#### Advanced PostgreSQL Configuration
+For additional PostgreSQL connection parameters (SSL, timeouts, etc.), use:
+
+```bash
+export DB_CONNECTION_PARAMS="sslmode=require"
+# or multiple parameters:
+export DB_CONNECTION_PARAMS="sslmode=require&connectTimeout=10&socketTimeout=30"
+```
+
+Common connection parameters:
+- `sslmode=require` - Force SSL connection
+- `sslmode=disable` - Disable SSL
+- `connectTimeout=10` - Connection timeout in seconds
+- `socketTimeout=30` - Socket timeout in seconds
+- `prepareThreshold=0` - Disable prepared statement caching
+
+### Running the Application via Gradle
+```bash
+./gradlew run
+```
+
 ## Architecture & Technology Stack
 
 **Backend & UI**
@@ -21,7 +61,7 @@ This project supports the creation of weighted decision matrices when multiple p
 - http4k for HTTP server framework
 
 **Data & Build**
-- SQLite for database storage
+- PostgreSQL for database storage
 - Gradle with Kotlin DSL for build automation
 - Use Gradle version catalogs for dependency management (`libs.versions.toml`)
 
@@ -128,7 +168,7 @@ When working on decision matrix features, remember:
 - Results should be easy to understand and export
 
 ## Database Schema
-SQLite with these main entities:
+PostgreSQL with these main entities:
 - **decisions** - Decision matrices
 - **options** - Choices being evaluated
 - **criteria** - Evaluation factors with weights
