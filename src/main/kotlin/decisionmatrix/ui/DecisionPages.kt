@@ -178,20 +178,27 @@ object DecisionPages {
                         }
                     }
                 }
-                div(classes = "actions") {
+            }
+            div(classes = "actions") {
+                form {
+                    attributes["hx-post"] = "/decisions/${decision.id}/name"
+                    attributes["hx-target"] = "#decision-name-fragment"
+                    attributes["hx-swap"] = "outerHTML"
+                    attributes["hx-include"] = "#decision-name-fragment input"
+                    attributes["style"] = "display: inline;"
                     button(classes = "btn") {
                         type = ButtonType.submit
                         +"Save"
                     }
-                    form {
-                        attributes["method"] = "post"
-                        attributes["action"] = "/decisions/${decision.id}/delete"
-                        attributes["hx-confirm"] = "Are you sure you want to delete the decision '${decision.name}'? " +
-                                "This will permanently delete all criteria, options, and scores. This action cannot be undone."
-                        button(classes = "btn danger") {
-                            type = ButtonType.submit
-                            +"Delete"
-                        }
+                }
+                form {
+                    attributes["hx-post"] = "/decisions/${decision.id}/delete"
+                    attributes["hx-confirm"] = "Are you sure you want to delete the decision '${decision.name}'? " +
+                            "This will permanently delete all criteria, options, and scores. This action cannot be undone."
+                    attributes["style"] = "display: inline;"
+                    button(classes = "btn danger") {
+                        type = ButtonType.submit
+                        +"Delete"
                     }
                 }
             }

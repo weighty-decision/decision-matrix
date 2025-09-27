@@ -362,3 +362,9 @@ header.container {
     font-size: 14px;
     line-height: 1.4;
 }
+
+.inline-form {
+    display: inline-block;
+    margin: 0;
+    margin-left: var(--gap);
+}
