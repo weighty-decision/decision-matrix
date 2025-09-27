@@ -23,6 +23,7 @@ http4k-client-okhttp = { module = "org.http4k:http4k-client-okhttp" }
 http4k-core = { module = "org.http4k:http4k-core" }
 http4k-ops-opentelemetry = { module = "org.http4k:http4k-ops-opentelemetry" }
 http4k-ops-resilience4j = { module = "org.http4k:http4k-ops-resilience4j" }
+http4k-hotreload = { module = "org.http4k.pro:http4k-tools-hotreload" }
 http4k-server-undertow = { module = "org.http4k:http4k-server-undertow" }
 http4k-web-htmx = { module = "org.http4k:http4k-web-htmx" }
 http4k-testing-approval = { module = "org.http4k:http4k-testing-approval" }
@@ -59,6 +60,7 @@ testing = [
 http4k = [
     "http4k-core",
     "http4k-client-okhttp",
+    "http4k-hotreload",
     "http4k-ops-opentelemetry",
     "http4k-ops-resilience4j",
     "http4k-server-undertow",
