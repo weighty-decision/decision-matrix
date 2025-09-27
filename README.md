@@ -6,7 +6,33 @@ Weighted decision matrix that supports multiple users. When calculating each opt
 
 The easiest way to run Decision Matrix is using Docker with the pre-built images from GitHub Container Registry.
 
-### Using Docker Compose (Recommended)
+### Using Docker Run
+Don't do this in production, but it's a great way to try it out.
+
+For a quick test with development mode:
+1. Start PostgreSQL
+```bash
+docker run -d --name postgres \
+  -e POSTGRES_DB=decision_matrix \
+  -e POSTGRES_USER=decision_matrix \
+  -e POSTGRES_PASSWORD=decision_matrix_password \
+  -p 5432:5432 \
+  postgres:16
+```
+2. Start Decision Matrix
+```bash
+# Start Decision Matrix
+docker run -p 8080:8080 \
+  -e DM_DEV_MODE=true \
+  -e DB_HOST=host.docker.internal \
+  -e DB_USER=decision_matrix \
+  -e DB_PASSWORD=decision_matrix_password \
+  -e DB_NAME=decision_matrix \
+  ghcr.io/weighty-decision/decision-matrix:latest
+```
+3. Access the application at http://localhost:8080
+
+### Using Docker Compose 
 
 1. Create a `docker-compose.yml` file:
    ```yaml
@@ -76,30 +102,6 @@ The easiest way to run Decision Matrix is using Docker with the pre-built images
    ```
 
 3. Access the application at http://localhost:8080
-
-### Using Docker Run
-
-For a quick test with development mode:
-```bash
-# Start PostgreSQL
-docker run -d --name postgres \
-  -e POSTGRES_DB=decision_matrix \
-  -e POSTGRES_USER=decision_matrix \
-  -e POSTGRES_PASSWORD=decision_matrix_password \
-  -p 5432:5432 \
-  postgres:16
-
-sleep 3
-
-# Start Decision Matrix
-docker run -p 8080:8080 \
-  -e DM_DEV_MODE=true \
-  -e DB_HOST=host.docker.internal \
-  -e DB_USER=decision_matrix \
-  -e DB_PASSWORD=decision_matrix_password \
-  -e DB_NAME=decision_matrix \
-  ghcr.io/weighty-decision/decision-matrix:latest
-```
 
 ## Configuration
 
