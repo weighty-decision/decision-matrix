@@ -12,6 +12,7 @@ import decisionmatrix.db.DecisionRepositoryImpl
 import decisionmatrix.db.OptionRepositoryImpl
 import decisionmatrix.db.UserScoreRepositoryImpl
 import decisionmatrix.db.loadJdbi
+import decisionmatrix.http4k.HttpConfig
 import decisionmatrix.oauth.MockOAuthServer
 import decisionmatrix.routes.DecisionRoutes
 import decisionmatrix.http4k.HttpServer
@@ -26,7 +27,7 @@ val optionRepository = OptionRepositoryImpl(jdbi)
 val criteriaRepository = CriteriaRepositoryImpl(jdbi)
 val userScoreRepository = UserScoreRepositoryImpl(jdbi)
 
-// Authentication setup
+val httpConfig = HttpConfig.fromEnvironment()
 val authConfig = AuthConfiguration.fromEnvironment()
 val sessionManager = SessionManager()
 
@@ -65,7 +66,6 @@ val decisionRoutes = DecisionRoutes(
     authorizationService = authorizationService
 )
 
-private const val SERVER_PORT = 8080
 
 fun main() {
     val httpServer = HttpServer(
@@ -74,9 +74,7 @@ fun main() {
         sessionManager = sessionManager,
         devMode = authConfig.devMode,
         devUserId = authConfig.devUserId
-    )
-
-    httpServer.start(port = SERVER_PORT)
+    ).start(port = httpConfig.port)
 
     if (authConfig.devMode) {
         log.info("Running in DEV MODE - authentication bypassed")
