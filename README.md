@@ -89,6 +89,8 @@ docker run -d --name postgres \
   -p 5432:5432 \
   postgres:16
 
+sleep 3
+
 # Start Decision Matrix
 docker run -p 8080:8080 \
   -e DM_DEV_MODE=true \
@@ -177,6 +179,9 @@ For developers who want to build and run the application from source:
 
 ### Running with Gradle
 ```bash
+# start the database
+docker-compose up -d
+# run the application
 ./gradlew run
 ```
 
