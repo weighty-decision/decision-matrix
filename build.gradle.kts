@@ -23,6 +23,7 @@ kotlin {
 }
 
 application {
+    applicationName = "app"
     mainClass = "decisionmatrix.AppKt"
 }
 
