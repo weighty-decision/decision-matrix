@@ -7,8 +7,6 @@ Weighted decision matrix that supports multiple users. When calculating each opt
 The easiest way to run Decision Matrix is using Docker with the pre-built images from GitHub Container Registry.
 
 ### Using Docker Run
-Don't do this in production, but it's a great way to try it out.
-
 For a quick test with development mode:
 1. Start PostgreSQL
 ```bash
