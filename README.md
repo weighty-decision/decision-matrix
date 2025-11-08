@@ -193,7 +193,7 @@ For developers who want to build and run the application from source:
 
 ### Prerequisites
 - Java 21 or higher
-- PostgreSQL database
+- A Docker-compatible tool (Docker, Podman, Colima, etc.)
 
 ### Running with Gradle
 ```bash
@@ -208,4 +208,4 @@ docker-compose up -d
 ./gradlew test
 ```
 
-See [CLAUDE.md](CLAUDE.md) for more development guidelines, coding standards, and development environment setup.
+See [AGENTS.md](CLAUDE.md) for more development guidelines, coding standards, and development environment setup.
