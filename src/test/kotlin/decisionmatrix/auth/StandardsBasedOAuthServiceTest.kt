@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class StandardsBasedOAuthServiceTest {
 
@@ -113,8 +114,73 @@ class StandardsBasedOAuthServiceTest {
         successResult.user shouldBe userInfo
         successResult.redirectAfterLogin shouldBe "/dashboard"
 
-        // Test Error result  
+        // Test Error result
         val errorResult = StandardsBasedOAuthService.CallbackResult.Error("Test error")
         errorResult.message shouldBe "Test error"
+    }
+
+    @Test
+    fun `claim extractor should map custom claims from mail and samaccountname with first and last name`() {
+        val claims = mapOf(
+            "mail" to "alice@example.com",
+            "samaccountname" to "alice",
+            "firstname" to "Alice",
+            "lastname" to "Smith",
+            // No standard "email" or "name"
+            "sub" to "sub-ignored-when-id-claim-present"
+        )
+        val config = OAuthConfiguration(
+            issuerUrl = "https://oauth.example.com",
+            clientId = "test-client",
+            clientSecret = "test-secret",
+            redirectUri = "https://app.example.com/callback",
+            emailClaim = "mail",
+            idClaim = "samaccountname",
+            firstNameClaim = "firstname",
+            lastNameClaim = "lastname",
+        )
+
+        val user = StandardsBasedOAuthService.ClaimExtractor.extract(claims, config)
+        user.id shouldBe "alice"
+        user.email shouldBe "alice@example.com"
+        user.name shouldBe "Alice Smith"
+    }
+
+    @Test
+    fun `claim extractor should use standard claims when no mapping configured`() {
+        val claims = mapOf(
+            "sub" to "user-123",
+            "email" to "bob@example.com",
+            "name" to "Bob Jones"
+        )
+        val config = OAuthConfiguration(
+            issuerUrl = "https://oauth.example.com",
+            clientId = "test-client",
+            clientSecret = "test-secret",
+            redirectUri = "https://app.example.com/callback"
+        )
+
+        val user = StandardsBasedOAuthService.ClaimExtractor.extract(claims, config)
+        user.id shouldBe "user-123"
+        user.email shouldBe "bob@example.com"
+        user.name shouldBe "Bob Jones"
+    }
+
+    @Test
+    fun `claim extractor should throw when email missing after mapping and defaults`() {
+        val claims = mapOf(
+            "sub" to "user-123"
+        )
+        val config = OAuthConfiguration(
+            issuerUrl = "https://oauth.example.com",
+            clientId = "test-client",
+            clientSecret = "test-secret",
+            redirectUri = "https://app.example.com/callback"
+        )
+
+        val ex = assertThrows<RuntimeException> {
+            StandardsBasedOAuthService.ClaimExtractor.extract(claims, config)
+        }
+        ex.message shouldContain "email"
     }
 }

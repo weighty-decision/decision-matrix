@@ -123,6 +123,24 @@ DM_OAUTH_REDIRECT_URI=https://your-domain.com/auth/callback
 DM_OAUTH_SCOPES=openid,profile,email  # Optional, this is the default
 ```
 
+Optional claim mapping (for providers using non-standard claim names):
+```bash
+# Map ID Token claim names to the fields the app needs
+# If unset, defaults are used as shown
+DM_OAUTH_EMAIL_CLAIM=mail               # default: "email" (required)
+DM_OAUTH_ID_CLAIM=samaccountname        # default: "sub"
+DM_OAUTH_NAME_CLAIM=displayName         # optional
+DM_OAUTH_FIRST_NAME_CLAIM=given_name    # optional
+DM_OAUTH_LAST_NAME_CLAIM=family_name    # optional
+```
+
+Claim resolution order:
+- id: DM_OAUTH_ID_CLAIM → sub (required)
+- email: DM_OAUTH_EMAIL_CLAIM → email (required)
+- name: DM_OAUTH_NAME_CLAIM → first+last from DM_OAUTH_FIRST_NAME_CLAIM/DM_OAUTH_LAST_NAME_CLAIM → name → preferred_username (optional)
+
+If a required claim (id or email) cannot be resolved after applying mappings and defaults, login will fail with a clear error message.
+
 #### Mock OAuth (Testing)
 For testing OAuth flows without external dependencies:
 ```bash

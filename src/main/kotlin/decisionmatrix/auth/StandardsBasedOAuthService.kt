@@ -142,13 +142,31 @@ class StandardsBasedOAuthService(private val config: OAuthConfiguration) : OAuth
 
         val claims = idToken.jwtClaimsSet
 
-        val userId = claims.subject
+        fun getClaim(name: String?): String? = name?.let { claims.getStringClaim(it) }
+
+        // Resolve user id
+        val userId = getClaim(config.idClaim)
+            ?: claims.subject
             ?: throw RuntimeException("No subject (user ID) in ID token")
 
-        val email = claims.getStringClaim("email")
+        // Resolve email (required)
+        val email = getClaim(config.emailClaim)
+            ?: claims.getStringClaim("email")
             ?: throw RuntimeException("No email claim in ID token")
 
-        val name = claims.getStringClaim("name")
+        // Resolve display name (optional)
+        val nameFromConfigured = getClaim(config.nameClaim)
+        val nameFromFirstLast = run {
+            val first = getClaim(config.firstNameClaim)
+            val last = getClaim(config.lastNameClaim)
+            listOfNotNull(first, last)
+                .joinToString(" ")
+                .trim()
+                .ifBlank { null }
+        }
+        val name = nameFromConfigured
+            ?: nameFromFirstLast
+            ?: claims.getStringClaim("name")
             ?: claims.getStringClaim("preferred_username")
 
         log.info("Successfully authenticated user: {}", email)
@@ -158,6 +176,36 @@ class StandardsBasedOAuthService(private val config: OAuthConfiguration) : OAuth
             email = email,
             name = name
         )
+    }
+
+    internal object ClaimExtractor {
+        fun extract(claims: Map<String, String?>, config: OAuthConfiguration): UserInfo {
+            fun get(name: String?): String? = name?.let { claims[it] }
+
+            val userId = get(config.idClaim)
+                ?: claims["sub"]
+                ?: throw RuntimeException("No subject (user ID) in ID token")
+
+            val email = get(config.emailClaim)
+                ?: claims["email"]
+                ?: throw RuntimeException("No email claim in ID token")
+
+            val nameFromConfigured = get(config.nameClaim)
+            val nameFromFirstLast = run {
+                val first = get(config.firstNameClaim)
+                val last = get(config.lastNameClaim)
+                listOfNotNull(first, last)
+                    .joinToString(" ")
+                    .trim()
+                    .ifBlank { null }
+            }
+            val name = nameFromConfigured
+                ?: nameFromFirstLast
+                ?: claims["name"]
+                ?: claims["preferred_username"]
+
+            return UserInfo(id = userId, email = email, name = name)
+        }
     }
 
     sealed class CallbackResult {
