@@ -1,5 +1,10 @@
-package decisionmatrix
+package decisionmatrix.score
 
+import decisionmatrix.Criteria
+import decisionmatrix.Decision
+import decisionmatrix.DecisionAggregate
+import decisionmatrix.Option
+import decisionmatrix.UserScore
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test

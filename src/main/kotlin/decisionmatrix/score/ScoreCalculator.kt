@@ -1,5 +1,8 @@
-package decisionmatrix
+package decisionmatrix.score
 
+import decisionmatrix.DecisionAggregate
+import decisionmatrix.Option
+import decisionmatrix.UserScore
 import java.math.BigDecimal
 import java.math.RoundingMode
 

@@ -3,7 +3,7 @@ package decisionmatrix.ui
 import decisionmatrix.DecisionAggregate
 import decisionmatrix.UserScore
 import decisionmatrix.auth.AuthenticatedUser
-import decisionmatrix.calculateOptionScores
+import decisionmatrix.score.calculateOptionScores
 import kotlinx.html.a
 import kotlinx.html.div
 import kotlinx.html.h1
