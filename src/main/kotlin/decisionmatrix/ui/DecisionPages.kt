@@ -108,10 +108,8 @@ object DecisionPages {
                 // Name form fragment
                 +decisionFragment(decisionAggregate.decision)
             }
-            div(classes = "grid") {
-                unsafe { +criteriaFragment(decisionAggregate) }
-                unsafe { +optionsFragment(decisionAggregate) }
-            }
+            unsafe { +criteriaFragment(decisionAggregate) }
+            unsafe { +optionsFragment(decisionAggregate) }
             section(classes = "card") {
                 h2 { +"Next steps" }
                 ul(classes = "list") {
@@ -181,7 +179,7 @@ object DecisionPages {
                         }
                         small(classes = "muted") {
                             style = "align-self: end; margin-bottom: 0.25rem;"
-                            +"Constrain the range of scores users can give each option"
+                            +"Constrains the minimum and maximum score value allowed for each option"
                         }
                     }
                 }
