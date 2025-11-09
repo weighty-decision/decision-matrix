@@ -56,7 +56,7 @@ object MyScoresPages {
                         attributes["action"] = "/decisions/${decisionAggregate.id}/my-scores"
                         classes = setOf("stack")
 
-                        table {
+                        table(classes = "full-width") {
                             thead {
                                 tr {
                                     th { }

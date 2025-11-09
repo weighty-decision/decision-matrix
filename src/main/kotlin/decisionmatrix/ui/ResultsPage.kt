@@ -31,7 +31,7 @@ object ResultsPage {
                 } else {
                     val scoreReport = decisionAggregate.calculateOptionScores(scores)
 
-                    table {
+                    table(classes = "full-width") {
                         thead {
                             tr {
                                 th { +"Criteria" }
