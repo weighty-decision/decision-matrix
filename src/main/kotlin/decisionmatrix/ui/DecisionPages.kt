@@ -227,12 +227,12 @@ object DecisionPages {
             ul(classes = "list") {
                 decisionAggregate.options.forEach { opt ->
                     li(classes = "row") {
-                        form(classes = "row grow") {
+                        form(classes = "row") {
                             // Update option inline
                             attributes["hx-post"] = "/decisions/${decisionAggregate.id}/options/${opt.id}/update"
                             attributes["hx-target"] = "#options-fragment"
                             attributes["hx-swap"] = "outerHTML"
-                            textInput(classes = "grow") {
+                            textInput {
                                 name = "name"
                                 required = true
                                 value = opt.name
@@ -282,12 +282,12 @@ object DecisionPages {
             ul(classes = "list") {
                 decisionAggregate.criteria.forEach { c ->
                     li(classes = "row") {
-                        form(classes = "row grow") {
+                        form(classes = "row") {
                             // Update criteria inline
                             attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${c.id}/update"
                             attributes["hx-target"] = "#criteria-fragment"
                             attributes["hx-swap"] = "outerHTML"
-                            textInput(classes = "grow") {
+                            textInput {
                                 name = "name"
                                 required = true
                                 value = c.name

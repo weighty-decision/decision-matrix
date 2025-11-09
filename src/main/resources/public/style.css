@@ -101,7 +101,6 @@ input[type="text"], input[type="number"], input[type="search"], select {
     color: var(--text);
     border-radius: 8px;
     padding: 10px 12px;
-    width: 100%;
     outline: none;
     font: inherit;
 }
