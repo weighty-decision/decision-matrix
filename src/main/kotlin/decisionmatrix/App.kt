@@ -11,6 +11,7 @@ import decisionmatrix.db.CriteriaRepositoryImpl
 import decisionmatrix.db.DecisionRepositoryImpl
 import decisionmatrix.db.OptionRepositoryImpl
 import decisionmatrix.db.UserScoreRepositoryImpl
+import decisionmatrix.db.SampleDataPopulator
 import decisionmatrix.db.loadJdbi
 import decisionmatrix.http4k.HttpConfig
 import decisionmatrix.oauth.MockOAuthServer
@@ -68,6 +69,17 @@ val decisionRoutes = DecisionRoutes(
 
 
 fun main() {
+    // Populate sample data if requested
+    if (System.getenv("DM_INCLUDE_SAMPLE_DATA")?.toBoolean() == true) {
+        SampleDataPopulator(
+            jdbi = jdbi,
+            decisionRepository = decisionRepository,
+            optionRepository = optionRepository,
+            criteriaRepository = criteriaRepository,
+            userScoreRepository = userScoreRepository
+        ).populateIfEmpty()
+    }
+
     HttpServer(
         authRoutes = authRoutes,
         decisionRoutes = decisionRoutes,

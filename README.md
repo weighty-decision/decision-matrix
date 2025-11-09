@@ -39,6 +39,7 @@ docker run -d --name postgres \
 # Start Decision Matrix
 docker run -p 8080:8080 \
   -e DM_DEV_MODE=true \
+  -e DM_INCLUDE_SAMPLE_DATA=true \
   -e DB_HOST=host.docker.internal \
   -e DB_USER=decision_matrix \
   -e DB_PASSWORD=decision_matrix_password \
@@ -119,6 +120,10 @@ docker run -p 8080:8080 \
 3. Access the application at http://localhost:8080
 
 ## Configuration
+
+### Sample Data
+You can load sample data by setting a `DM_INCLUDE_SAMPLE_DATA` environment variable to `true`.
+The sample data will only be loaded if the database is empty.
 
 ### Authentication Options
 
