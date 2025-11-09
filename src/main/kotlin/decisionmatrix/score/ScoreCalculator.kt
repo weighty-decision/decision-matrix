@@ -1,5 +1,8 @@
-package decisionmatrix
+package decisionmatrix.score
 
+import decisionmatrix.DecisionAggregate
+import decisionmatrix.Option
+import decisionmatrix.UserScore
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -31,8 +34,12 @@ fun DecisionAggregate.calculateOptionScores(userScores: List<UserScore>): ScoreR
     val optionScores = mutableListOf<CriteriaOptionScore>()
     val totalScores = LinkedHashMap<Option, BigDecimal>()
 
+    // Calculate total possible weight across all criteria
+    val totalPossibleWeight = criteria.sumOf { it.weight }
+
     for (option in options) {
-        var optionTotal = BigDecimal.ZERO
+        var weightedSum = BigDecimal.ZERO
+        var totalWeightScored = 0
 
         for (criterion in criteria) {
             val scores = userScores.filter { it.optionId == option.id && it.criteriaId == criterion.id }
@@ -40,6 +47,7 @@ fun DecisionAggregate.calculateOptionScores(userScores: List<UserScore>): ScoreR
             val weightedScore = if (scores.isNotEmpty()) {
                 val sum = scores.fold(BigDecimal.ZERO) { acc, s -> acc + BigDecimal(s.score) }
                 val average = sum.divide(BigDecimal(scores.size), 2, RoundingMode.HALF_UP)
+                totalWeightScored += criterion.weight
                 average.multiply(BigDecimal(criterion.weight))
             } else {
                 BigDecimal.ZERO
@@ -54,10 +62,21 @@ fun DecisionAggregate.calculateOptionScores(userScores: List<UserScore>): ScoreR
                 )
             )
 
-            optionTotal = optionTotal.add(weightedScore)
+            weightedSum = weightedSum.add(weightedScore)
         }
 
-        totalScores[option] = optionTotal
+        // Normalize the score: (weightedSum / totalWeightScored) * totalPossibleWeight
+        // This ensures that omitted scores don't penalize the option
+        val normalizedScore = if (totalWeightScored > 0) {
+            weightedSum
+                .divide(BigDecimal(totalWeightScored), 10, RoundingMode.HALF_UP)
+                .multiply(BigDecimal(totalPossibleWeight))
+                .setScale(2, RoundingMode.HALF_UP)
+        } else {
+            BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)
+        }
+
+        totalScores[option] = normalizedScore
     }
 
     return ScoreReport(optionScores = optionScores, totalScores = totalScores)
