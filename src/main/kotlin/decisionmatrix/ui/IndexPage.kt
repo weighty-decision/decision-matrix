@@ -168,7 +168,7 @@ object IndexPage {
                 +"No decisions found. Try adjusting your search or filters, or create your first decision to get started."
             }
         } else {
-            appendHTML().table {
+            appendHTML().table(classes = "full-width") {
                 thead {
                     tr {
                         th { +"Decision" }

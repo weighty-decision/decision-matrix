@@ -121,6 +121,10 @@ label > span {
     margin-bottom: 6px;
 }
 
+.full-width {
+    width: 100%;
+}
+
 .actions {
     display: flex;
     gap: var(--gap);
