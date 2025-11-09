@@ -299,30 +299,17 @@ object DecisionPages {
                     decisionAggregate.criteria.forEach { criteria ->
                         tr {
                             td {
-                                form {
-                                    // Update criteria inline
-                                    attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${criteria.id}/update"
-                                    attributes["hx-target"] = "#criteria-fragment"
-                                    attributes["hx-swap"] = "outerHTML"
-                                    attributes["hx-include"] = "closest tr"
-                                    textInput {
-                                        name = "name"
-                                        required = true
-                                        value = criteria.name
-                                    }
+                                textInput {
+                                    name = "name"
+                                    required = true
+                                    value = criteria.name
                                 }
                             }
                             td {
-                                form {
-                                    attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${criteria.id}/update"
-                                    attributes["hx-target"] = "#criteria-fragment"
-                                    attributes["hx-swap"] = "outerHTML"
-                                    attributes["hx-include"] = "closest tr"
-                                    numberInput {
-                                        name = "weight"
-                                        value = criteria.weight.toString()
-                                        min = "1"
-                                    }
+                                numberInput {
+                                    name = "weight"
+                                    value = criteria.weight.toString()
+                                    min = "1"
                                 }
                             }
                             td {
@@ -346,11 +333,12 @@ object DecisionPages {
                                         }
                                     }
                                     form {
-                                        // Delete criteria inline
                                         attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${criteria.id}/delete"
                                         attributes["hx-target"] = "#criteria-fragment"
                                         attributes["hx-swap"] = "outerHTML"
-                                        attributes["hx-confirm"] = "Are you sure you want to delete the criteria '${criteria.name}'? This action cannot be undone."
+                                        attributes["hx-confirm"] =
+                                            "Are you sure you want to delete the criteria '${criteria.name}'? " +
+                                                    "This action cannot be undone."
                                         button(classes = "btn danger small") {
                                             type = ButtonType.submit
                                             +"Delete"
@@ -363,31 +351,18 @@ object DecisionPages {
                     // Create new criteria row
                     tr {
                         td {
-                            form {
-                                // Create criteria inline
-                                attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria"
-                                attributes["hx-target"] = "#criteria-fragment"
-                                attributes["hx-swap"] = "outerHTML"
-                                attributes["hx-include"] = "closest tr"
-                                textInput {
-                                    id = "new-criteria-input"
-                                    name = "name"
-                                    placeholder = "New criteria"
-                                    required = true
-                                }
+                            textInput {
+                                id = "new-criteria-input"
+                                name = "name"
+                                placeholder = "New criteria"
+                                required = true
                             }
                         }
                         td {
-                            form {
-                                attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria"
-                                attributes["hx-target"] = "#criteria-fragment"
-                                attributes["hx-swap"] = "outerHTML"
-                                attributes["hx-include"] = "closest tr"
-                                numberInput {
-                                    name = "weight"
-                                    placeholder = "Weight"
-                                    min = "1"
-                                }
+                            numberInput {
+                                name = "weight"
+                                placeholder = "Weight"
+                                min = "1"
                             }
                         }
                         td { }
