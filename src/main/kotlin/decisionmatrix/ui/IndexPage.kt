@@ -70,6 +70,7 @@ object IndexPage {
                         select {
                             id = "time-range-select"
                             name = "timeRange"
+                            attributes["title"] = "Show decisions created or scored within the given time"
                             attributes["hx-get"] = "/search"
                             attributes["hx-trigger"] = "change"
                             attributes["hx-target"] = "#decisions-table"
@@ -106,6 +107,7 @@ object IndexPage {
                         button(classes = if (involvedFilter) "btn filter-btn active" else "btn filter-btn") {
                             type = ButtonType.button
                             id = "involved-toggle"
+                            attributes["title"] = "Show decisions I've created or scored"
                             attributes["hx-get"] = "/search"
                             attributes["hx-trigger"] = "click"
                             attributes["hx-target"] = "#decisions-table"
