@@ -136,6 +136,13 @@ object PageLayout {
                         +"Decision Matrix"
                     }
 
+                    user?.let {
+                        a(classes = "header-create-btn") {
+                            href = "/decisions/new"
+                            +"New Decision"
+                        }
+                    }
+
                     user?.let { authenticatedUser ->
                         div(classes = "account-dropdown") {
                             button(classes = "account-button") {

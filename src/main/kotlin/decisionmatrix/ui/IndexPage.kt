@@ -100,15 +100,6 @@ object IndexPage {
                             value = if (involvedFilter) "true" else "false"
                         }
                     }
-
-                    div(classes = "grow") {
-                        // Empty div to push button to the right
-                    }
-                    a(classes = "btn primary") {
-                        href = "/decisions/new"
-                        attributes["style"] = "white-space: nowrap;"
-                        +"Create New Decision"
-                    }
                 }
 
                 div {

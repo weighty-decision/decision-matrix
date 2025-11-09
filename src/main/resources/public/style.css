@@ -280,6 +280,29 @@ header.container {
     justify-content: space-between;
 }
 
+.header-create-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    margin-right: 12px;
+    background: linear-gradient(180deg, #2a5bbf, #1b3b75);
+    border: 1px solid #3b82f6;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.header-create-btn:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+}
+
 .account-dropdown {
     position: relative;
 }

@@ -197,7 +197,7 @@ class DecisionUiRoutesTest {
         htmlContent shouldContain "First Decision"
         htmlContent shouldContain "Second Decision"
         htmlContent shouldContain "Third Decision"
-        htmlContent shouldContain "Create New Decision"
+        htmlContent shouldContain "New Decision"
     }
 
     @Test
@@ -268,7 +268,7 @@ class DecisionUiRoutesTest {
 
         htmlContent shouldContain "No decisions found"
         htmlContent shouldContain "create your first decision"
-        htmlContent shouldContain "Create New Decision"
+        htmlContent shouldContain "New Decision"
     }
 
     @Test
