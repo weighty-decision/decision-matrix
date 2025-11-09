@@ -242,7 +242,7 @@ class DecisionRepositoryTest {
     }
 
     @Test
-    fun `findDecisions with no filters returns all decisions`() {
+    fun `findDecisions with no filters returns decisions using default time range`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
 
         val decision1 = decisionRepository.insert(DecisionInput(name = "First Decision"), createdBy = "user1")
@@ -251,6 +251,7 @@ class DecisionRepositoryTest {
         val filters = DecisionSearchFilters()
         val decisions = decisionRepository.findDecisions(filters)
 
+        // Default is LAST_90_DAYS, so recently created decisions should appear
         decisions.size shouldBe 2
         decisions.map { it.id } shouldContain decision1.id
         decisions.map { it.id } shouldContain decision2.id
@@ -295,12 +296,12 @@ class DecisionRepositoryTest {
     }
 
     @Test
-    fun `findDecisions with recent filter returns recent decisions`() {
+    fun `findDecisions with time range filter returns recent decisions`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
 
         decisionRepository.insert(DecisionInput(name = "Recent Decision"), createdBy = "user1")
 
-        val filters = DecisionSearchFilters(search = "Recent Decision", recentOnly = true)
+        val filters = DecisionSearchFilters(search = "Recent Decision", timeRange = TimeRange.LAST_30_DAYS)
         val decisions = decisionRepository.findDecisions(filters)
 
         decisions.size shouldBe 1

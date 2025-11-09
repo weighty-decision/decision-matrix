@@ -11,6 +11,7 @@ import decisionmatrix.db.CriteriaRepository
 import decisionmatrix.db.DecisionRepository
 import decisionmatrix.db.DecisionSearchFilters
 import decisionmatrix.db.OptionRepository
+import decisionmatrix.db.TimeRange
 import decisionmatrix.db.UserScoreRepository
 import decisionmatrix.ui.DecisionPages
 import decisionmatrix.ui.IndexPage
@@ -65,19 +66,19 @@ class DecisionRoutes(
 
         // Parse query parameters for search and filters
         val search = request.query("search")?.takeIf { it.isNotBlank() }
-        val recent = request.query("recent")?.let { it == "true" } ?: true
+        val timeRange = TimeRange.fromString(request.query("timeRange"))
         val involved = request.query("involved") == "true"
 
         val filters = DecisionSearchFilters(
             search = search,
-            recentOnly = recent,
+            timeRange = timeRange,
             involvedOnly = involved,
             userId = currentUser.id
         )
 
         val decisions = decisionRepository.findDecisions(filters)
 
-        return htmlResponse(IndexPage.indexPage(decisions, currentUser, search, recent, involved))
+        return htmlResponse(IndexPage.indexPage(decisions, currentUser, search, timeRange, involved))
     }
 
     private fun searchDecisions(request: Request): Response {
@@ -85,12 +86,12 @@ class DecisionRoutes(
 
         // Parse query parameters for search and filters
         val search = request.query("search")?.takeIf { it.isNotBlank() }
-        val recent = request.query("recent")?.let { it == "true" } ?: true
+        val timeRange = TimeRange.fromString(request.query("timeRange"))
         val involved = request.query("involved") == "true"
 
         val filters = DecisionSearchFilters(
             search = search,
-            recentOnly = recent,
+            timeRange = timeRange,
             involvedOnly = involved,
             userId = currentUser.id
         )
@@ -100,7 +101,7 @@ class DecisionRoutes(
         return if (isHx(request)) {
             htmlResponse(IndexPage.decisionsTableFragment(decisions, currentUser))
         } else {
-            htmlResponse(IndexPage.indexPage(decisions, currentUser, search, recent, involved))
+            htmlResponse(IndexPage.indexPage(decisions, currentUser, search, timeRange, involved))
         }
     }
 

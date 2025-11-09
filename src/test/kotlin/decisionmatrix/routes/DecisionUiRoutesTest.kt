@@ -281,37 +281,58 @@ class DecisionUiRoutesTest {
 
         htmlContent shouldContain "search-input"
         htmlContent shouldContain "Search decisions..."
-        htmlContent shouldContain "Recent"
+        htmlContent shouldContain "time-range-select"
+        htmlContent shouldContain "All decisions"
         htmlContent shouldContain "I'm involved in"
     }
 
     @Test
-    fun `home page with recent filter parameter shows recent decisions`() {
+    fun `home page defaults to Last 90 days time range`() {
+        decisionRepository.insert(
+            DecisionInput(name = "Recent Decision"),
+            createdBy = "test-user"
+        )
+
+        val request = Request(Method.GET, "/")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+
+        // Should show the decision (created within last 90 days)
+        htmlContent shouldContain "Recent Decision"
+        // Should have Last 90 days selected by default
+        htmlContent shouldContain "value=\"90\""
+        htmlContent shouldContain "selected"
+    }
+
+    @Test
+    fun `home page with time range filter parameter shows recent decisions`() {
         decisionRepository.insert(
             DecisionInput(name = "Recent Decision"),
             createdBy = "other-user"
         )
 
-        val request = Request(Method.GET, "/?recent=true")
+        val request = Request(Method.GET, "/?timeRange=30")
         val response = routes(request)
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
 
         htmlContent shouldContain "Recent Decision"
-        htmlContent shouldContain "btn filter-btn active"
+        htmlContent shouldContain "Last 30 days"
     }
 
     @Test
-    fun `recent filter shows empty state when no recent decisions`() {
-        val request = Request(Method.GET, "/?recent=true")
+    fun `time range filter shows empty state when no recent decisions`() {
+        val request = Request(Method.GET, "/?timeRange=7")
         val response = routes(request)
 
         response.status shouldBe Status.OK
         val htmlContent = response.bodyString()
 
         htmlContent shouldContain "No decisions found"
-        htmlContent shouldContain "btn filter-btn active"
+        htmlContent shouldContain "Last 7 days"
     }
 
     @Test
@@ -347,10 +368,10 @@ class DecisionUiRoutesTest {
     }
 
     @Test
-    fun `search endpoint with recent filter returns recent decisions`() {
+    fun `search endpoint with time range filter returns recent decisions`() {
         decisionRepository.insert(DecisionInput(name = "Recent Decision"), createdBy = "test-user")
 
-        val request = Request(Method.GET, "/search?recent=true")
+        val request = Request(Method.GET, "/search?timeRange=30")
         val response = routes(request)
 
         response.status shouldBe Status.OK

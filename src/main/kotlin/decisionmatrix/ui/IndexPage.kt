@@ -2,6 +2,7 @@ package decisionmatrix.ui
 
 import decisionmatrix.Decision
 import decisionmatrix.auth.AuthenticatedUser
+import decisionmatrix.db.TimeRange
 import kotlinx.html.ButtonType
 import kotlinx.html.InputType
 import kotlinx.html.a
@@ -10,9 +11,12 @@ import kotlinx.html.div
 import kotlinx.html.form
 import kotlinx.html.id
 import kotlinx.html.input
+import kotlinx.html.label
+import kotlinx.html.option
 import kotlinx.html.p
 import kotlinx.html.script
 import kotlinx.html.section
+import kotlinx.html.select
 import kotlinx.html.span
 import kotlinx.html.stream.appendHTML
 import kotlinx.html.strong
@@ -32,7 +36,7 @@ object IndexPage {
         decisions: List<Decision>,
         currentUser: AuthenticatedUser,
         searchTerm: String? = null,
-        recentFilter: Boolean = true,
+        timeRange: TimeRange = TimeRange.LAST_90_DAYS,
         involvedFilter: Boolean = false
     ): String =
         PageLayout.page("Decision Matrix", user = currentUser) {
@@ -56,44 +60,64 @@ object IndexPage {
 
                     form {
                         id = "search-form"
-                        attributes["style"] = "display: contents;"
+                        attributes["style"] = "display: flex; align-items: center; gap: 8px;"
 
-                        button(classes = if (recentFilter) "btn filter-btn active" else "btn filter-btn") {
-                            type = ButtonType.button
-                            id = "recent-toggle"
-                            attributes["style"] = "margin-left: 12px;"
+                        label {
+                            attributes["for"] = "time-range-select"
+                            attributes["style"] = "margin-left: 12px; white-space: nowrap;"
+                            +"Show:"
+                        }
+                        select {
+                            id = "time-range-select"
+                            name = "timeRange"
                             attributes["hx-get"] = "/search"
-                            attributes["hx-trigger"] = "click"
+                            attributes["hx-trigger"] = "change"
                             attributes["hx-target"] = "#decisions-table"
-                            attributes["hx-vals"] =
-                                "js:{recent: document.querySelector('input[name=\"recent\"]').value === 'true' ? 'false' : 'true', " +
-                                        "involved: document.querySelector('input[name=\"involved\"]').value, " +
-                                        "search: document.getElementById('search-input').value}"
+                            attributes["hx-include"] = "#search-form"
                             attributes["hx-push-url"] = "true"
-                            +"Recent"
+
+                            option {
+                                value = ""
+                                selected = (timeRange == TimeRange.ALL)
+                                +"All decisions"
+                            }
+                            option {
+                                value = "7"
+                                selected = (timeRange == TimeRange.LAST_7_DAYS)
+                                +"Last 7 days"
+                            }
+                            option {
+                                value = "30"
+                                selected = (timeRange == TimeRange.LAST_30_DAYS)
+                                +"Last 30 days"
+                            }
+                            option {
+                                value = "90"
+                                selected = (timeRange == TimeRange.LAST_90_DAYS)
+                                +"Last 90 days"
+                            }
+                            option {
+                                value = "180"
+                                selected = (timeRange == TimeRange.LAST_6_MONTHS)
+                                +"Last 6 months"
+                            }
                         }
 
                         button(classes = if (involvedFilter) "btn filter-btn active" else "btn filter-btn") {
                             type = ButtonType.button
                             id = "involved-toggle"
-                            attributes["style"] = "margin-left: 8px;"
                             attributes["hx-get"] = "/search"
                             attributes["hx-trigger"] = "click"
                             attributes["hx-target"] = "#decisions-table"
                             attributes["hx-vals"] =
                                 "js:{involved: document.querySelector('input[name=\"involved\"]').value === 'true' ? 'false' : 'true', " +
-                                        "recent: document.querySelector('input[name=\"recent\"]').value, " +
+                                        "timeRange: document.getElementById('time-range-select').value, " +
                                         "search: document.getElementById('search-input').value}"
                             attributes["hx-push-url"] = "true"
                             +"I'm involved in"
                         }
 
-                        // Hidden inputs to track filter state
-                        input(type = InputType.hidden) {
-                            id = "recent-input"
-                            name = "recent"
-                            value = if (recentFilter) "true" else "false"
-                        }
+                        // Hidden input to track involved filter state
                         input(type = InputType.hidden) {
                             id = "involved-input"
                             name = "involved"
@@ -113,33 +137,15 @@ object IndexPage {
                     +"""
                     // Toggle button behavior - update local hidden inputs and button appearance
                     document.addEventListener('DOMContentLoaded', function() {
-                        // Update button appearance immediately on click
-                        document.getElementById('recent-toggle').addEventListener('click', function() {
-                            const button = this;
-                            const hiddenInput = document.querySelector('input[name="recent"]');
-                            const currentValue = hiddenInput.value === 'true';
-                            const newValue = !currentValue;
-                            
-                            // Update local state
-                            hiddenInput.value = newValue.toString();
-                            
-                            // Update button appearance immediately
-                            if (newValue) {
-                                button.classList.add('active');
-                            } else {
-                                button.classList.remove('active');
-                            }
-                        });
-                        
                         document.getElementById('involved-toggle').addEventListener('click', function() {
                             const button = this;
                             const hiddenInput = document.querySelector('input[name="involved"]');
                             const currentValue = hiddenInput.value === 'true';
                             const newValue = !currentValue;
-                            
+
                             // Update local state
                             hiddenInput.value = newValue.toString();
-                            
+
                             // Update button appearance immediately
                             if (newValue) {
                                 button.classList.add('active');

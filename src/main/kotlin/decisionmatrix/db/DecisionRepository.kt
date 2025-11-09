@@ -8,9 +8,30 @@ import decisionmatrix.Option
 import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 
+enum class TimeRange(val days: Int?) {
+    ALL(null),
+    LAST_7_DAYS(7),
+    LAST_30_DAYS(30),
+    LAST_90_DAYS(90),
+    LAST_6_MONTHS(180);
+
+    companion object {
+        fun fromString(value: String?): TimeRange {
+            return when (value?.uppercase()) {
+                "ALL", "" -> ALL
+                "7" -> LAST_7_DAYS
+                "30" -> LAST_30_DAYS
+                "90" -> LAST_90_DAYS
+                "180" -> LAST_6_MONTHS
+                else -> LAST_90_DAYS
+            }
+        }
+    }
+}
+
 data class DecisionSearchFilters(
     val search: String? = null,
-    val recentOnly: Boolean = false,
+    val timeRange: TimeRange = TimeRange.LAST_90_DAYS,
     val involvedOnly: Boolean = false,
     val userId: String? = null
 )
@@ -142,10 +163,10 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
                 parameters["search"] = "%$searchTerm%"
             }
 
-            // Recent filter (1 month)
-            if (filters.recentOnly) {
-                conditions.add("(d.created_at >= CURRENT_TIMESTAMP - INTERVAL '1 month' " +
-                        "OR EXISTS (SELECT 1 FROM user_scores us WHERE us.decision_id = d.id AND us.created_at >= CURRENT_TIMESTAMP - INTERVAL '1 month'))")
+            // Time range filter
+            filters.timeRange.days?.let { days ->
+                conditions.add("(d.created_at >= CURRENT_TIMESTAMP - INTERVAL '$days days' " +
+                        "OR EXISTS (SELECT 1 FROM user_scores us WHERE us.decision_id = d.id AND us.created_at >= CURRENT_TIMESTAMP - INTERVAL '$days days'))")
             }
 
             // Involvement filter
