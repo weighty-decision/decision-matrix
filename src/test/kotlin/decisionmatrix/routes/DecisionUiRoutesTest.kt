@@ -482,4 +482,99 @@ class DecisionUiRoutesTest {
         htmlContent shouldContain ">Locked<"
         htmlContent.contains("/decisions/${lockedDecision.id}/my-scores") shouldBe false
     }
+
+    @Test
+    fun `criteriaFragment shows weight percentage for single criterion`() {
+        val decision = decisionRepository.insert(DecisionInput(name = "Test Decision"), createdBy = "test-user")
+        criteriaRepository.insert(decision.id, decisionmatrix.CriteriaInput(name = "Cost", weight = 5))
+
+        val request = Request(Method.GET, "/decisions/${decision.id}/edit")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+
+        htmlContent shouldContain "Cost"
+        htmlContent shouldContain "100%"
+    }
+
+    @Test
+    fun `criteriaFragment shows correct percentages for multiple criteria`() {
+        val decision = decisionRepository.insert(DecisionInput(name = "Test Decision"), createdBy = "test-user")
+        criteriaRepository.insert(decision.id, decisionmatrix.CriteriaInput(name = "Cost", weight = 3))
+        criteriaRepository.insert(decision.id, decisionmatrix.CriteriaInput(name = "Quality", weight = 7))
+
+        val request = Request(Method.GET, "/decisions/${decision.id}/edit")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+
+        htmlContent shouldContain "Cost"
+        htmlContent shouldContain "30%"
+        htmlContent shouldContain "Quality"
+        htmlContent shouldContain "70%"
+    }
+
+    @Test
+    fun `criteriaFragment does not show percentage when total weight is zero`() {
+        val decision = decisionRepository.insert(DecisionInput(name = "Test Decision"), createdBy = "test-user")
+        criteriaRepository.insert(decision.id, decisionmatrix.CriteriaInput(name = "Cost", weight = 0))
+        criteriaRepository.insert(decision.id, decisionmatrix.CriteriaInput(name = "Quality", weight = 0))
+
+        val request = Request(Method.GET, "/decisions/${decision.id}/edit")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+
+        htmlContent shouldContain "Cost"
+        htmlContent shouldContain "Quality"
+        // Should not contain percentage indicators
+        htmlContent.contains("0%") shouldBe false
+    }
+
+    @Test
+    fun `criteriaFragment rounds percentages using half-up rounding`() {
+        val decision = decisionRepository.insert(DecisionInput(name = "Test Decision"), createdBy = "test-user")
+        criteriaRepository.insert(decision.id, decisionmatrix.CriteriaInput(name = "A", weight = 1))
+        criteriaRepository.insert(decision.id, decisionmatrix.CriteriaInput(name = "B", weight = 2))
+
+        val request = Request(Method.GET, "/decisions/${decision.id}/edit")
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+
+        // 1/3 = 33.333...% -> rounds to 33%
+        htmlContent shouldContain "33%"
+        // 2/3 = 66.666...% -> rounds to 67%
+        htmlContent shouldContain "67%"
+    }
+
+    @Test
+    fun `criteriaFragment updates percentages after criteria update`() {
+        val decision = decisionRepository.insert(DecisionInput(name = "Test Decision"), createdBy = "test-user")
+        val criterion1 = criteriaRepository.insert(decision.id, decisionmatrix.CriteriaInput(name = "Cost", weight = 5))
+        criteriaRepository.insert(decision.id, decisionmatrix.CriteriaInput(name = "Quality", weight = 5))
+
+        // Update the first criterion's weight
+        val request = Request(Method.POST, "/decisions/${decision.id}/criteria/${criterion1.id}/update")
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .header("HX-Request", "true")
+            .body("name=Cost&weight=3")
+
+        val response = routes(request)
+
+        response.status shouldBe Status.OK
+        val htmlContent = response.bodyString()
+
+        // After update: Cost=3, Quality=5, total=8
+        // Cost: 3/8 = 37.5% -> rounds to 38%
+        // Quality: 5/8 = 62.5% -> rounds to 63% (half-up rounding)
+        htmlContent shouldContain "Cost"
+        htmlContent shouldContain "38%"
+        htmlContent shouldContain "Quality"
+        htmlContent shouldContain "63%"
+    }
 }

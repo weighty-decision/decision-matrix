@@ -5,6 +5,7 @@ import decisionmatrix.DEFAULT_MIN_SCORE
 import decisionmatrix.Decision
 import decisionmatrix.DecisionAggregate
 import decisionmatrix.auth.AuthenticatedUser
+import decisionmatrix.score.calculateWeightPercentage
 import kotlinx.html.ButtonType
 import kotlinx.html.a
 import kotlinx.html.button
@@ -280,22 +281,29 @@ object DecisionPages {
             id = "criteria-fragment"
             h2 { +"Criteria" }
             ul(classes = "list") {
-                decisionAggregate.criteria.forEach { c ->
+                decisionAggregate.criteria.forEach { criteria ->
                     li(classes = "row") {
                         form(classes = "row") {
                             // Update criteria inline
-                            attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${c.id}/update"
+                            attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${criteria.id}/update"
                             attributes["hx-target"] = "#criteria-fragment"
                             attributes["hx-swap"] = "outerHTML"
                             textInput {
                                 name = "name"
                                 required = true
-                                value = c.name
+                                value = criteria.name
                             }
                             numberInput {
                                 name = "weight"
-                                value = c.weight.toString()
+                                value = criteria.weight.toString()
                                 min = "1"
+                            }
+                            val percentage = criteria.calculateWeightPercentage(decisionAggregate.criteria)
+                            if (percentage != null) {
+                                small(classes = "muted") {
+                                    style = "margin-left: 0.5rem;"
+                                    +"$percentage%"
+                                }
                             }
                             button(classes = "btn small") {
                                 type = ButtonType.submit
@@ -304,10 +312,10 @@ object DecisionPages {
                         }
                         form {
                             // Delete criteria inline
-                            attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${c.id}/delete"
+                            attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${criteria.id}/delete"
                             attributes["hx-target"] = "#criteria-fragment"
                             attributes["hx-swap"] = "outerHTML"
-                            attributes["hx-confirm"] = "Are you sure you want to delete the criteria '${c.name}'? This action cannot be undone."
+                            attributes["hx-confirm"] = "Are you sure you want to delete the criteria '${criteria.name}'? This action cannot be undone."
                             button(classes = "btn danger small") {
                                 type = ButtonType.submit
                                 +"Delete"
