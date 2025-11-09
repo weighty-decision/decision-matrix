@@ -196,6 +196,7 @@ object IndexPage {
                                 }
                                 if (decision.locked) {
                                     span(classes = "btn small disabled") {
+                                        attributes["title"] = "Scoring for this decision has been locked by the creator"
                                         +"Locked"
                                     }
                                 } else {
