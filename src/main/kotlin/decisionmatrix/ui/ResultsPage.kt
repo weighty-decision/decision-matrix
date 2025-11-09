@@ -35,14 +35,14 @@ object ResultsPage {
                         thead {
                             tr {
                                 th { +"Criteria" }
-                                decisionAggregate.options.forEach { option ->
+                                decisionAggregate.options.sortedBy { it.id }.forEach { option ->
                                     th { +option.name }
                                 }
                             }
                         }
                         tbody {
                             // Create rows for each criterion
-                            decisionAggregate.criteria.forEach { criterion ->
+                            decisionAggregate.criteria.sortedBy { it.id }.forEach { criterion ->
                                 tr {
                                     td { +"${criterion.name} (×${criterion.weight})" }
                                     decisionAggregate.options.forEach { option ->
@@ -56,7 +56,7 @@ object ResultsPage {
 
                             tr(classes = "total-row") {
                                 td { +"Total" }
-                                decisionAggregate.options.forEach { option ->
+                                decisionAggregate.options.sortedBy { it.id }.forEach { option ->
                                     val totalScore = scoreReport.totalScores[option] ?: java.math.BigDecimal.ZERO
                                     td { +totalScore.setScale(2, RoundingMode.HALF_UP).toPlainString() }
                                 }

@@ -227,84 +227,6 @@ object DecisionPages {
         }
     }
 
-    fun optionsFragment(decisionAggregate: DecisionAggregate): String = buildString {
-        appendHTML().section(classes = "card") {
-            id = "options-fragment"
-            h2 { +"Options" }
-            table {
-                thead {
-                    tr {
-                        th { +"Name" }
-                        th { }
-                    }
-                }
-                tbody {
-                    decisionAggregate.options.forEach { opt ->
-                        tr {
-                            td {
-                                textInput {
-                                    name = "name"
-                                    required = true
-                                    value = opt.name
-                                }
-                            }
-                            td {
-                                div(classes = "row") {
-                                    form {
-                                        // Update option inline
-                                        attributes["hx-post"] = "/decisions/${decisionAggregate.id}/options/${opt.id}/update"
-                                        attributes["hx-target"] = "#options-fragment"
-                                        attributes["hx-swap"] = "outerHTML"
-                                        attributes["hx-include"] = "closest tr"
-                                        button(classes = "btn small") {
-                                            type = ButtonType.submit
-                                            +"Save"
-                                        }
-                                    }
-                                    form {
-                                        // Delete option inline
-                                        attributes["hx-post"] = "/decisions/${decisionAggregate.id}/options/${opt.id}/delete"
-                                        attributes["hx-target"] = "#options-fragment"
-                                        attributes["hx-swap"] = "outerHTML"
-                                        attributes["hx-confirm"] = "Are you sure you want to delete the option '${opt.name}'? This action cannot be undone."
-                                        button(classes = "btn danger small") {
-                                            type = ButtonType.submit
-                                            +"Delete"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // Create new option row
-                    tr {
-                        td {
-                            textInput {
-                                id = "new-option-input"
-                                name = "name"
-                                placeholder = "New option"
-                                required = true
-                            }
-                        }
-                        td {
-                            form {
-                                // Create option inline
-                                attributes["hx-post"] = "/decisions/${decisionAggregate.id}/options"
-                                attributes["hx-target"] = "#options-fragment"
-                                attributes["hx-swap"] = "outerHTML"
-                                attributes["hx-include"] = "closest tr"
-                                button(classes = "btn") {
-                                    type = ButtonType.submit
-                                    +"Add"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     fun criteriaFragment(decisionAggregate: DecisionAggregate): String = buildString {
         appendHTML().section(classes = "card") {
             id = "criteria-fragment"
@@ -319,7 +241,7 @@ object DecisionPages {
                     }
                 }
                 tbody {
-                    decisionAggregate.criteria.forEach { criteria ->
+                    decisionAggregate.criteria.sortedBy { it.id }.forEach { criteria ->
                         tr {
                             td {
                                 textInput {
@@ -393,6 +315,84 @@ object DecisionPages {
                             form {
                                 attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria"
                                 attributes["hx-target"] = "#criteria-fragment"
+                                attributes["hx-swap"] = "outerHTML"
+                                attributes["hx-include"] = "closest tr"
+                                button(classes = "btn") {
+                                    type = ButtonType.submit
+                                    +"Add"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun optionsFragment(decisionAggregate: DecisionAggregate): String = buildString {
+        appendHTML().section(classes = "card") {
+            id = "options-fragment"
+            h2 { +"Options" }
+            table {
+                thead {
+                    tr {
+                        th { +"Name" }
+                        th { }
+                    }
+                }
+                tbody {
+                    decisionAggregate.options.sortedBy { it.id }.forEach { opt ->
+                        tr {
+                            td {
+                                textInput {
+                                    name = "name"
+                                    required = true
+                                    value = opt.name
+                                }
+                            }
+                            td {
+                                div(classes = "row") {
+                                    form {
+                                        // Update option inline
+                                        attributes["hx-post"] = "/decisions/${decisionAggregate.id}/options/${opt.id}/update"
+                                        attributes["hx-target"] = "#options-fragment"
+                                        attributes["hx-swap"] = "outerHTML"
+                                        attributes["hx-include"] = "closest tr"
+                                        button(classes = "btn small") {
+                                            type = ButtonType.submit
+                                            +"Save"
+                                        }
+                                    }
+                                    form {
+                                        // Delete option inline
+                                        attributes["hx-post"] = "/decisions/${decisionAggregate.id}/options/${opt.id}/delete"
+                                        attributes["hx-target"] = "#options-fragment"
+                                        attributes["hx-swap"] = "outerHTML"
+                                        attributes["hx-confirm"] = "Are you sure you want to delete the option '${opt.name}'? This action cannot be undone."
+                                        button(classes = "btn danger small") {
+                                            type = ButtonType.submit
+                                            +"Delete"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // Create new option row
+                    tr {
+                        td {
+                            textInput {
+                                id = "new-option-input"
+                                name = "name"
+                                placeholder = "New option"
+                                required = true
+                            }
+                        }
+                        td {
+                            form {
+                                // Create option inline
+                                attributes["hx-post"] = "/decisions/${decisionAggregate.id}/options"
+                                attributes["hx-target"] = "#options-fragment"
                                 attributes["hx-swap"] = "outerHTML"
                                 attributes["hx-include"] = "closest tr"
                                 button(classes = "btn") {
