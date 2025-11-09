@@ -75,6 +75,10 @@ object DecisionPages {
                             required = true
                         }
                     }
+                    small(classes = "muted") {
+                        style = "align-self: end; margin-bottom: 0.25rem;"
+                        +"Constrains the minimum and maximum score allowed for each option"
+                    }
                 }
                 div(classes = "actions") {
                     button(classes = "btn primary") {
@@ -186,7 +190,7 @@ object DecisionPages {
                         }
                         small(classes = "muted") {
                             style = "align-self: end; margin-bottom: 0.25rem;"
-                            +"Constrains the minimum and maximum score value allowed for each option"
+                            +"Constrains the minimum and maximum score allowed for each option"
                         }
                     }
                 }
