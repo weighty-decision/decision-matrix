@@ -2,6 +2,23 @@
 
 Weighted decision matrix that supports multiple users. When calculating each option's weighted score, it uses the average of each user's score.
 
+## How Scoring Works
+
+The scoring system is designed to not penalize users for honest gaps in knowledge:
+
+1. **User Scores**: Multiple users can score each option against each criterion
+2. **Averaging**: For each option-criterion combination, all user scores are averaged
+3. **Weighting**: The average is multiplied by the criterion's weight
+4. **Omitted Scores**: If users don't provide a score for a particular criterion, it's treated as "not applicable" or "can't evaluate" rather than zero
+5. **Normalization**: The final score is normalized so that omitted scores don't penalize the option
+
+**Example**: If you have criteria with weights [5, 3, 4] (total = 12) and a user scores an option as [Performance=10, Cost=omitted, Usability=10]:
+- Weighted sum: 5×10 + 4×10 = 90
+- Total weight scored: 5 + 4 = 9
+- Normalized score: (90 / 9) × 12 = 120
+
+This means an option scored 10/10 on all evaluated criteria gets a perfect score of 120, regardless of whether some criteria were omitted.
+
 ## Quick Start with Docker
 
 The easiest way to run Decision Matrix is using Docker with the pre-built images from GitHub Container Registry.

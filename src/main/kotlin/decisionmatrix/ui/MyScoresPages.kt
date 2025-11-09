@@ -39,6 +39,10 @@ object MyScoresPages {
                         +"Add options and criteria first on the edit page."
                     }
                 } else {
+                    p {
+                        +"Leave a field blank if you can't evaluate an option for that criterion. Omitted scores won't penalize the option."
+                    }
+
                     // Build a map for quick lookup of existing scores by (optionId, criteriaId)
                     val scoreMap = scores.associateBy { it.optionId to it.criteriaId }
 
