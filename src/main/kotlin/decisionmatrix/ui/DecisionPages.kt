@@ -239,8 +239,24 @@ object DecisionPages {
                 thead {
                     tr {
                         th { +"Name" }
-                        th { +"Weight" }
-                        th { +"Weight %" }
+                        th {
+                            +"Weight "
+                            span(classes = "muted") {
+                                attributes["title"] = "The relative importance of this criteria. Higher values mean " +
+                                        "this criteria has more influence on the final decision. For example a weight of 2 " +
+                                        "will be twice as important as a criteria with a weight of 1."
+                                style = "cursor: help;"
+                                +"\u24d8"
+                            }
+                        }
+                        th {
+                            +"Weight % "
+                            span(classes = "muted") {
+                                attributes["title"] = "The percentage this criteria contributes to the total weight across all criteria."
+                                style = "cursor: help;"
+                                +"\u24d8"
+                            }
+                        }
                         th { }
                     }
                 }
