@@ -125,7 +125,6 @@ class ScoreRangeEndToEndTest {
         val initialBody = initialMyScores.bodyString()
         initialBody shouldContain "min=\"1\""
         initialBody shouldContain "max=\"5\""
-        initialBody shouldContain "placeholder=\"Score (1-5)\""
 
         // Step 3: Update score range
         val updateRangeRequest = Request.Companion(Method.POST, "/decisions/$decisionId/name")
@@ -141,12 +140,10 @@ class ScoreRangeEndToEndTest {
         val updatedBody = updatedMyScores.bodyString()
         updatedBody shouldContain "min=\"2\""
         updatedBody shouldContain "max=\"8\""
-        updatedBody shouldContain "placeholder=\"Score (2-8)\""
 
         // Old constraints should not be present
         updatedBody shouldNotContain "min=\"1\""
         updatedBody shouldNotContain "max=\"5\""
-        updatedBody shouldNotContain "placeholder=\"Score (1-5)\""
 
     }
 

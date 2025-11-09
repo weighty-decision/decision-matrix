@@ -44,7 +44,8 @@ object MyScoresPages {
                     }
 
                     p {
-                        +"Score each option from ${decisionAggregate.minScore} (lowest) to ${decisionAggregate.maxScore} (highest) based on how well it meets each criterion."
+                        +"Score each option from ${decisionAggregate.minScore} (lowest) to "
+                        +"${decisionAggregate.maxScore} (highest) based on how well it meets each criterion."
                     }
 
                     // Build a map for quick lookup of existing scores by (optionId, criteriaId)
