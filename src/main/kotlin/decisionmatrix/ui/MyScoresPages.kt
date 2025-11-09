@@ -43,6 +43,10 @@ object MyScoresPages {
                         +"Leave a field blank if you can't evaluate an option for that criterion. Omitted scores won't penalize the option."
                     }
 
+                    p {
+                        +"Score each option from ${decisionAggregate.minScore} (lowest) to ${decisionAggregate.maxScore} (highest) based on how well it meets each criterion."
+                    }
+
                     // Build a map for quick lookup of existing scores by (optionId, criteriaId)
                     val scoreMap = scores.associateBy { it.optionId to it.criteriaId }
 
@@ -71,7 +75,6 @@ object MyScoresPages {
                                             td {
                                                 numberInput {
                                                     name = "score_${opt.id}_${c.id}"
-                                                    placeholder = "Score (${decisionAggregate.minScore}-${decisionAggregate.maxScore})"
                                                     min = decisionAggregate.minScore.toString()
                                                     max = decisionAggregate.maxScore.toString()
                                                     if (existing != null) {
