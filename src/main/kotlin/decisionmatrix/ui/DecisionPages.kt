@@ -24,7 +24,13 @@ import kotlinx.html.small
 import kotlinx.html.span
 import kotlinx.html.stream.appendHTML
 import kotlinx.html.style
+import kotlinx.html.table
+import kotlinx.html.tbody
+import kotlinx.html.td
 import kotlinx.html.textInput
+import kotlinx.html.th
+import kotlinx.html.thead
+import kotlinx.html.tr
 import kotlinx.html.ul
 import kotlinx.html.unsafe
 
@@ -280,69 +286,124 @@ object DecisionPages {
         appendHTML().section(classes = "card") {
             id = "criteria-fragment"
             h2 { +"Criteria" }
-            ul(classes = "list") {
-                decisionAggregate.criteria.forEach { criteria ->
-                    li(classes = "row") {
-                        form(classes = "row") {
-                            // Update criteria inline
-                            attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${criteria.id}/update"
-                            attributes["hx-target"] = "#criteria-fragment"
-                            attributes["hx-swap"] = "outerHTML"
-                            textInput {
-                                name = "name"
-                                required = true
-                                value = criteria.name
-                            }
-                            numberInput {
-                                name = "weight"
-                                value = criteria.weight.toString()
-                                min = "1"
-                            }
-                            val percentage = criteria.calculateWeightPercentage(decisionAggregate.criteria)
-                            if (percentage != null) {
-                                small(classes = "muted") {
-                                    style = "margin-left: 0.5rem;"
-                                    +"$percentage%"
+            table {
+                thead {
+                    tr {
+                        th { +"Criteria" }
+                        th { +"Weight" }
+                        th { +"%" }
+                        th { }
+                    }
+                }
+                tbody {
+                    decisionAggregate.criteria.forEach { criteria ->
+                        tr {
+                            td {
+                                form {
+                                    // Update criteria inline
+                                    attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${criteria.id}/update"
+                                    attributes["hx-target"] = "#criteria-fragment"
+                                    attributes["hx-swap"] = "outerHTML"
+                                    attributes["hx-include"] = "closest tr"
+                                    textInput {
+                                        name = "name"
+                                        required = true
+                                        value = criteria.name
+                                    }
                                 }
                             }
-                            button(classes = "btn small") {
-                                type = ButtonType.submit
-                                +"Save"
+                            td {
+                                form {
+                                    attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${criteria.id}/update"
+                                    attributes["hx-target"] = "#criteria-fragment"
+                                    attributes["hx-swap"] = "outerHTML"
+                                    attributes["hx-include"] = "closest tr"
+                                    numberInput {
+                                        name = "weight"
+                                        value = criteria.weight.toString()
+                                        min = "1"
+                                    }
+                                }
                             }
-                        }
-                        form {
-                            // Delete criteria inline
-                            attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${criteria.id}/delete"
-                            attributes["hx-target"] = "#criteria-fragment"
-                            attributes["hx-swap"] = "outerHTML"
-                            attributes["hx-confirm"] = "Are you sure you want to delete the criteria '${criteria.name}'? This action cannot be undone."
-                            button(classes = "btn danger small") {
-                                type = ButtonType.submit
-                                +"Delete"
+                            td {
+                                val percentage = criteria.calculateWeightPercentage(decisionAggregate.criteria)
+                                if (percentage != null) {
+                                    small(classes = "muted") {
+                                        +"$percentage%"
+                                    }
+                                }
+                            }
+                            td {
+                                div(classes = "row") {
+                                    form {
+                                        attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${criteria.id}/update"
+                                        attributes["hx-target"] = "#criteria-fragment"
+                                        attributes["hx-swap"] = "outerHTML"
+                                        attributes["hx-include"] = "closest tr"
+                                        button(classes = "btn small") {
+                                            type = ButtonType.submit
+                                            +"Save"
+                                        }
+                                    }
+                                    form {
+                                        // Delete criteria inline
+                                        attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria/${criteria.id}/delete"
+                                        attributes["hx-target"] = "#criteria-fragment"
+                                        attributes["hx-swap"] = "outerHTML"
+                                        attributes["hx-confirm"] = "Are you sure you want to delete the criteria '${criteria.name}'? This action cannot be undone."
+                                        button(classes = "btn danger small") {
+                                            type = ButtonType.submit
+                                            +"Delete"
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            }
-            form(classes = "row") {
-                // Create criteria inline
-                attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria"
-                attributes["hx-target"] = "#criteria-fragment"
-                attributes["hx-swap"] = "outerHTML"
-                textInput {
-                    id = "new-criteria-input"
-                    name = "name"
-                    placeholder = "New criteria"
-                    required = true
-                }
-                numberInput {
-                    name = "weight"
-                    placeholder = "Weight"
-                    min = "1"
-                }
-                button(classes = "btn") {
-                    type = ButtonType.submit
-                    +"Add"
+                    // Create new criteria row
+                    tr {
+                        td {
+                            form {
+                                // Create criteria inline
+                                attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria"
+                                attributes["hx-target"] = "#criteria-fragment"
+                                attributes["hx-swap"] = "outerHTML"
+                                attributes["hx-include"] = "closest tr"
+                                textInput {
+                                    id = "new-criteria-input"
+                                    name = "name"
+                                    placeholder = "New criteria"
+                                    required = true
+                                }
+                            }
+                        }
+                        td {
+                            form {
+                                attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria"
+                                attributes["hx-target"] = "#criteria-fragment"
+                                attributes["hx-swap"] = "outerHTML"
+                                attributes["hx-include"] = "closest tr"
+                                numberInput {
+                                    name = "weight"
+                                    placeholder = "Weight"
+                                    min = "1"
+                                }
+                            }
+                        }
+                        td { }
+                        td {
+                            form {
+                                attributes["hx-post"] = "/decisions/${decisionAggregate.id}/criteria"
+                                attributes["hx-target"] = "#criteria-fragment"
+                                attributes["hx-swap"] = "outerHTML"
+                                attributes["hx-include"] = "closest tr"
+                                button(classes = "btn") {
+                                    type = ButtonType.submit
+                                    +"Add"
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

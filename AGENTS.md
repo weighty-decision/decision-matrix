@@ -59,6 +59,7 @@ Common connection parameters:
 - kotlinx.html for HTML generation
 - htmx for frontend interactivity
 - http4k for HTTP server framework
+- If you modify the UI, you must restart the server to see the changes
 
 **Data & Build**
 - PostgreSQL for database storage
