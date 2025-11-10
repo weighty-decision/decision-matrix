@@ -19,105 +19,13 @@ The scoring system is designed to not penalize users for honest gaps in knowledg
 
 This means an option scored 10/10 on all evaluated criteria gets a perfect score of 120, regardless of whether some criteria were omitted.
 
-## Quick Start with Docker
+## Quick Start with Docker Compose
 
-The easiest way to run Decision Matrix is using Docker with the pre-built images from GitHub Container Registry.
-
-### Using Docker Run
-For a quick test with development mode:
-1. Start PostgreSQL
-```bash
-docker run -d --name postgres \
-  -e POSTGRES_DB=decision_matrix \
-  -e POSTGRES_USER=decision_matrix \
-  -e POSTGRES_PASSWORD=decision_matrix_password \
-  -p 5432:5432 \
-  postgres:16
+```shell
+docker-compose -f docker-compose.demo.yml up
 ```
-2. Start Decision Matrix
-```bash
-# Start Decision Matrix
-docker run -p 8080:8080 \
-  -e DM_DEV_MODE=true \
-  -e DM_INCLUDE_SAMPLE_DATA=true \
-  -e DB_HOST=host.docker.internal \
-  -e DB_USER=decision_matrix \
-  -e DB_PASSWORD=decision_matrix_password \
-  -e DB_NAME=decision_matrix \
-  ghcr.io/weighty-decision/decision-matrix:latest
-```
-3. Access the application at http://localhost:8080
 
-### Using Docker Compose 
-
-1. Create a `docker-compose.yml` file:
-   ```yaml
-   services:
-     postgres:
-       image: postgres:16
-       environment:
-         POSTGRES_DB: decision_matrix
-         POSTGRES_USER: decision_matrix
-         POSTGRES_PASSWORD: your_secure_password_here
-       ports:
-         - "5432:5432"
-       volumes:
-         - postgres_data:/var/lib/postgresql/data
-       healthcheck:
-         test: ["CMD-SHELL", "pg_isready -U decision_matrix -d decision_matrix"]
-         interval: 10s
-         timeout: 5s
-         retries: 5
-
-     decision-matrix:
-       image: ghcr.io/weighty-decision/decision-matrix:latest # use a specific version in production for version stability
-       ports:
-         - "8080:8080"
-       environment:
-         # You can set the DM_HTTP_SERVER_PORT environment variable to change the HTTP server port
-   
-         # Database configuration
-         - DB_HOST=postgres
-         - DB_PORT=5432
-         - DB_USER=decision_matrix
-         - DB_PASSWORD=your_secure_password_here
-         - DB_NAME=decision_matrix
-         # Additional connection parameters if needed
-         #- DB_CONNECTION_PARAMS="sslmode=require"
-
-         # Authentication (choose one of the options below)
-
-         # Option 1: Development mode (no authentication required)
-         - DM_DEV_MODE=true
-
-         # Option 2: Production OAuth (uncomment and configure)
-         # - DM_DEV_MODE=false
-         # - DM_OAUTH_ISSUER_URL=https://your-oauth-provider.com
-         # - DM_OAUTH_CLIENT_ID=your-client-id
-         # - DM_OAUTH_CLIENT_SECRET=your-client-secret
-         # - DM_OAUTH_REDIRECT_URI=http://localhost:8080/auth/callback
-
-         # Option 3: Mock OAuth for testing (uncomment to use)
-         # - DM_DEV_MODE=false
-         # - DM_MOCK_OAUTH_SERVER=true
-         # - DM_OAUTH_ISSUER_URL=http://localhost:8081
-         # - DM_OAUTH_CLIENT_ID=test-client
-         # - DM_OAUTH_CLIENT_SECRET=test-secret
-         # - DM_OAUTH_REDIRECT_URI=http://localhost:8080/auth/callback
-       depends_on:
-         postgres:
-           condition: service_healthy
-
-   volumes:
-     postgres_data:
-   ```
-
-2. Start the application:
-   ```bash
-   docker-compose up -d
-   ```
-
-3. Access the application at http://localhost:8080
+Then access the application at http://localhost:8080
 
 ## Configuration
 
@@ -179,12 +87,12 @@ Test users available: Alice Test (user1), Bob Test (user2), Admin User (admin)
 ### Database Configuration
 
 ```bash
-DB_HOST=localhost                    # PostgreSQL host
-DB_PORT=5432                        # PostgreSQL port (default: 5432)
-DB_NAME=decision_matrix             # Database name
-DB_USER=decision_matrix             # Database username
-DB_PASSWORD=decision_matrix_password           # Database password
-DB_CONNECTION_PARAMS=""             # Additional connection parameters
+DB_HOST=localhost                     # PostgreSQL host
+DB_PORT=5432                          # PostgreSQL port (default: 5432)
+DB_NAME=decision_matrix               # Database name
+DB_USER=decision_matrix               # Database username
+DB_PASSWORD=decision_matrix_password  # Database password
+DB_CONNECTION_PARAMS=""               # Additional connection parameters
 ```
 
 Common connection parameters:
@@ -219,7 +127,7 @@ For developers who want to build and run the application from source:
 
 ### Running with Gradle
 ```bash
-# start the database
+# The docker-compose.yml contains a postgres database
 docker-compose up -d
 # run the application
 ./gradlew run
@@ -227,7 +135,7 @@ docker-compose up -d
 
 ### Running Tests
 ```bash
-./gradlew test
+./gradlew check
 ```
 
-See [AGENTS.md](CLAUDE.md) for more development guidelines, coding standards, and development environment setup.
+See [AGENTS.md](AGENTS.md) for more development guidelines, coding standards, and development environment setup.

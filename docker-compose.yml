@@ -1,3 +1,5 @@
+# Docker compose file for local development
+
 services:
   postgres:
     image: postgres:16

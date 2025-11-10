@@ -1,0 +1,33 @@
+# Docker compose file for demo usage
+# See the README for available parameters
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: decision_matrix
+      POSTGRES_USER: decision_matrix
+      POSTGRES_PASSWORD: decision_matrix_password
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U decision_matrix -d decision_matrix"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  decision-matrix:
+    image: ghcr.io/weighty-decision/decision-matrix:latest # use a specific version in production for version stability
+    ports:
+      - "8080:8080"
+    environment:
+      - DM_DEV_MODE=true
+      - DM_INCLUDE_SAMPLE_DATA=true
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=decision_matrix
+      - DB_PASSWORD=decision_matrix_password
+      - DB_NAME=decision_matrix
+    depends_on:
+      postgres:
+        condition: service_healthy

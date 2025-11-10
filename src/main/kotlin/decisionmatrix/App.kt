@@ -91,7 +91,6 @@ fun main() {
     if (authConfig.devMode) {
         log.info("Running in DEV MODE - authentication bypassed")
         log.info("Default dev user: {}", authConfig.devUserId ?: "dev-user")
-        log.info("Override with ?dev_user=<user_id> query parameter")
     } else {
         log.info("OAuth authentication enabled - using standards-based OAuth 2.0")
     }
