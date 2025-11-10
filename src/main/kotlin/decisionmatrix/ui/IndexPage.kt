@@ -137,6 +137,26 @@ object IndexPage {
             script {
                 unsafe {
                     +"""
+                    // Format timestamps to user's local timezone as YYYY-MM-DD
+                    function formatLocalDates() {
+                        document.querySelectorAll('.local-date').forEach(function(element) {
+                            const timestamp = element.getAttribute('data-timestamp');
+                            if (timestamp) {
+                                const date = new Date(timestamp);
+                                const year = date.getFullYear();
+                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                const day = String(date.getDate()).padStart(2, '0');
+                                element.textContent = year + '-' + month + '-' + day;
+                            }
+                        });
+                    }
+
+                    // Format on initial page load
+                    document.addEventListener('DOMContentLoaded', formatLocalDates);
+
+                    // Format after htmx swaps content
+                    document.body.addEventListener('htmx:afterSwap', formatLocalDates);
+
                     // Toggle button behavior - update local hidden inputs and button appearance
                     document.addEventListener('DOMContentLoaded', function() {
                         document.getElementById('involved-toggle').addEventListener('click', function() {
@@ -182,9 +202,9 @@ object IndexPage {
                             td {
                                 strong { +decision.name }
                             }
-                            td {
-                               +decision.createdAt.atZone(java.time.ZoneId.systemDefault())
-                                   .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
+                            td(classes = "local-date") {
+                                attributes["data-timestamp"] = decision.createdAt.toString()
+                                +decision.createdAt.toString() // Fallback text
                             }
                             td {
                                 +decision.createdBy
