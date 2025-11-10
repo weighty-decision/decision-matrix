@@ -22,8 +22,8 @@ data class Decision(
     val minScore: Int = DEFAULT_MIN_SCORE,
     val maxScore: Int = DEFAULT_MAX_SCORE,
     val locked: Boolean = false,
-    val createdBy: String? = null,
-    @Contextual val createdAt: Instant? = null,
+    val createdBy: String,
+    @Contextual val createdAt: Instant,
 ) {
     /**
      * Checks if a user can modify a decision when you already have a hydrated Decision object.
@@ -45,8 +45,8 @@ data class DecisionAggregate(
     val minScore: Int get() = decision.minScore
     val maxScore: Int get() = decision.maxScore
     val locked: Boolean get() = decision.locked
-    val createdBy: String? get() = decision.createdBy
-    val createdAt: Instant? get() = decision.createdAt
+    val createdBy: String get() = decision.createdBy
+    val createdAt: Instant get() = decision.createdAt
 
     fun canBeModifiedBy(userId: String): Boolean = decision.canBeModifiedBy(userId)
 }
@@ -89,7 +89,7 @@ data class UserScore(
     val optionId: Long,
     val criteriaId: Long,
     val scoredBy: String,
-    @Contextual val createdAt: Instant? = null,
+    @Contextual val createdAt: Instant,
     val score: Int,
 ) {
     fun canModifyUserScore(userId: String): Boolean {

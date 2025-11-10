@@ -183,15 +183,11 @@ object IndexPage {
                                 strong { +decision.name }
                             }
                             td {
-                                decision.createdAt?.let { createdAt ->
-                                    +createdAt.atZone(java.time.ZoneId.systemDefault())
-                                        .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
-                                } ?: span(classes = "muted") { +"Unknown" }
+                               +decision.createdAt.atZone(java.time.ZoneId.systemDefault())
+                                   .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
                             }
                             td {
-                                decision.createdBy?.let { createdBy ->
-                                    +createdBy
-                                } ?: span(classes = "muted") { +"Unknown" }
+                                +decision.createdBy
                             }
                             td(classes = "actions") {
                                 if (decision.createdBy == currentUser.id) {

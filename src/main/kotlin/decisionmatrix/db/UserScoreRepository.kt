@@ -20,8 +20,8 @@ class UserScoreRepositoryImpl(private val jdbi: Jdbi) : UserScoreRepository {
         return jdbi.withHandle<UserScore, Exception> { handle ->
             handle.createQuery(
                 """
-                INSERT INTO user_scores (decision_id, option_id, criteria_id, scored_by, score) 
-                VALUES (:decisionId, :optionId, :criteriaId, :scoredBy, :score)
+                INSERT INTO user_scores (decision_id, option_id, criteria_id, scored_by, created_at, score) 
+                VALUES (:decisionId, :optionId, :criteriaId, :scoredBy, CURRENT_TIMESTAMP, :score)
                 RETURNING *
                 """.trimIndent()
             )
@@ -107,7 +107,7 @@ private fun mapUserScore(rs: ResultSet): UserScore {
         optionId = rs.getLong("option_id"),
         criteriaId = rs.getLong("criteria_id"),
         scoredBy = rs.getString("scored_by"),
+        createdAt = rs.getTimestamp("created_at").toInstant(),
         score = rs.getInt("score"),
-        createdAt = rs.getTimestamp("created_at")?.toInstant()
     )
 }

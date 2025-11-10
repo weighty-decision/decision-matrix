@@ -50,8 +50,8 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
         return jdbi.withHandle<Decision, Exception> { handle ->
             handle.createQuery(
                 """
-                INSERT INTO decisions (name, min_score, max_score, locked, created_by)
-                VALUES (:name, :minScore, :maxScore, :locked, :createdBy)
+                INSERT INTO decisions (name, min_score, max_score, locked, created_by, created_at)
+                VALUES (:name, :minScore, :maxScore, :locked, :createdBy, CURRENT_TIMESTAMP)
                 RETURNING *
                 """.trimIndent()
             )
@@ -202,7 +202,7 @@ fun mapDecision(rs: ResultSet): Decision {
         maxScore = rs.getInt("max_score"),
         locked = rs.getBoolean("locked"),
         createdBy = rs.getString("created_by"),
-        createdAt = rs.getTimestamp("created_at")?.toInstant()
+        createdAt = rs.getTimestamp("created_at").toInstant()
     )
 }
 
@@ -215,8 +215,8 @@ fun mapDecisionAggregate(rows: List<Map<String, Any>>): DecisionAggregate {
     val decisionMinScore = (firstRow["decision_min_score"] as Number).toInt()
     val decisionMaxScore = (firstRow["decision_max_score"] as Number).toInt()
     val decisionLocked = firstRow["decision_locked"] as Boolean
-    val decisionCreatedBy = firstRow["decision_created_by"] as? String
-    val decisionCreatedAt = (firstRow["decision_created_at"] as? java.sql.Timestamp)?.toInstant()
+    val decisionCreatedBy = firstRow["decision_created_by"] as String
+    val decisionCreatedAt = (firstRow["decision_created_at"] as java.sql.Timestamp).toInstant()
 
     val criteriaMap = mutableMapOf<Long, Criteria>()
     val optionsMap = mutableMapOf<Long, Option>()

@@ -4,8 +4,8 @@ CREATE TABLE decisions (
     min_score INTEGER NOT NULL,
     max_score INTEGER NOT NULL,
     locked BOOLEAN NOT NULL,
-    created_by TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_by TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL
 );
 
 CREATE TABLE criteria (
@@ -30,7 +30,7 @@ CREATE TABLE user_scores (
     criteria_id INTEGER NOT NULL,
     score INTEGER NOT NULL,
     scored_by TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL,
     FOREIGN KEY (decision_id) REFERENCES decisions(id) ON DELETE CASCADE,
     FOREIGN KEY(option_id) REFERENCES options(id) ON DELETE CASCADE,
     FOREIGN KEY(criteria_id) REFERENCES criteria(id) ON DELETE CASCADE
