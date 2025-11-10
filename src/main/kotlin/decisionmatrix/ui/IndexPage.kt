@@ -172,6 +172,7 @@ object IndexPage {
                     tr {
                         th { +"Decision" }
                         th { +"Created" }
+                        th { +"Author" }
                         th(classes = "actions") { +"Actions" }
                     }
                 }
@@ -185,6 +186,11 @@ object IndexPage {
                                 decision.createdAt?.let { createdAt ->
                                     +createdAt.atZone(java.time.ZoneId.systemDefault())
                                         .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
+                                } ?: span(classes = "muted") { +"Unknown" }
+                            }
+                            td {
+                                decision.createdBy?.let { createdBy ->
+                                    +createdBy
                                 } ?: span(classes = "muted") { +"Unknown" }
                             }
                             td(classes = "actions") {

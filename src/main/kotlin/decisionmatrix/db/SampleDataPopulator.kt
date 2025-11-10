@@ -97,11 +97,17 @@ class SampleDataPopulator(
      * Scenario 2: Vendor selection decision created by dev-user 9 months ago
      */
     private fun populateVendorDecisionOld() {
+        val nineMonthsAgo = Instant.now().minus(270, ChronoUnit.DAYS)
+
         val decisionName = "Cloud Provider for Production Deployment"
         val decision = decisionRepository.insert(
             decision = DecisionInput(name = decisionName, minScore = 1, maxScore = 10),
             createdBy = "dev-user",
         )
+        // lock the decision
+        decisionRepository.update(decision.id, decisionName, 1, 10, true)
+
+        updateDecisionTimestamp(decisionId = decision.id, timestamp = nineMonthsAgo)
 
         val criteria = listOf(
             criteriaRepository.insert(decisionId = decision.id, criteria = CriteriaInput(name = "Cost", weight = 5)),
@@ -128,23 +134,17 @@ class SampleDataPopulator(
                         option.name == "Azure" && criterion.name == "Ease of Use" -> (6..8).random()
                         else -> (5..8).random()
                     }
-                    userScoreRepository.insert(
+                    val userScore = userScoreRepository.insert(
                         decisionId = decision.id,
                         optionId = option.id,
                         criteriaId = criterion.id,
                         scoredBy = user,
                         score = UserScoreInput(score = score)
                     )
+                    updateScoreTimestamp(userScore.id, nineMonthsAgo)
                 }
             }
         }
-
-        // Update timestamps to 9 months ago
-        val nineMonthsAgo = Instant.now().minus(270, ChronoUnit.DAYS)
-        updateDecisionTimestamp(decisionId = decision.id, timestamp = nineMonthsAgo)
-
-        // lock the decision
-        decisionRepository.update(decision.id, decisionName, 1, 10, true)
 
         log.info("Created cloud provider decision (ID: ${decision.id}) from 9 months ago")
     }
@@ -153,10 +153,13 @@ class SampleDataPopulator(
      * Scenario 3: Vacation destination decision by sample-user from 2 months ago
      */
     private fun populateVacationDecisionBySampleUser() {
+        val twoMonthsAgo = Instant.now().minus(60, ChronoUnit.DAYS)
+
         val decision = decisionRepository.insert(
             decision = DecisionInput(name = "Summer Vacation Destination", minScore = 1, maxScore = 10),
             createdBy = "sample-user"
         )
+        updateDecisionTimestamp(decisionId = decision.id, timestamp = twoMonthsAgo)
 
         val criteria = listOf(
             criteriaRepository.insert(decisionId = decision.id, criteria = CriteriaInput(name = "Beach Quality", weight = 4)),
@@ -184,19 +187,16 @@ class SampleDataPopulator(
                     option.name == "Maldives" && criterion.name == "Budget" -> (3..5).random()
                     else -> (6..8).random()
                 }
-                userScoreRepository.insert(
+                val userScore = userScoreRepository.insert(
                     decisionId = decision.id,
                     optionId = option.id,
                     criteriaId = criterion.id,
                     scoredBy = "sample-user",
                     score = UserScoreInput(score = score)
                 )
+                updateScoreTimestamp(userScore.id, twoMonthsAgo)
             }
         }
-
-        // Update timestamps to 2 months ago
-        val twoMonthsAgo = Instant.now().minus(60, ChronoUnit.DAYS)
-        updateDecisionTimestamp(decisionId = decision.id, timestamp = twoMonthsAgo)
 
         log.info("Created vacation decision (ID: ${decision.id}) from 2 months ago")
     }
@@ -205,10 +205,13 @@ class SampleDataPopulator(
      * Scenario 4: Car purchase decision by sample-user from 2 months ago with score from dev-user
      */
     private fun populateCarPurchaseDecisionBySampleUser() {
+        val twoMonthsAgo = Instant.now().minus(60, ChronoUnit.DAYS)
+
         val decision = decisionRepository.insert(
             decision = DecisionInput(name = "Family Car Purchase Decision", minScore = 1, maxScore = 10),
             createdBy = "sample-user"
         )
+        updateDecisionTimestamp(decisionId = decision.id, timestamp = twoMonthsAgo)
 
         val criteria = listOf(
             criteriaRepository.insert(decisionId = decision.id, criteria = CriteriaInput(name = "Fuel Economy", weight = 4)),
@@ -239,20 +242,18 @@ class SampleDataPopulator(
                         option.name == "Subaru Forester" && criterion.name == "Cargo Space" -> (8..10).random()
                         else -> (6..8).random()
                     }
-                    userScoreRepository.insert(
+                    val userScore = userScoreRepository.insert(
                         decisionId = decision.id,
                         optionId = option.id,
                         criteriaId = criterion.id,
                         scoredBy = user,
                         score = UserScoreInput(score = score)
                     )
+
+                    updateScoreTimestamp(userScore.id, twoMonthsAgo)
                 }
             }
         }
-
-        // Update timestamps to 2 months ago
-        val twoMonthsAgo = Instant.now().minus(60, ChronoUnit.DAYS)
-        updateDecisionTimestamp(decisionId = decision.id, timestamp = twoMonthsAgo)
 
         log.info("Created car purchase decision (ID: ${decision.id}) from 2 months ago with dev-user score")
     }
@@ -267,6 +268,21 @@ class SampleDataPopulator(
                 """.trimIndent()
             )
                 .bind("decisionId", decisionId)
+                .bind("timestamp", timestamp)
+                .execute()
+        }
+    }
+
+    private fun updateScoreTimestamp(scoreId: Long, timestamp: Instant) {
+        jdbi.useHandle<Exception> { handle ->
+            handle.createUpdate(
+                """
+                UPDATE user_scores
+                SET created_at = :timestamp
+                WHERE id = :scoreId
+                """.trimIndent()
+            )
+                .bind("scoreId", scoreId)
                 .bind("timestamp", timestamp)
                 .execute()
         }
