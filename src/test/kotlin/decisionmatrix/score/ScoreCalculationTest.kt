@@ -10,28 +10,58 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.Instant
 
 class ScoreCalculationTest {
+
+    // Test helpers with sensible defaults
+    private fun testDecision(
+        id: Long = 1L,
+        name: String = "Test Decision",
+        minScore: Int = 1,
+        maxScore: Int = 10,
+        locked: Boolean = false,
+        createdBy: String = "test-user",
+        createdAt: Instant = Instant.EPOCH,
+    ) = Decision(
+        id = id,
+        name = name,
+        minScore = minScore,
+        maxScore = maxScore,
+        locked = locked,
+        createdBy = createdBy,
+        createdAt = createdAt,
+    )
+
+    private fun testUserScore(
+        id: Long,
+        decisionId: Long = 1L,
+        optionId: Long,
+        criteriaId: Long,
+        scoredBy: String,
+        score: Int,
+        createdAt: Instant = Instant.EPOCH,
+    ) = UserScore(
+        id = id,
+        decisionId = decisionId,
+        optionId = optionId,
+        criteriaId = criteriaId,
+        scoredBy = scoredBy,
+        createdAt = createdAt,
+        score = score,
+    )
 
     @Test
     fun `calculateOptionScores should calculate correct weighted scores for single option and criterion`() {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
         val decisionAggregate = DecisionAggregate(
-            decision = Decision(id = 1L, name = "Test Decision"),
+            decision = testDecision(),
             criteria = listOf(criterion),
             options = listOf(option)
         )
         val scores = listOf(
-            UserScore(
-                id = 1L,
-                decisionId = 1L,
-                optionId = 1L,
-                criteriaId = 1L,
-                scoredBy = "user1",
-                createdAt = null,
-                score = 5
-            )
+            testUserScore(id = 1L, optionId = 1L, criteriaId = 1L, scoredBy = "user1", score = 5)
         )
 
         val result = decisionAggregate.calculateOptionScores(scores)
@@ -50,15 +80,15 @@ class ScoreCalculationTest {
             Option(id = 2L, decisionId = 1L, name = "Option B")
         )
         val decisionAggregate = DecisionAggregate(
-            decision = Decision(id = 1L, name = "Test Decision"),
+            decision = testDecision(),
             criteria = criteria,
             options = options
         )
         val scores = listOf(
-            UserScore(1L, 1L, 1L, 1L, "user1", null, 4), // Option A, Cost: 4
-            UserScore(2L, 1L, 1L, 2L, "user1", null, 5), // Option A, Quality: 5
-            UserScore(3L, 1L, 2L, 1L, "user1", null, 3), // Option B, Cost: 3
-            UserScore(4L, 1L, 2L, 2L, "user1", null, 4)  // Option B, Quality: 4
+            testUserScore(id = 1L, optionId = 1L, criteriaId = 1L, scoredBy = "user1", score = 4), // Option A, Cost: 4
+            testUserScore(id = 2L, optionId = 1L, criteriaId = 2L, scoredBy = "user1", score = 5), // Option A, Quality: 5
+            testUserScore(id = 3L, optionId = 2L, criteriaId = 1L, scoredBy = "user1", score = 3), // Option B, Cost: 3
+            testUserScore(id = 4L, optionId = 2L, criteriaId = 2L, scoredBy = "user1", score = 4)  // Option B, Quality: 4
         )
 
         val result = decisionAggregate.calculateOptionScores(scores)
@@ -72,14 +102,14 @@ class ScoreCalculationTest {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 2)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
         val decisionAggregate = DecisionAggregate(
-            decision = Decision(id = 1L, name = "Test Decision"),
+            decision = testDecision(),
             criteria = listOf(criterion),
             options = listOf(option)
         )
         val scores = listOf(
-            UserScore(1L, 1L, 1L, 1L, "user1", null, 3),
-            UserScore(2L, 1L, 1L, 1L, "user2", null, 5),
-            UserScore(3L, 1L, 1L, 1L, "user3", null, 4)
+            testUserScore(id = 1L, optionId = 1L, criteriaId = 1L, scoredBy = "user1", score = 3),
+            testUserScore(id = 2L, optionId = 1L, criteriaId = 1L, scoredBy = "user2", score = 5),
+            testUserScore(id = 3L, optionId = 1L, criteriaId = 1L, scoredBy = "user3", score = 4)
         )
 
         val result = decisionAggregate.calculateOptionScores(scores)
@@ -93,13 +123,13 @@ class ScoreCalculationTest {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
         val decisionAggregate = DecisionAggregate(
-            decision = Decision(id = 1L, name = "Test Decision"),
+            decision = testDecision(),
             criteria = listOf(criterion),
             options = listOf(option)
         )
         val scores = listOf(
-            UserScore(1L, 1L, 1L, 1L, "user1", null, 1),
-            UserScore(2L, 1L, 1L, 1L, "user2", null, 2)
+            testUserScore(id = 1L, optionId = 1L, criteriaId = 1L, scoredBy = "user1", score = 1),
+            testUserScore(id = 2L, optionId = 1L, criteriaId = 1L, scoredBy = "user2", score = 2)
         )
 
         val result = decisionAggregate.calculateOptionScores(scores)
@@ -113,12 +143,12 @@ class ScoreCalculationTest {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 0)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
         val decisionAggregate = DecisionAggregate(
-            decision = Decision(id = 1L, name = "Test Decision"),
+            decision = testDecision(),
             criteria = listOf(criterion),
             options = listOf(option)
         )
         val scores = listOf(
-            UserScore(1L, 1L, 1L, 1L, "user1", null, 5)
+            testUserScore(id = 1L, optionId = 1L, criteriaId = 1L, scoredBy = "user1", score = 5)
         )
 
         val result = decisionAggregate.calculateOptionScores(scores)
@@ -134,12 +164,12 @@ class ScoreCalculationTest {
         )
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
         val decisionAggregate = DecisionAggregate(
-            decision = Decision(id = 1L, name = "Test Decision"),
+            decision = testDecision(),
             criteria = criteria,
             options = listOf(option)
         )
         val scores = listOf(
-            UserScore(1L, 1L, 1L, 1L, "user1", null, 4) // Only Cost score, no Quality score
+            testUserScore(id = 1L, optionId = 1L, criteriaId = 1L, scoredBy = "user1", score = 4) // Only Cost score, no Quality score
         )
 
         val result = decisionAggregate.calculateOptionScores(scores)
@@ -160,12 +190,12 @@ class ScoreCalculationTest {
             Option(id = 2L, decisionId = 1L, name = "Option B")
         )
         val decisionAggregate = DecisionAggregate(
-            decision = Decision(id = 1L, name = "Test Decision"),
+            decision = testDecision(),
             criteria = listOf(criterion),
             options = options
         )
         val scores = listOf(
-            UserScore(1L, 1L, 1L, 1L, "user1", null, 4) // Only for Option A
+            testUserScore(id = 1L, optionId = 1L, criteriaId = 1L, scoredBy = "user1", score = 4) // Only for Option A
         )
 
         val result = decisionAggregate.calculateOptionScores(scores)
@@ -178,12 +208,12 @@ class ScoreCalculationTest {
     fun `calculateOptionScores should throw exception when options are empty`() {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3)
         val decisionAggregate = DecisionAggregate(
-            decision = Decision(id = 1L, name = "Test Decision"),
+            decision = testDecision(),
             criteria = listOf(criterion),
             options = emptyList()
         )
         val scores = listOf(
-            UserScore(1L, 1L, 1L, 1L, "user1", null, 4)
+            testUserScore(id = 1L, optionId = 1L, criteriaId = 1L, scoredBy = "user1", score = 4)
         )
 
         // When & Then
@@ -197,12 +227,12 @@ class ScoreCalculationTest {
     fun `calculateOptionScores should throw exception when criteria are empty`() {
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
         val decisionAggregate = DecisionAggregate(
-            decision = Decision(id = 1L, name = "Test Decision"),
+            decision = testDecision(),
             criteria = emptyList(),
             options = listOf(option)
         )
         val scores = listOf(
-            UserScore(1L, 1L, 1L, 1L, "user1", null, 4)
+            testUserScore(id = 1L, optionId = 1L, criteriaId = 1L, scoredBy = "user1", score = 4)
         )
 
         val exception = shouldThrow<IllegalArgumentException> {
@@ -217,7 +247,7 @@ class ScoreCalculationTest {
         val criterion = Criteria(id = 1L, decisionId = 1L, name = "Cost", weight = 3)
         val option = Option(id = 1L, decisionId = 1L, name = "Option A")
         val decisionAggregate = DecisionAggregate(
-            decision = Decision(id = 1L, name = "Test Decision"),
+            decision = testDecision(),
             criteria = listOf(criterion),
             options = listOf(option)
         )
@@ -237,14 +267,14 @@ class ScoreCalculationTest {
             Option(id = 2L, decisionId = 1L, name = "Option B")
         )
         val decisionAggregate = DecisionAggregate(
-            decision = Decision(id = 1L, name = "Test Decision"),
+            decision = testDecision(),
             criteria = listOf(criterion),
             options = options
         )
         val scores = listOf(
-            UserScore(1L, 1L, 3L, 1L, "user1", null, 3),
-            UserScore(2L, 1L, 1L, 1L, "user1", null, 1),
-            UserScore(3L, 1L, 2L, 1L, "user1", null, 2)
+            testUserScore(id = 1L, optionId = 3L, criteriaId = 1L, scoredBy = "user1", score = 3),
+            testUserScore(id = 2L, optionId = 1L, criteriaId = 1L, scoredBy = "user1", score = 1),
+            testUserScore(id = 3L, optionId = 2L, criteriaId = 1L, scoredBy = "user1", score = 2)
         )
 
         val result = decisionAggregate.calculateOptionScores(scores)
@@ -265,20 +295,20 @@ class ScoreCalculationTest {
             Option(id = 2L, decisionId = 1L, name = "Option B")
         )
         val decisionAggregate = DecisionAggregate(
-            decision = Decision(id = 1L, name = "Test Decision"),
+            decision = testDecision(),
             criteria = criteria,
             options = options
         )
         val scores = listOf(
             // User1 scores only Option A, and omits Cost
-            UserScore(1L, 1L, 1L, 1L, "user1", null, 10), // Option A, Performance: 10
+            testUserScore(id = 1L, optionId = 1L, criteriaId = 1L, scoredBy = "user1", score = 10), // Option A, Performance: 10
             // Cost omitted for user1
 
             // User2 scores both options completely
-            UserScore(2L, 1L, 1L, 1L, "user2", null, 8),  // Option A, Performance: 8
-            UserScore(3L, 1L, 1L, 2L, "user2", null, 6),  // Option A, Cost: 6
-            UserScore(4L, 1L, 2L, 1L, "user2", null, 7),  // Option B, Performance: 7
-            UserScore(5L, 1L, 2L, 2L, "user2", null, 9)   // Option B, Cost: 9
+            testUserScore(id = 2L, optionId = 1L, criteriaId = 1L, scoredBy = "user2", score = 8),  // Option A, Performance: 8
+            testUserScore(id = 3L, optionId = 1L, criteriaId = 2L, scoredBy = "user2", score = 6),  // Option A, Cost: 6
+            testUserScore(id = 4L, optionId = 2L, criteriaId = 1L, scoredBy = "user2", score = 7),  // Option B, Performance: 7
+            testUserScore(id = 5L, optionId = 2L, criteriaId = 2L, scoredBy = "user2", score = 9)   // Option B, Cost: 9
         )
 
         val result = decisionAggregate.calculateOptionScores(scores)
@@ -316,19 +346,19 @@ class ScoreCalculationTest {
             Option(id = 2L, decisionId = 1L, name = "Option B")
         )
         val decisionAggregate = DecisionAggregate(
-            decision = Decision(id = 1L, name = "Test Decision"),
+            decision = testDecision(),
             criteria = criteria,
             options = options
         )
         val scores = listOf(
             // Option A: Only Performance and Usability scored (Cost omitted)
-            UserScore(1L, 1L, 1L, 1L, "user1", null, 10), // Option A, Performance: 10
-            UserScore(2L, 1L, 1L, 3L, "user1", null, 10), // Option A, Usability: 10
+            testUserScore(id = 1L, optionId = 1L, criteriaId = 1L, scoredBy = "user1", score = 10), // Option A, Performance: 10
+            testUserScore(id = 2L, optionId = 1L, criteriaId = 3L, scoredBy = "user1", score = 10), // Option A, Usability: 10
             // Cost omitted
 
             // Option B: Only Cost and Usability scored (Performance omitted)
-            UserScore(3L, 1L, 2L, 2L, "user1", null, 10), // Option B, Cost: 10
-            UserScore(4L, 1L, 2L, 3L, "user1", null, 10)  // Option B, Usability: 10
+            testUserScore(id = 3L, optionId = 2L, criteriaId = 2L, scoredBy = "user1", score = 10), // Option B, Cost: 10
+            testUserScore(id = 4L, optionId = 2L, criteriaId = 3L, scoredBy = "user1", score = 10)  // Option B, Usability: 10
             // Performance omitted
         )
 
