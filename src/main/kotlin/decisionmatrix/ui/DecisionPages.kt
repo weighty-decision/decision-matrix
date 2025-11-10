@@ -218,9 +218,10 @@ object DecisionPages {
                     }
                 }
                 form {
-                    attributes["hx-post"] = "/decisions/${decision.id}/delete"
-                    attributes["hx-confirm"] = "Are you sure you want to delete the decision '${decision.name}'? " +
-                            "This will permanently delete all criteria, options, and scores. This action cannot be undone."
+                    attributes["method"] = "post"
+                    attributes["action"] = "/decisions/${decision.id}/delete"
+                    attributes["onsubmit"] = "return confirm('Are you sure you want to delete the decision? " +
+                            "This will permanently delete all criteria, options, and scores. This action cannot be undone.');"
                     attributes["style"] = "display: inline;"
                     button(classes = "btn danger") {
                         type = ButtonType.submit
