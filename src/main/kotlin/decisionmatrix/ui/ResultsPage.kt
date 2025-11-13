@@ -6,9 +6,12 @@ import decisionmatrix.auth.AuthenticatedUser
 import decisionmatrix.score.calculateOptionScores
 import kotlinx.html.a
 import kotlinx.html.div
+import kotlinx.html.em
 import kotlinx.html.h1
 import kotlinx.html.p
 import kotlinx.html.section
+import kotlinx.html.span
+import kotlinx.html.style
 import kotlinx.html.table
 import kotlinx.html.tbody
 import kotlinx.html.td
@@ -35,8 +38,20 @@ object ResultsPage {
                         thead {
                             tr {
                                 th { +"Criteria" }
+                                th {
+                                    style = "text-align: right;"
+                                    +"Possible Points"
+                                    span(classes = "muted") {
+                                        attributes["title"] = "The decision's maximum score * the criteria weight"
+                                        style = "cursor: help;"
+                                        +"\u24d8"
+                                    }
+                                }
                                 decisionAggregate.options.sortedBy { it.id }.forEach { option ->
-                                    th { +option.name }
+                                    th {
+                                        style = "text-align: right;"
+                                        +option.name
+                                    }
                                 }
                             }
                         }
@@ -44,21 +59,36 @@ object ResultsPage {
                             // Create rows for each criterion
                             decisionAggregate.criteria.sortedBy { it.id }.forEach { criterion ->
                                 tr {
-                                    td { +"${criterion.name} (×${criterion.weight})" }
+                                    td { +criterion.name }
+                                    td {
+                                        style = "text-align: right;"
+                                        +(criterion.weight * decisionAggregate.maxScore).toString()
+                                    }
                                     decisionAggregate.options.forEach { option ->
                                         val score = scoreReport.optionScores.find {
                                             it.criteriaName == criterion.name && it.optionName == option.name
                                         }?.optionScore ?: java.math.BigDecimal.ZERO
-                                        td { +score.setScale(2, RoundingMode.HALF_UP).toPlainString() }
+                                        td {
+                                            style = "text-align: right;"
+                                            +score.setScale(2, RoundingMode.HALF_UP).toPlainString()
+                                        }
                                     }
                                 }
                             }
 
                             tr(classes = "total-row") {
+                                val totalPossiblePoints = decisionAggregate.criteria.sumOf { it.weight * decisionAggregate.maxScore }
                                 td { +"Total" }
+                                td {
+                                    style = "text-align: right;"
+                                    +totalPossiblePoints.toString()
+                                }
                                 decisionAggregate.options.sortedBy { it.id }.forEach { option ->
                                     val totalScore = scoreReport.totalScores[option] ?: java.math.BigDecimal.ZERO
-                                    td { +totalScore.setScale(2, RoundingMode.HALF_UP).toPlainString() }
+                                    td {
+                                        style = "text-align: right;"
+                                        +totalScore.setScale(2, RoundingMode.HALF_UP).toPlainString()
+                                    }
                                 }
                             }
                         }
@@ -67,6 +97,7 @@ object ResultsPage {
                     div(classes = "score-count") {
                         val uniqueUsers = scores.map { it.scoredBy }.distinct().size
                         p { +"Scores from $uniqueUsers participant${if (uniqueUsers == 1) "" else "s"}" }
+                        p { em { +"Each criteria's score is the average score of all participants for that criteria." } }
                     }
                 }
 
