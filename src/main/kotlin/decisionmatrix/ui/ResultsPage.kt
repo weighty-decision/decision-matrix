@@ -109,7 +109,7 @@ object ResultsPage {
                     if (decisionAggregate.canBeModifiedBy(user.id)) {
                         a(classes = "btn") {
                             href = "/decisions/${decisionAggregate.id}/edit"
-                            +"Back to edit"
+                            +"Edit"
                         }
                     }
                 }
