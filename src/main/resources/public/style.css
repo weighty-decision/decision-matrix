@@ -393,3 +393,20 @@ header.container {
     margin: 0;
     margin-left: var(--gap);
 }
+
+.hidden {
+    display: none;
+}
+
+.btn-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 12px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.btn-link:hover {
+    color: #60a5fa;
+    text-decoration: underline;
+}

@@ -15,6 +15,7 @@ import kotlinx.html.li
 import kotlinx.html.numberInput
 import kotlinx.html.p
 import kotlinx.html.section
+import kotlinx.html.span
 import kotlinx.html.table
 import kotlinx.html.tbody
 import kotlinx.html.td
@@ -57,9 +58,22 @@ object MyScoresPages {
                         classes = setOf("stack")
 
                         table(classes = "full-width") {
+                            attributes["id"] = "scores-table"
                             thead {
                                 tr {
-                                    th { }
+                                    th {
+                                        a(classes = "btn-link") {
+                                            href = "#"
+                                            attributes["hx-on:click"] = """
+                                                event.preventDefault();
+                                                document.querySelectorAll('.criterion-weight').forEach(el => {
+                                                    el.classList.toggle('hidden');
+                                                });
+                                                this.textContent = this.textContent.includes('Show') ? 'Hide weights' : 'Show weights';
+                                            """.trimIndent()
+                                            +"Show weights"
+                                        }
+                                    }
                                     decisionAggregate.options.forEach { opt ->
                                         th {
                                             +opt.name
@@ -70,7 +84,13 @@ object MyScoresPages {
                             tbody {
                                 decisionAggregate.criteria.forEach { c ->
                                     tr {
-                                        th { +c.name }
+                                        th {
+                                            +c.name
+                                            +" "
+                                            span(classes = "criterion-weight hidden") {
+                                                +"(weight: ${c.weight})"
+                                            }
+                                        }
                                         decisionAggregate.options.forEach { opt ->
                                             val existing = scoreMap[opt.id to c.id]
                                             td {
