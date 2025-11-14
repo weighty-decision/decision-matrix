@@ -166,6 +166,7 @@ class DecisionRoutes(
 
         return if (isHx(request)) {
             htmlResponse(DecisionPages.decisionFragment(updated))
+                .header("HX-Trigger", """{"showSuccess": {"message": "Decision saved"}}""")
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/${updated.id}/edit")
         }
@@ -187,6 +188,7 @@ class DecisionRoutes(
         return if (isHx(request)) {
             val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.optionsFragment(decision))
+                .header("HX-Trigger", """{"showSuccess": {"message": "Option added"}}""")
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
         }
@@ -209,6 +211,7 @@ class DecisionRoutes(
         return if (isHx(request)) {
             val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.optionsFragment(decision))
+                .header("HX-Trigger", """{"showSuccess": {"message": "Option saved"}}""")
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
         }
@@ -228,6 +231,7 @@ class DecisionRoutes(
         return if (isHx(request)) {
             val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.optionsFragment(decision))
+                .header("HX-Trigger", """{"showSuccess": {"message": "Option deleted"}}""")
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
         }
@@ -250,6 +254,7 @@ class DecisionRoutes(
         return if (isHx(request)) {
             val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.criteriaFragment(decision))
+                .header("HX-Trigger", """{"showSuccess": {"message": "Criteria added"}}""")
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
         }
@@ -273,6 +278,7 @@ class DecisionRoutes(
         return if (isHx(request)) {
             val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.criteriaFragment(decision))
+                .header("HX-Trigger", """{"showSuccess": {"message": "Criteria saved"}}""")
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
         }
@@ -292,6 +298,7 @@ class DecisionRoutes(
         return if (isHx(request)) {
             val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.criteriaFragment(decision))
+                .header("HX-Trigger", """{"showSuccess": {"message": "Criteria deleted"}}""")
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
         }

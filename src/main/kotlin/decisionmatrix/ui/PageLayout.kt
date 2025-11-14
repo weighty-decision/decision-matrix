@@ -113,13 +113,34 @@ object PageLayout {
                             if (errorContainer) {
                                 errorContainer.innerHTML = message;
                                 errorContainer.style.display = 'block';
-                                
+
                                 // Auto-hide after 5 seconds
                                 setTimeout(function() {
                                     errorContainer.style.display = 'none';
                                 }, 5000);
                             }
                         }
+
+                        function showSuccessNotification(message) {
+                            const successContainer = document.getElementById('success-notifications');
+                            if (successContainer) {
+                                successContainer.innerHTML = message;
+                                successContainer.style.display = 'block';
+
+                                // Auto-hide after 3 seconds
+                                setTimeout(function() {
+                                    successContainer.style.display = 'none';
+                                }, 3000);
+                            }
+                        }
+
+                        document.addEventListener('DOMContentLoaded', function() {
+                            document.body.addEventListener('showSuccess', function(evt) {
+                                if (evt.detail && evt.detail.message) {
+                                    showSuccessNotification(evt.detail.message);
+                                }
+                            });
+                        });
                         """.trimIndent()
                     }
                 }
@@ -174,6 +195,11 @@ object PageLayout {
                 }
                 main(classes = "container") {
                     mainContent()
+                }
+                div {
+                    id = "success-notifications"
+                    attributes["class"] = "success-toast"
+                    attributes["style"] = "display: none;"
                 }
                 div {
                     id = "error-notifications"
