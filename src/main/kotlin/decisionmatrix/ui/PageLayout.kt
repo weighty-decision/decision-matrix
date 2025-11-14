@@ -140,6 +140,17 @@ object PageLayout {
                                     showSuccessNotification(evt.detail.message);
                                 }
                             });
+
+                            // Check for success message in query parameter
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const successMessage = urlParams.get('success');
+                            if (successMessage) {
+                                showSuccessNotification(successMessage);
+                                // Remove the query parameter from URL without reloading
+                                const url = new URL(window.location);
+                                url.searchParams.delete('success');
+                                window.history.replaceState({}, '', url);
+                            }
                         });
                         """.trimIndent()
                     }

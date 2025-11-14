@@ -314,7 +314,7 @@ class DecisionRoutes(
         
         decisionRepository.delete(decisionId)
 
-        return Response(Status.SEE_OTHER).header("Location", "/")
+        return Response(Status.SEE_OTHER).header("Location", "/?success=Decision+deleted")
     }
 
     private fun viewMyScores(request: Request): Response {
@@ -380,7 +380,7 @@ class DecisionRoutes(
         }
 
         return Response(Status.SEE_OTHER)
-            .header("Location", "/decisions/$decisionId/my-scores")
+            .header("Location", "/decisions/$decisionId/my-scores?success=Scores+saved")
     }
 
     private fun calculateScores(request: Request): Response {
