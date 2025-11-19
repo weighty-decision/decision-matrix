@@ -11,6 +11,8 @@ postgresql = "42.7.4"
 flyway = "10.20.1"
 slf4j = "2.0.16"
 logback = "1.5.12"
+logback-ecs-encoder = "1.7.0"
+logstash-logback = "9.0"
 nimbus-oauth2 = "11.20.1"
 nimbus-jose-jwt = "9.47"
 hikari = "5.1.0"
@@ -43,6 +45,8 @@ flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+logback-ecs-encoder = { module = "co.elastic.logging:logback-ecs-encoder", version.ref = "logback-ecs-encoder" }
+logstash-logback = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash-logback" }
 nimbus-oauth2-sdk = { module = "com.nimbusds:oauth2-oidc-sdk", version.ref = "nimbus-oauth2" }
 nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus-jose-jwt" }
 
@@ -76,6 +80,8 @@ http4k-testing = [
 logging = [
     "slf4j-api",
     "logback-classic",
+    "logback-ecs-encoder",
+    "logstash-logback",
 ]
 
 [plugins]

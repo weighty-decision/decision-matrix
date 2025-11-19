@@ -1,14 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <configuration>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- Console (human-readable) -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%-12.12d{HH:mm:ss.SS} %highlight(%-5level) [%thread] %logger{15} %kvp{NONE} %msg%n</pattern>
         </encoder>
     </appender>
 
-    <root level="info">
-        <appender-ref ref="STDOUT"/>
+    <!-- JSON (generic, OTEL-friendly) -->
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdc>true</includeMdc>
+            <includeStructuredArguments>true</includeStructuredArguments>
+        </encoder>
+    </appender>
+
+    <!-- ECS (Elastic) -->
+    <appender name="ECS" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="co.elastic.logging.logback.EcsEncoder">
+            <serviceName>${SERVICE_NAME:-decisionmatrix}</serviceName>
+        </encoder>
+    </appender>
+
+    <!-- Switch based on LOG_FORMAT env var -->
+    <root level="${DM_LOG_LEVEL:-INFO}">
+        <appender-ref ref="${DM_LOG_FORMAT:-JSON}"/>
     </root>
-    <logger name="decisionmatrix" level="info"/>
 </configuration>

@@ -107,6 +107,12 @@ Common connection parameters:
 DM_HTTP_SERVER_PORT=8080            # HTTP server port (default: 8080)
 ```
 
+### Logging Configuration
+```bash
+DM_LOG_FORMAT=CONSOLE # CONSOLE, JSON, ECS
+DM_LOG_LEVEL=INFO  # TRACE, DEBUG, INFO, WARN, ERROR
+```
+
 ## Screenshots
 ### Home
 ![Index](docs/resources/index.png)
