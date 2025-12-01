@@ -273,6 +273,25 @@ class DecisionRepositoryTest {
     }
 
     @Test
+    fun `findDecisions with search filter is case insensitive`() {
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+
+        decisionRepository.insert(DecisionInput(name = "Laptop Selection"), createdBy = "user1")
+
+        val lowercaseFilter = DecisionSearchFilters(search = "selection")
+        val lowercaseResults = decisionRepository.findDecisions(lowercaseFilter)
+
+        lowercaseResults.size shouldBe 1
+        lowercaseResults[0].name shouldBe "Laptop Selection"
+
+        val uppercaseFilter = DecisionSearchFilters(search = "LAPTOP")
+        val uppercaseResults = decisionRepository.findDecisions(uppercaseFilter)
+
+        uppercaseResults.size shouldBe 1
+        uppercaseResults[0].name shouldBe "Laptop Selection"
+    }
+
+    @Test
     fun `findDecisions with involvement filter returns decisions user is involved in`() {
         val decisionRepository = DecisionRepositoryImpl(jdbi)
         val userScoreRepository = UserScoreRepositoryImpl(jdbi)

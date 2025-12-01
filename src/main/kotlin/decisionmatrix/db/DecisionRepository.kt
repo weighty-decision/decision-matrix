@@ -159,7 +159,7 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
 
             // Search by decision name
             filters.search?.let { searchTerm ->
-                conditions.add("d.name LIKE :search")
+                conditions.add("d.name ILIKE :search")
                 parameters["search"] = "%$searchTerm%"
             }
 
