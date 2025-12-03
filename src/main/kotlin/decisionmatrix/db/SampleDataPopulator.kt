@@ -16,7 +16,8 @@ class SampleDataPopulator(
     private val decisionRepository: DecisionRepository,
     private val optionRepository: OptionRepository,
     private val criteriaRepository: CriteriaRepository,
-    private val userScoreRepository: UserScoreRepository
+    private val userScoreRepository: UserScoreRepository,
+    private val tagRepository: TagRepository
 ) {
     fun populateIfEmpty() {
         val isEmpty = jdbi.withHandle<Boolean, Exception> { handle ->
@@ -90,6 +91,12 @@ class SampleDataPopulator(
             }
         }
 
+        // Add tags
+        val technologyTag = tagRepository.findOrCreate(name = "technology")
+        val backendTag = tagRepository.findOrCreate(name = "backend")
+        tagRepository.addTagToDecision(decisionId = decision.id, tagId = technologyTag.id)
+        tagRepository.addTagToDecision(decisionId = decision.id, tagId = backendTag.id)
+
         log.info("Created tech stack decision (ID: ${decision.id}) with 10 users")
     }
 
@@ -146,6 +153,12 @@ class SampleDataPopulator(
             }
         }
 
+        // Add tags
+        val infrastructureTag = tagRepository.findOrCreate(name = "infrastructure")
+        val technologyTag = tagRepository.findOrCreate(name = "technology")
+        tagRepository.addTagToDecision(decisionId = decision.id, tagId = infrastructureTag.id)
+        tagRepository.addTagToDecision(decisionId = decision.id, tagId = technologyTag.id)
+
         log.info("Created cloud provider decision (ID: ${decision.id}) from 9 months ago")
     }
 
@@ -197,6 +210,12 @@ class SampleDataPopulator(
                 updateScoreTimestamp(userScore.id, twoMonthsAgo)
             }
         }
+
+        // Add tags
+        val personalTag = tagRepository.findOrCreate(name = "personal")
+        val travelTag = tagRepository.findOrCreate(name = "travel")
+        tagRepository.addTagToDecision(decisionId = decision.id, tagId = personalTag.id)
+        tagRepository.addTagToDecision(decisionId = decision.id, tagId = travelTag.id)
 
         log.info("Created vacation decision (ID: ${decision.id}) from 2 months ago")
     }
@@ -254,6 +273,12 @@ class SampleDataPopulator(
                 }
             }
         }
+
+        // Add tags
+        val personalTag = tagRepository.findOrCreate(name = "personal")
+        val familyTag = tagRepository.findOrCreate(name = "family")
+        tagRepository.addTagToDecision(decisionId = decision.id, tagId = personalTag.id)
+        tagRepository.addTagToDecision(decisionId = decision.id, tagId = familyTag.id)
 
         log.info("Created car purchase decision (ID: ${decision.id}) from 2 months ago with dev-user score")
     }

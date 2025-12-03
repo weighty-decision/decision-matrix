@@ -27,6 +27,17 @@ object ResultsPage {
             section(classes = "card") {
                 h1 { +"Results for '${decisionAggregate.name}'" }
 
+                if (decisionAggregate.tags.isNotEmpty()) {
+                    div {
+                        style = "display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"
+                        decisionAggregate.tags.forEach { tag ->
+                            span(classes = "badge") {
+                                +tag.name
+                            }
+                        }
+                    }
+                }
+
                 if (decisionAggregate.options.isEmpty() || decisionAggregate.criteria.isEmpty()) {
                     p { +"Add options and criteria first on the edit page." }
                 } else if (scores.isEmpty()) {

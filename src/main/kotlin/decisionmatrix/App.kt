@@ -11,11 +11,13 @@ import decisionmatrix.db.CriteriaRepositoryImpl
 import decisionmatrix.db.DecisionRepositoryImpl
 import decisionmatrix.db.OptionRepositoryImpl
 import decisionmatrix.db.UserScoreRepositoryImpl
+import decisionmatrix.db.TagRepositoryImpl
 import decisionmatrix.db.SampleDataPopulator
 import decisionmatrix.db.loadJdbi
 import decisionmatrix.http4k.HttpConfig
 import decisionmatrix.oauth.MockOAuthServer
 import decisionmatrix.routes.DecisionRoutes
+import decisionmatrix.routes.TagRoutes
 import decisionmatrix.http4k.HttpServer
 import org.slf4j.LoggerFactory
 
@@ -27,6 +29,7 @@ val decisionRepository = DecisionRepositoryImpl(jdbi)
 val optionRepository = OptionRepositoryImpl(jdbi)
 val criteriaRepository = CriteriaRepositoryImpl(jdbi)
 val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+val tagRepository = TagRepositoryImpl(jdbi)
 
 val httpConfig = HttpConfig.fromEnvironment()
 val authConfig = AuthConfiguration.fromEnvironment()
@@ -64,9 +67,13 @@ val decisionRoutes = DecisionRoutes(
     optionRepository = optionRepository,
     criteriaRepository = criteriaRepository,
     userScoreRepository = userScoreRepository,
+    tagRepository = tagRepository,
     authorizationService = authorizationService
 )
 
+val tagRoutes = TagRoutes(
+    tagRepository = tagRepository
+)
 
 fun main() {
     // Populate sample data if requested
@@ -76,13 +83,15 @@ fun main() {
             decisionRepository = decisionRepository,
             optionRepository = optionRepository,
             criteriaRepository = criteriaRepository,
-            userScoreRepository = userScoreRepository
+            userScoreRepository = userScoreRepository,
+            tagRepository = tagRepository
         ).populateIfEmpty()
     }
 
     HttpServer(
         authRoutes = authRoutes,
         decisionRoutes = decisionRoutes,
+        tagRoutes = tagRoutes,
         sessionManager = sessionManager,
         devMode = authConfig.devMode,
         devUserId = authConfig.devUserId

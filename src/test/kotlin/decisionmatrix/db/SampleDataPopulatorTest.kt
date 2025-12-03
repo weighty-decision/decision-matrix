@@ -26,13 +26,15 @@ class SampleDataPopulatorTest {
         val optionRepository = OptionRepositoryImpl(jdbi)
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
         val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+        val tagRepository = TagRepositoryImpl(jdbi)
 
         val populator = SampleDataPopulator(
             jdbi = jdbi,
             decisionRepository = decisionRepository,
             optionRepository = optionRepository,
             criteriaRepository = criteriaRepository,
-            userScoreRepository = userScoreRepository
+            userScoreRepository = userScoreRepository,
+            tagRepository = tagRepository
         )
 
         populator.populateIfEmpty()
@@ -48,6 +50,7 @@ class SampleDataPopulatorTest {
         val optionRepository = OptionRepositoryImpl(jdbi)
         val criteriaRepository = CriteriaRepositoryImpl(jdbi)
         val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+        val tagRepository = TagRepositoryImpl(jdbi)
 
         // Create a single decision first
         decisionRepository.insert(
@@ -60,7 +63,8 @@ class SampleDataPopulatorTest {
             decisionRepository = decisionRepository,
             optionRepository = optionRepository,
             criteriaRepository = criteriaRepository,
-            userScoreRepository = userScoreRepository
+            userScoreRepository = userScoreRepository,
+            tagRepository = tagRepository
         )
 
         populator.populateIfEmpty()

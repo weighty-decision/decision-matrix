@@ -40,9 +40,9 @@ fun cleanTestDatabase() {
     try {
         DriverManager.getConnection(testJdbcUrl, dbUsername, dbPassword).use { connection ->
             val cleanupStatements = listOf(
-                "TRUNCATE user_scores, criteria, options, decisions CASCADE"
+                "TRUNCATE user_scores, criteria, options, decisions, decision_tags, tags CASCADE"
             )
-            
+
             connection.createStatement().use { statement ->
                 for (sql in cleanupStatements) {
                     statement.executeUpdate(sql)

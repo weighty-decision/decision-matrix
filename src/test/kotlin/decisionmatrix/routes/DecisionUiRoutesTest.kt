@@ -7,6 +7,7 @@ import decisionmatrix.db.CriteriaRepositoryImpl
 import decisionmatrix.db.DecisionRepositoryImpl
 import decisionmatrix.db.OptionRepositoryImpl
 import decisionmatrix.db.UserScoreRepositoryImpl
+import decisionmatrix.db.TagRepositoryImpl
 import decisionmatrix.db.cleanTestDatabase
 import decisionmatrix.db.getTestJdbi
 import io.kotest.matchers.shouldBe
@@ -24,11 +25,12 @@ class DecisionUiRoutesTest {
     private val optionRepository = OptionRepositoryImpl(jdbi)
     private val criteriaRepository = CriteriaRepositoryImpl(jdbi)
     private val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+    private val tagRepository = TagRepositoryImpl(jdbi)
 
     private val authorizationService = AuthorizationService(decisionRepository)
-    
+
     private val routes = DecisionRoutes(
-        decisionRepository, optionRepository, criteriaRepository, userScoreRepository, authorizationService
+        decisionRepository, optionRepository, criteriaRepository, userScoreRepository, tagRepository, authorizationService
     ).routes.withMockAuth()
 
     @AfterEach

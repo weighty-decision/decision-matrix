@@ -1,6 +1,7 @@
 package decisionmatrix.ui
 
 import decisionmatrix.Decision
+import decisionmatrix.Tag
 import decisionmatrix.auth.AuthenticatedUser
 import decisionmatrix.db.TimeRange
 import kotlinx.html.ButtonType
@@ -25,15 +26,15 @@ import kotlinx.html.tbody
 import kotlinx.html.td
 import kotlinx.html.th
 import kotlinx.html.thead
+import kotlinx.html.title
 import kotlinx.html.tr
 import kotlinx.html.unsafe
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 object IndexPage {
 
     fun indexPage(
         decisions: List<Decision>,
+        decisionTags: Map<Long, List<Tag>>,
         currentUser: AuthenticatedUser,
         searchTerm: String? = null,
         timeRange: TimeRange = TimeRange.LAST_90_DAYS,
@@ -48,6 +49,7 @@ object IndexPage {
                             id = "search-input"
                             name = "search"
                             placeholder = "Search decisions..."
+                            title = "Search by title or @tagname"
                             value = searchTerm ?: ""
                             attributes["hx-get"] = "/search"
                             attributes["hx-trigger"] = "keyup changed delay:500ms[target.value.length == 0 || target.value.length >= 3]"
@@ -65,7 +67,7 @@ object IndexPage {
                         label {
                             attributes["for"] = "time-range-select"
                             attributes["style"] = "margin-left: 12px; white-space: nowrap;"
-                            +"Show:"
+                            +"Filter:"
                         }
                         select {
                             id = "time-range-select"
@@ -107,7 +109,7 @@ object IndexPage {
                         button(classes = if (involvedFilter) "btn filter-btn active" else "btn filter-btn") {
                             type = ButtonType.button
                             id = "involved-toggle"
-                            attributes["title"] = "Show decisions I've created or scored"
+                            attributes["title"] = "Only show decisions I've created or scored"
                             attributes["hx-get"] = "/search"
                             attributes["hx-trigger"] = "click"
                             attributes["hx-target"] = "#decisions-table"
@@ -130,7 +132,7 @@ object IndexPage {
 
                 div {
                     id = "decisions-table"
-                    unsafe { +decisionsTableFragment(decisions, currentUser) }
+                    unsafe { +decisionsTableFragment(decisions, decisionTags, currentUser) }
                 }
             }
 
@@ -181,7 +183,7 @@ object IndexPage {
             }
         }
 
-    fun decisionsTableFragment(decisions: List<Decision>, currentUser: AuthenticatedUser): String = buildString {
+    fun decisionsTableFragment(decisions: List<Decision>, decisionTags: Map<Long, List<Tag>>, currentUser: AuthenticatedUser): String = buildString {
         if (decisions.isEmpty()) {
             appendHTML().p(classes = "muted") {
                 +"No decisions found. Try adjusting your search or filters, or create your first decision to get started."
@@ -201,6 +203,19 @@ object IndexPage {
                         tr {
                             td {
                                 strong { +decision.name }
+                                val tags = decisionTags[decision.id] ?: emptyList()
+                                if (tags.isNotEmpty()) {
+                                    div {
+                                        attributes["style"] = "display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.25rem;"
+                                        tags.forEach { tag ->
+                                            a(classes = "badge") {
+                                                href = "/?search=@${tag.name}"
+                                                attributes["title"] = "Filter by tag: ${tag.name}"
+                                                +tag.name
+                                            }
+                                        }
+                                    }
+                                }
                             }
                             td(classes = "local-date") {
                                 attributes["data-timestamp"] = decision.createdAt.toString()

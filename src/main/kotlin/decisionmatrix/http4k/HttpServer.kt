@@ -5,6 +5,7 @@ import decisionmatrix.auth.SessionManager
 import decisionmatrix.auth.UserContext
 import decisionmatrix.auth.requireAuth
 import decisionmatrix.routes.DecisionRoutes
+import decisionmatrix.routes.TagRoutes
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Response
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory
 class HttpServer(
     private val authRoutes: AuthRoutes,
     private val decisionRoutes: DecisionRoutes,
+    private val tagRoutes: TagRoutes,
     private val sessionManager: SessionManager,
     private val devMode: Boolean,
     private val devUserId: String?
@@ -39,7 +41,8 @@ class HttpServer(
         },
         "/assets" bind static(ResourceLoader.Classpath("public")),
         authRoutes.routes,
-        decisionRoutes.routes
+        decisionRoutes.routes,
+        tagRoutes.routes
     )
 
     fun createHttpHandler(): HttpHandler = ResponseFilters.ReportHttpTransaction { tx ->
@@ -72,10 +75,12 @@ class ReloadableHttpApp : HotReloadable<HttpHandler> {
         val sessionManager = decisionmatrix.sessionManager
         val authRoutes = decisionmatrix.authRoutes
         val decisionRoutes = decisionmatrix.decisionRoutes
+        val tagRoutes = decisionmatrix.tagRoutes
 
         return HttpServer(
             authRoutes = authRoutes,
             decisionRoutes = decisionRoutes,
+            tagRoutes = tagRoutes,
             sessionManager = sessionManager,
             devMode = authConfig.devMode,
             devUserId = authConfig.devUserId

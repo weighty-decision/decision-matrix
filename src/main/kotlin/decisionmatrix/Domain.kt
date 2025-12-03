@@ -38,6 +38,7 @@ data class DecisionAggregate(
     val decision: Decision,
     val criteria: List<Criteria> = emptyList(),
     val options: List<Option> = emptyList(),
+    val tags: List<Tag> = emptyList(),
 ) {
     // Delegate properties to the composed Decision
     val id: Long get() = decision.id
@@ -96,3 +97,9 @@ data class UserScore(
         return scoredBy == userId
     }
 }
+
+@Serializable
+data class Tag(
+    val id: Long,
+    val name: String,
+)

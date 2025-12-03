@@ -34,6 +34,7 @@ class DecisionRoutes(
     private val optionRepository: OptionRepository,
     private val criteriaRepository: CriteriaRepository,
     private val userScoreRepository: UserScoreRepository,
+    private val tagRepository: decisionmatrix.db.TagRepository,
     private val authorizationService: AuthorizationService
 ) {
 
@@ -46,6 +47,7 @@ class DecisionRoutes(
 
         "/decisions/{id}/name" bind Method.POST to ::updateDecisionName,
         "/decisions/{id}/delete" bind Method.POST to ::deleteDecision,
+        "/decisions/{id}/tags" bind Method.POST to ::updateTags,
 
         "/decisions/{id}/options" bind Method.POST to ::createOption,
         "/decisions/{id}/options/{optionId}/update" bind Method.POST to ::updateOption,
@@ -78,7 +80,12 @@ class DecisionRoutes(
 
         val decisions = decisionRepository.findDecisions(filters)
 
-        return htmlResponse(IndexPage.indexPage(decisions, currentUser, search, timeRange, involved))
+        // Load tags for all decisions
+        val decisionTags = decisions.associate { decision ->
+            decision.id to tagRepository.findByDecisionId(decision.id)
+        }
+
+        return htmlResponse(IndexPage.indexPage(decisions, decisionTags, currentUser, search, timeRange, involved))
     }
 
     private fun searchDecisions(request: Request): Response {
@@ -98,10 +105,15 @@ class DecisionRoutes(
 
         val decisions = decisionRepository.findDecisions(filters)
 
+        // Load tags for all decisions
+        val decisionTags = decisions.associate { decision ->
+            decision.id to tagRepository.findByDecisionId(decision.id)
+        }
+
         return if (isHx(request)) {
-            htmlResponse(IndexPage.decisionsTableFragment(decisions, currentUser))
+            htmlResponse(IndexPage.decisionsTableFragment(decisions, decisionTags, currentUser))
         } else {
-            htmlResponse(IndexPage.indexPage(decisions, currentUser, search, timeRange, involved))
+            htmlResponse(IndexPage.indexPage(decisions, decisionTags, currentUser, search, timeRange, involved))
         }
     }
 
@@ -307,14 +319,75 @@ class DecisionRoutes(
     private fun deleteDecision(request: Request): Response {
         val currentUser = UserContext.requireCurrent(request)
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
-        
+
         if (!authorizationService.canModifyDecision(decisionId, currentUser.id)) {
             return Response(Status.FORBIDDEN).body("You don't have permission to delete this decision")
         }
-        
+
         decisionRepository.delete(decisionId)
 
         return Response(Status.SEE_OTHER).header("Location", "/?success=Decision+deleted")
+    }
+
+    private fun updateTags(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
+        val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
+
+        if (!authorizationService.canModifyDecision(decisionId, currentUser.id)) {
+            return Response(Status.FORBIDDEN).body("You don't have permission to modify this decision")
+        }
+
+        val form = parseForm(request)
+        val tagsInput = form["tags"]?.trim().orEmpty()
+
+        // Parse space-delimited tags
+        val tagNames = if (tagsInput.isBlank()) {
+            emptyList()
+        } else {
+            tagsInput.split("\\s+".toRegex())
+                .map { it.lowercase() }
+                .filter { it.isNotBlank() }
+        }
+
+        // Validate tag count
+        if (tagNames.size > 5) {
+            return Response(Status.BAD_REQUEST).body("Maximum 5 tags allowed")
+        }
+
+        // Validate tag names (letters, numbers, and hyphens only, max 25 chars)
+        val invalidTag = tagNames.find { tag ->
+            tag.length > 25 || !tag.matches(Regex("[a-z0-9-]+"))
+        }
+        if (invalidTag != null) {
+            return Response(Status.BAD_REQUEST).body("Invalid tag: $invalidTag. Tags must be lowercase letters, numbers, and hyphens only, max 25 characters")
+        }
+
+        // Get existing tags for this decision
+        val existingTags = tagRepository.findByDecisionId(decisionId)
+
+        // Remove tags that are no longer in the list
+        existingTags.forEach { existingTag ->
+            if (existingTag.name !in tagNames) {
+                tagRepository.removeTagFromDecision(decisionId = decisionId, tagId = existingTag.id)
+            }
+        }
+
+        // Add new tags
+        val existingTagNames = existingTags.map { it.name }.toSet()
+        tagNames.forEach { tagName ->
+            if (tagName !in existingTagNames) {
+                val tag = tagRepository.findOrCreate(tagName)
+                tagRepository.addTagToDecision(decisionId = decisionId, tagId = tag.id)
+            }
+        }
+
+        return if (isHx(request)) {
+            val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+            htmlResponse(DecisionPages.tagsFragment(decision))
+                .header("HX-Trigger", """{"showSuccess": {"message": "Tags updated"}}""")
+        } else {
+            Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
+        }
     }
 
     private fun viewMyScores(request: Request): Response {

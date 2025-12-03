@@ -119,6 +119,7 @@ object DecisionPages {
                 // Name form fragment
                 +decisionFragment(decisionAggregate.decision)
             }
+            unsafe { +tagsFragment(decisionAggregate) }
             unsafe { +criteriaFragment(decisionAggregate) }
             unsafe { +optionsFragment(decisionAggregate) }
             section(classes = "card") {
@@ -227,6 +228,50 @@ object DecisionPages {
                         type = ButtonType.submit
                         +"Delete"
                     }
+                }
+            }
+        }
+    }
+
+    fun tagsFragment(decisionAggregate: DecisionAggregate): String = buildString {
+        appendHTML().section(classes = "card") {
+            id = "tags-fragment"
+            h2 { +"Tags" }
+            form {
+                attributes["hx-post"] = "/decisions/${decisionAggregate.id}/tags"
+                attributes["hx-target"] = "#tags-fragment"
+                attributes["hx-swap"] = "outerHTML"
+                classes = setOf("stack")
+
+                label {
+                    span {
+                        +"Categorize this decision with space-separated tags"
+                    }
+                    textInput {
+                        name = "tags"
+                        placeholder = "tag1 tag2"
+                        value = decisionAggregate.tags.joinToString(" ") { it.name }
+                        attributes["maxlength"] = "150"
+                    }
+                    small(classes = "muted") {
+                        +"Use lowercase letters, numbers, and hyphens. Maximum 5 tags, 25 characters each."
+                    }
+                }
+
+                if (decisionAggregate.tags.isNotEmpty()) {
+                    div {
+                        style = "display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;"
+                        decisionAggregate.tags.forEach { tag ->
+                            span(classes = "badge") {
+                                +tag.name
+                            }
+                        }
+                    }
+                }
+
+                button(classes = "btn") {
+                    type = ButtonType.submit
+                    +"Save"
                 }
             }
         }

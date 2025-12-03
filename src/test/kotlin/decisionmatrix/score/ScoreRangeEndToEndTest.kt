@@ -6,6 +6,7 @@ import decisionmatrix.db.CriteriaRepositoryImpl
 import decisionmatrix.db.DecisionRepositoryImpl
 import decisionmatrix.db.OptionRepositoryImpl
 import decisionmatrix.db.UserScoreRepositoryImpl
+import decisionmatrix.db.TagRepositoryImpl
 import decisionmatrix.db.getTestJdbi
 import decisionmatrix.routes.DecisionRoutes
 import io.kotest.matchers.shouldBe
@@ -28,6 +29,7 @@ class ScoreRangeEndToEndTest {
     private val optionRepository = OptionRepositoryImpl(jdbi)
     private val criteriaRepository = CriteriaRepositoryImpl(jdbi)
     private val userScoreRepository = UserScoreRepositoryImpl(jdbi)
+    private val tagRepository = TagRepositoryImpl(jdbi)
 
     private val authorizationService = AuthorizationService(decisionRepository)
 
@@ -36,6 +38,7 @@ class ScoreRangeEndToEndTest {
         optionRepository = optionRepository,
         criteriaRepository = criteriaRepository,
         userScoreRepository = userScoreRepository,
+        tagRepository = tagRepository,
         authorizationService = authorizationService
     )
 

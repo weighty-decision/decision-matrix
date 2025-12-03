@@ -427,3 +427,25 @@ header.container {
     color: #60a5fa;
     text-decoration: underline;
 }
+
+.badge {
+    display: inline-block;
+    background: rgba(154, 164, 178, 0.12);
+    color: #9aa4b2;
+    border: 1px solid rgba(154, 164, 178, 0.2);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.badge:hover {
+    background: rgba(154, 164, 178, 0.18);
+    border-color: rgba(154, 164, 178, 0.35);
+    color: #b8c1cc;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}

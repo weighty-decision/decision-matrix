@@ -451,4 +451,85 @@ class DecisionRepositoryTest {
         val found = requireNotNull(decisionRepository.getDecisionAggregate(inserted.id))
         found.locked shouldBe false
     }
+
+    @Test fun `getDecisionAggregate includes tags`() {
+        cleanTestDatabase()
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val tagRepository = TagRepositoryImpl(jdbi)
+
+        val decision = decisionRepository.insert(DecisionInput(name = "Decision with tags"))
+
+        val tag1 = tagRepository.findOrCreate("vacations")
+        val tag2 = tagRepository.findOrCreate("urgent")
+
+        tagRepository.addTagToDecision(decisionId = decision.id, tagId = tag1.id)
+        tagRepository.addTagToDecision(decisionId = decision.id, tagId = tag2.id)
+
+        val found = requireNotNull(decisionRepository.getDecisionAggregate(decision.id))
+
+        found.tags.size shouldBe 2
+        found.tags.map { it.name }.shouldContainAll("vacations", "urgent")
+    }
+
+    @Test fun `getDecisionAggregate returns empty tags list when no tags exist`() {
+        cleanTestDatabase()
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+
+        val decision = decisionRepository.insert(DecisionInput(name = "Decision without tags"))
+
+        val found = requireNotNull(decisionRepository.getDecisionAggregate(decision.id))
+
+        found.tags shouldBe emptyList()
+    }
+
+    @Test fun `findDecisions with tag search returns decisions with that tag`() {
+        cleanTestDatabase()
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val tagRepository = TagRepositoryImpl(jdbi)
+
+        val decision1 = decisionRepository.insert(DecisionInput(name = "Vacation Planning"), createdBy = "user1")
+        val decision2 = decisionRepository.insert(DecisionInput(name = "Work Project"), createdBy = "user1")
+        val decision3 = decisionRepository.insert(DecisionInput(name = "Another Vacation"), createdBy = "user1")
+
+        val vacationTag = tagRepository.findOrCreate("vacations")
+        val workTag = tagRepository.findOrCreate("work")
+
+        tagRepository.addTagToDecision(decisionId = decision1.id, tagId = vacationTag.id)
+        tagRepository.addTagToDecision(decisionId = decision2.id, tagId = workTag.id)
+        tagRepository.addTagToDecision(decisionId = decision3.id, tagId = vacationTag.id)
+
+        val filters = DecisionSearchFilters(search = "@vacations", timeRange = TimeRange.ALL)
+        val decisions = decisionRepository.findDecisions(filters)
+
+        decisions.size shouldBe 2
+        decisions.map { it.id }.shouldContainAll(decision1.id, decision3.id)
+    }
+
+    @Test fun `findDecisions with tag search is case insensitive`() {
+        cleanTestDatabase()
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+        val tagRepository = TagRepositoryImpl(jdbi)
+
+        val decision = decisionRepository.insert(DecisionInput(name = "Tagged Decision"), createdBy = "user1")
+        val tag = tagRepository.findOrCreate("vacations")
+        tagRepository.addTagToDecision(decisionId = decision.id, tagId = tag.id)
+
+        val filters = DecisionSearchFilters(search = "@VACATIONS", timeRange = TimeRange.ALL)
+        val decisions = decisionRepository.findDecisions(filters)
+
+        decisions.size shouldBe 1
+        decisions[0].id shouldBe decision.id
+    }
+
+    @Test fun `findDecisions with tag search returns empty list when tag does not exist`() {
+        cleanTestDatabase()
+        val decisionRepository = DecisionRepositoryImpl(jdbi)
+
+        decisionRepository.insert(DecisionInput(name = "Decision"), createdBy = "user1")
+
+        val filters = DecisionSearchFilters(search = "@nonexistent", timeRange = TimeRange.ALL)
+        val decisions = decisionRepository.findDecisions(filters)
+
+        decisions shouldBe emptyList()
+    }
 }

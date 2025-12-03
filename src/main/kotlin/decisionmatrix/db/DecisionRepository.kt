@@ -98,10 +98,14 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
                     c.name as criteria_name,
                     c.weight as criteria_weight,
                     o.id as option_id,
-                    o.name as option_name
+                    o.name as option_name,
+                    t.id as tag_id,
+                    t.name as tag_name
                 FROM decisions d
                 LEFT JOIN criteria c ON d.id = c.decision_id
                 LEFT JOIN options o ON d.id = o.decision_id
+                LEFT JOIN decision_tags dt ON d.id = dt.decision_id
+                LEFT JOIN tags t ON dt.tag_id = t.id
                 WHERE d.id = :id
                 """.trimIndent()
             )
@@ -156,11 +160,22 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
         return jdbi.withHandle<List<Decision>, Exception> { handle ->
             val conditions = mutableListOf<String>()
             val parameters = mutableMapOf<String, Any>()
+            val joins = mutableListOf<String>()
 
-            // Search by decision name
+            // Search by decision name or tag
             filters.search?.let { searchTerm ->
-                conditions.add("d.name ILIKE :search")
-                parameters["search"] = "%$searchTerm%"
+                if (searchTerm.startsWith("@")) {
+                    // Tag search
+                    val tagName = searchTerm.substring(1).lowercase()
+                    joins.add("INNER JOIN decision_tags dt ON d.id = dt.decision_id")
+                    joins.add("INNER JOIN tags t ON dt.tag_id = t.id")
+                    conditions.add("t.name = :tagName")
+                    parameters["tagName"] = tagName
+                } else {
+                    // Name search
+                    conditions.add("d.name ILIKE :search")
+                    parameters["search"] = "%$searchTerm%"
+                }
             }
 
             // Time range filter
@@ -175,11 +190,13 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
                 parameters["userId"] = filters.userId
             }
 
+            val joinClause = if (joins.isEmpty()) "" else joins.joinToString(" ")
             val whereClause = if (conditions.isEmpty()) "" else "WHERE ${conditions.joinToString(" AND ")}"
 
             val query = """
                 SELECT DISTINCT d.id, d.name, d.min_score, d.max_score, d.locked, d.created_by, d.created_at
                 FROM decisions d
+                $joinClause
                 $whereClause
                 ORDER BY d.created_at DESC
                 """.trimIndent()
@@ -220,6 +237,7 @@ fun mapDecisionAggregate(rows: List<Map<String, Any>>): DecisionAggregate {
 
     val criteriaMap = mutableMapOf<Long, Criteria>()
     val optionsMap = mutableMapOf<Long, Option>()
+    val tagsMap = mutableMapOf<Long, decisionmatrix.Tag>()
 
     for (row in rows) {
         // Map criteria if present
@@ -233,13 +251,22 @@ fun mapDecisionAggregate(rows: List<Map<String, Any>>): DecisionAggregate {
             )
         }
 
-        // Map options if present  
+        // Map options if present
         val optionId = (row["option_id"] as? Number)?.toLong()
         if (optionId != null) {
             optionsMap[optionId] = Option(
                 id = optionId,
                 decisionId = decisionId,
                 name = row["option_name"] as String
+            )
+        }
+
+        // Map tags if present
+        val tagId = (row["tag_id"] as? Number)?.toLong()
+        if (tagId != null) {
+            tagsMap[tagId] = decisionmatrix.Tag(
+                id = tagId,
+                name = row["tag_name"] as String
             )
         }
     }
@@ -255,7 +282,8 @@ fun mapDecisionAggregate(rows: List<Map<String, Any>>): DecisionAggregate {
             createdAt = decisionCreatedAt,
         ),
         criteria = criteriaMap.values.toList(),
-        options = optionsMap.values.toList()
+        options = optionsMap.values.toList(),
+        tags = tagsMap.values.toList()
     )
 }
 
