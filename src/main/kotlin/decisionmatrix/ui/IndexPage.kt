@@ -58,6 +58,24 @@ object IndexPage {
                             attributes["hx-push-url"] = "true"
                             attributes["style"] = "width: 100%; padding: 8px 12px;"
                         }
+                        div {
+                            id = "tag-autocomplete"
+                            attributes["style"] = """
+                                display: none;
+                                position: absolute;
+                                top: 100%;
+                                left: 0;
+                                right: 0;
+                                background: white;
+                                border: 1px solid #ddd;
+                                border-top: none;
+                                border-radius: 0 0 4px 4px;
+                                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                                max-height: 200px;
+                                overflow-y: auto;
+                                z-index: 1000;
+                            """.trimIndent()
+                        }
                     }
 
                     form {
@@ -175,6 +193,140 @@ object IndexPage {
                                 button.classList.add('active');
                             } else {
                                 button.classList.remove('active');
+                            }
+                        });
+
+                        // Tag autocomplete functionality
+                        const searchInput = document.getElementById('search-input');
+                        const autocompleteDiv = document.getElementById('tag-autocomplete');
+
+                        let autocompleteTimeout = null;
+                        let currentTags = [];
+                        let selectedIndex = -1;
+                        let currentAtIndex = -1;
+
+                        searchInput.addEventListener('input', function() {
+                            const value = this.value;
+                            const atIndex = value.lastIndexOf('@');
+
+                            // Clear any existing timeout
+                            if (autocompleteTimeout) {
+                                clearTimeout(autocompleteTimeout);
+                            }
+
+                            // Check if we have an @ symbol and extract the prefix after it
+                            if (atIndex !== -1) {
+                                const prefix = value.substring(atIndex + 1);
+
+                                // Only show autocomplete if there's at least one character after @
+                                if (prefix.length > 0) {
+                                    // Debounce the autocomplete request
+                                    autocompleteTimeout = setTimeout(function() {
+                                        fetch('/api/tags/autocomplete?q=' + encodeURIComponent(prefix))
+                                            .then(response => response.json())
+                                            .then(data => {
+                                                if (data.tags && data.tags.length > 0) {
+                                                    currentAtIndex = atIndex;
+                                                    showAutocomplete(data.tags);
+                                                } else {
+                                                    hideAutocomplete();
+                                                }
+                                            })
+                                            .catch(() => hideAutocomplete());
+                                    }, 200);
+                                } else {
+                                    hideAutocomplete();
+                                }
+                            } else {
+                                hideAutocomplete();
+                            }
+                        });
+
+                        // Keyboard navigation
+                        searchInput.addEventListener('keydown', function(e) {
+                            if (autocompleteDiv.style.display !== 'block') return;
+
+                            if (e.key === 'ArrowDown') {
+                                e.preventDefault();
+                                selectedIndex = Math.min(selectedIndex + 1, currentTags.length - 1);
+                                updateSelection();
+                            } else if (e.key === 'ArrowUp') {
+                                e.preventDefault();
+                                selectedIndex = Math.max(selectedIndex - 1, 0);
+                                updateSelection();
+                            } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                                e.preventDefault();
+                                selectTag(currentTags[selectedIndex]);
+                            } else if (e.key === 'Escape') {
+                                e.preventDefault();
+                                hideAutocomplete();
+                            }
+                        });
+
+                        function showAutocomplete(tags) {
+                            currentTags = tags;
+                            selectedIndex = 0; // Select first item by default
+                            autocompleteDiv.innerHTML = '';
+
+                            tags.forEach(function(tag, index) {
+                                const item = document.createElement('div');
+                                item.className = 'autocomplete-item';
+                                item.textContent = tag.name;
+                                item.dataset.index = index;
+                                item.style.cssText = 'padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; color: #333;';
+
+                                // Mouse hover effect
+                                item.addEventListener('mouseenter', function() {
+                                    selectedIndex = parseInt(this.dataset.index);
+                                    updateSelection();
+                                });
+
+                                // Click to select
+                                item.addEventListener('click', function() {
+                                    selectTag(tag);
+                                });
+
+                                autocompleteDiv.appendChild(item);
+                            });
+
+                            autocompleteDiv.style.display = 'block';
+                            updateSelection();
+                        }
+
+                        function updateSelection() {
+                            const items = autocompleteDiv.querySelectorAll('.autocomplete-item');
+                            items.forEach(function(item, index) {
+                                if (index === selectedIndex) {
+                                    item.style.backgroundColor = '#007bff';
+                                    item.style.color = 'white';
+                                } else {
+                                    item.style.backgroundColor = 'white';
+                                    item.style.color = '#333';
+                                }
+                            });
+                        }
+
+                        function selectTag(tag) {
+                            const beforeAt = searchInput.value.substring(0, currentAtIndex);
+                            searchInput.value = beforeAt + '@' + tag.name;
+                            hideAutocomplete();
+
+                            // Trigger the search by dispatching htmx trigger
+                            htmx.trigger(searchInput, 'keyup');
+                        }
+
+                        function hideAutocomplete() {
+                            autocompleteDiv.style.display = 'none';
+                            autocompleteDiv.innerHTML = '';
+                            currentTags = [];
+                            selectedIndex = -1;
+                            currentAtIndex = -1;
+                        }
+
+                        // Close autocomplete when clicking outside
+                        document.addEventListener('click', function(e) {
+                            if (!searchInput.contains(e.target) && !autocompleteDiv.contains(e.target)) {
+                                hideAutocomplete();
                             }
                         });
                     });
