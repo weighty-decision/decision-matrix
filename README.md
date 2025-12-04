@@ -2,6 +2,16 @@
 
 Weighted decision matrix that supports multiple users. When calculating each option's weighted score, it uses the average of each user's score.
 
+## Features
+
+- **Multi-user scoring**: Multiple users can evaluate options independently
+- **Weighted criteria**: Assign importance weights to different evaluation criteria
+- **Tags**: Organize and filter decisions using tags
+- **Option notes**: Add detailed notes to individual options for context and documentation
+- **Audit logging**: Track changes for compliance and transparency
+- **Flexible authentication**: Support for OAuth 2.0/OpenID Connect or development mode
+- **Smart scoring**: Omitted scores don't penalize options (see "How Scoring Works" below)
+
 ## How Scoring Works
 
 The scoring system is designed to not penalize users for honest gaps in knowledge:

@@ -75,10 +75,17 @@ Common connection parameters:
     - `audit/` - Audit logging utilities
     - `auth/` - Authentication & OAuth handling
     - `db/` - Database repositories and models
+        - `DecisionRepository` - Handles decisions and search
+        - `OptionRepository` - Manages options and their notes
+        - `CriteriaRepository` - Manages evaluation criteria
+        - `UserScoreRepository` - Stores user scores
+        - `TagRepository` - Manages tags for organizing decisions
     - `ui/` - HTML page generation (kotlinx.html)
     - `routes/` - HTTP route handlers
+        - `DecisionRoutes` - CRUD operations for decisions
+        - `TagRoutes` - Tag management and search
     - `oauth/` - Mock OAuth server for testing
-- `Domain.kt` - Core domain models (Decision, Option, Criteria, UserScore)
+- `Domain.kt` - Core domain models (Decision, Option, Criteria, UserScore, Tag)
 - `App.kt` - Main application entry point
 
 ## Development Principles
@@ -168,13 +175,18 @@ When working on decision matrix features, remember:
 - Multiple users need to input weights and scores
 - Calculations should be transparent and auditable
 - Results should be easy to understand and export
+- Decisions can be organized using tags for easier filtering and categorization
+- Options support notes for capturing additional context and details
+- All significant user actions are audit logged for compliance
 
 ## Database Schema
 PostgreSQL with these main entities:
-- **decisions** - Decision matrices
-- **options** - Choices being evaluated
+- **decisions** - Decision matrices with optional tags
+- **options** - Choices being evaluated (supports notes for additional context)
 - **criteria** - Evaluation factors with weights
 - **user_scores** - Individual user ratings per option/criteria pair
+- **tags** - Organizational tags for decisions (many-to-many relationship via decision_tags)
+- **decision_tags** - Junction table linking decisions to tags
 
 ### Authentication
 The application uses OAuth for authentication with pluggable provider support.
@@ -234,7 +246,14 @@ The application uses standards-based OAuth 2.0 with PKCE and OpenID Connect, sup
 
 ### Audit Logging
 
-The application provides structured audit logging for compliance and transparency
+The application provides structured audit logging for compliance and transparency. Key actions (creating/updating/deleting decisions, options, criteria, etc.) are logged with:
+- User ID performing the action
+- Action type (CREATE, UPDATE, DELETE)
+- Entity type and ID
+- Timestamp
+- Additional context as needed
+
+Audit logs are written to the application logger at INFO level and can be configured via the logging settings.
 
 ## Development Patterns in This Codebase
 - Repository pattern with `*Repository` interfaces and `*RepositoryImpl` implementations
