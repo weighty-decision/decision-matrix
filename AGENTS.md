@@ -72,6 +72,7 @@ Common connection parameters:
 
 ## Code Structure
 - `src/main/kotlin/decisionmatrix/` - Main application code
+    - `audit/` - Audit logging utilities
     - `auth/` - Authentication & OAuth handling
     - `db/` - Database repositories and models
     - `ui/` - HTML page generation (kotlinx.html)
@@ -230,6 +231,10 @@ The application uses standards-based OAuth 2.0 with PKCE and OpenID Connect, sup
 - Sessions are stored in memory (suitable for single-instance deployments)
 - Session timeout is 24 hours by default
 - Sessions are automatically cleaned up on expiry
+
+### Audit Logging
+
+The application provides structured audit logging for compliance and transparency
 
 ## Development Patterns in This Codebase
 - Repository pattern with `*Repository` interfaces and `*RepositoryImpl` implementations

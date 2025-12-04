@@ -6,6 +6,7 @@ import decisionmatrix.DEFAULT_MIN_SCORE
 import decisionmatrix.DecisionInput
 import decisionmatrix.OptionInput
 import decisionmatrix.UserScoreInput
+import decisionmatrix.audit.auditLog
 import decisionmatrix.auth.UserContext
 import decisionmatrix.db.CriteriaRepository
 import decisionmatrix.db.DecisionRepository
@@ -139,6 +140,15 @@ class DecisionRoutes(
             DecisionInput(name = name, minScore = minScore, maxScore = maxScore),
             currentUser.id
         )
+
+        auditLog.atInfo()
+            .setMessage("Decision created")
+            .addKeyValue("event", "decision.created")
+            .addKeyValue("user_id", currentUser.id)
+            .addKeyValue("decision_id", created.id)
+            .addKeyValue("decision_name", created.name)
+            .log()
+
         return Response(Status.SEE_OTHER).header("Location", "/decisions/${created.id}/edit")
     }
 
@@ -176,6 +186,14 @@ class DecisionRoutes(
 
         val updated = decisionRepository.update(id, name, minScore, maxScore, locked) ?: return Response(Status.NOT_FOUND).body("Decision not found")
 
+        auditLog.atInfo()
+            .setMessage("Decision updated")
+            .addKeyValue("event", "decision.updated")
+            .addKeyValue("user_id", currentUser.id)
+            .addKeyValue("decision_id", updated.id)
+            .addKeyValue("decision_name", updated.name)
+            .log()
+
         return if (isHx(request)) {
             htmlResponse(DecisionPages.decisionFragment(updated))
                 .header("HX-Trigger", """{"showSuccess": {"message": "Decision saved"}}""")
@@ -196,6 +214,14 @@ class DecisionRoutes(
         val name = form["name"]?.trim().orEmpty()
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Option name is required")
         optionRepository.insert(decisionId, OptionInput(name))
+
+        auditLog.atInfo()
+            .setMessage("Option created")
+            .addKeyValue("event", "option.created")
+            .addKeyValue("user_id", currentUser.id)
+            .addKeyValue("decision_id", decisionId)
+            .addKeyValue("option_name", name)
+            .log()
 
         return if (isHx(request)) {
             val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
@@ -220,6 +246,15 @@ class DecisionRoutes(
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Option name is required")
         optionRepository.update(optionId, name) ?: return Response(Status.NOT_FOUND).body("Option not found")
 
+        auditLog.atInfo()
+            .setMessage("Option updated")
+            .addKeyValue("event", "option.updated")
+            .addKeyValue("user_id", currentUser.id)
+            .addKeyValue("decision_id", decisionId)
+            .addKeyValue("option_id", optionId)
+            .addKeyValue("option_name", name)
+            .log()
+
         return if (isHx(request)) {
             val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.optionsFragment(decision))
@@ -237,7 +272,15 @@ class DecisionRoutes(
         if (!authorizationService.canModifyOption(decisionId, currentUser.id)) {
             return Response(Status.FORBIDDEN).body("You don't have permission to modify options for this decision")
         }
-        
+
+        auditLog.atInfo()
+            .setMessage("Option deleted")
+            .addKeyValue("event", "option.deleted")
+            .addKeyValue("user_id", currentUser.id)
+            .addKeyValue("decision_id", decisionId)
+            .addKeyValue("option_id", optionId)
+            .log()
+
         optionRepository.delete(optionId)
 
         return if (isHx(request)) {
@@ -263,6 +306,15 @@ class DecisionRoutes(
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Criteria name is required")
         criteriaRepository.insert(decisionId, CriteriaInput(name = name, weight = weight))
 
+        auditLog.atInfo()
+            .setMessage("Criteria created")
+            .addKeyValue("event", "criteria.created")
+            .addKeyValue("user_id", currentUser.id)
+            .addKeyValue("decision_id", decisionId)
+            .addKeyValue("criteria_name", name)
+            .addKeyValue("weight", weight)
+            .log()
+
         return if (isHx(request)) {
             val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.criteriaFragment(decision))
@@ -287,6 +339,16 @@ class DecisionRoutes(
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Criteria name is required")
         criteriaRepository.update(criteriaId, name, weight) ?: return Response(Status.NOT_FOUND).body("Criteria not found")
 
+        auditLog.atInfo()
+            .setMessage("Criteria updated")
+            .addKeyValue("event", "criteria.updated")
+            .addKeyValue("user_id", currentUser.id)
+            .addKeyValue("decision_id", decisionId)
+            .addKeyValue("criteria_id", criteriaId)
+            .addKeyValue("criteria_name", name)
+            .addKeyValue("weight", weight)
+            .log()
+
         return if (isHx(request)) {
             val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
             htmlResponse(DecisionPages.criteriaFragment(decision))
@@ -304,7 +366,15 @@ class DecisionRoutes(
         if (!authorizationService.canModifyCriteria(decisionId, currentUser.id)) {
             return Response(Status.FORBIDDEN).body("You don't have permission to modify criteria for this decision")
         }
-        
+
+        auditLog.atInfo()
+            .setMessage("Criteria deleted")
+            .addKeyValue("event", "criteria.deleted")
+            .addKeyValue("user_id", currentUser.id)
+            .addKeyValue("decision_id", decisionId)
+            .addKeyValue("criteria_id", criteriaId)
+            .log()
+
         criteriaRepository.delete(criteriaId)
 
         return if (isHx(request)) {
@@ -323,6 +393,13 @@ class DecisionRoutes(
         if (!authorizationService.canModifyDecision(decisionId, currentUser.id)) {
             return Response(Status.FORBIDDEN).body("You don't have permission to delete this decision")
         }
+
+        auditLog.atInfo()
+            .setMessage("Decision deleted")
+            .addKeyValue("event", "decision.deleted")
+            .addKeyValue("user_id", currentUser.id)
+            .addKeyValue("decision_id", decisionId)
+            .log()
 
         decisionRepository.delete(decisionId)
 
@@ -380,6 +457,14 @@ class DecisionRoutes(
                 tagRepository.addTagToDecision(decisionId = decisionId, tagId = tag.id)
             }
         }
+
+        auditLog.atInfo()
+            .setMessage("Tags updated")
+            .addKeyValue("event", "tags.updated")
+            .addKeyValue("user_id", currentUser.id)
+            .addKeyValue("decision_id", decisionId)
+            .addKeyValue("tags", tagNames.joinToString(","))
+            .log()
 
         return if (isHx(request)) {
             val decision = decisionRepository.getDecisionAggregate(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
@@ -446,8 +531,26 @@ class DecisionRoutes(
                         scoredBy = userId,
                         score = UserScoreInput(score = value)
                     )
+                    auditLog.atInfo()
+                        .setMessage("Score submitted")
+                        .addKeyValue("event", "score.submitted")
+                        .addKeyValue("user_id", userId)
+                        .addKeyValue("decision_id", decisionId)
+                        .addKeyValue("option_id", opt.id)
+                        .addKeyValue("criteria_id", c.id)
+                        .addKeyValue("score", value)
+                        .log()
                 } else if (existing.score != value) {
                     userScoreRepository.update(existing.id, value)
+                    auditLog.atInfo()
+                        .setMessage("Score submitted")
+                        .addKeyValue("event", "score.submitted")
+                        .addKeyValue("user_id", userId)
+                        .addKeyValue("decision_id", decisionId)
+                        .addKeyValue("option_id", opt.id)
+                        .addKeyValue("criteria_id", c.id)
+                        .addKeyValue("score", value)
+                        .log()
                 }
             }
         }
