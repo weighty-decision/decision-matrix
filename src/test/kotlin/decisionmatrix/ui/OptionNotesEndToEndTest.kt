@@ -131,7 +131,7 @@ class OptionNotesEndToEndTest {
         // Check that notes textarea is present
         html shouldContain "textarea"
         html shouldContain "name=\"notes\""
-        html shouldContain "Markdown notes (optional)"
+        html shouldContain "Markdown notes"
     }
 
     @Test fun `view notes page shows message when no notes exist`() {

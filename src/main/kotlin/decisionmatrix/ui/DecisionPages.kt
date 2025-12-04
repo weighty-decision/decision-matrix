@@ -421,7 +421,7 @@ object DecisionPages {
                             td {
                                 textArea {
                                     name = "notes"
-                                    placeholder = "Markdown notes (optional)"
+                                    placeholder = "Markdown notes"
                                     rows = "3"
                                     opt.notes?.let { +it }
                                 }
