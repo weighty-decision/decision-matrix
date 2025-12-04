@@ -20,6 +20,7 @@ CREATE TABLE options (
     id SERIAL PRIMARY KEY,
     decision_id INTEGER NOT NULL,
     name TEXT NOT NULL,
+    notes TEXT,
     FOREIGN KEY (decision_id) REFERENCES decisions(id) ON DELETE CASCADE
 );
 

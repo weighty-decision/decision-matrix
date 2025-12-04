@@ -16,6 +16,7 @@ logstash-logback = "9.0"
 nimbus-oauth2 = "11.20.1"
 nimbus-jose-jwt = "9.47"
 hikari = "5.1.0"
+commonmark = "0.24.0"
 
 [libraries]
 jdbi-core = { module = "org.jdbi:jdbi3-core", version.ref = "jdbi" }
@@ -49,6 +50,7 @@ logback-ecs-encoder = { module = "co.elastic.logging:logback-ecs-encoder", versi
 logstash-logback = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash-logback" }
 nimbus-oauth2-sdk = { module = "com.nimbusds:oauth2-oidc-sdk", version.ref = "nimbus-oauth2" }
 nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus-jose-jwt" }
+commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
 
 [bundles]
 testing = [

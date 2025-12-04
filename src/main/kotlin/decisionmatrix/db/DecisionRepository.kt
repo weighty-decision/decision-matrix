@@ -99,6 +99,7 @@ class DecisionRepositoryImpl(private val jdbi: Jdbi) : DecisionRepository {
                     c.weight as criteria_weight,
                     o.id as option_id,
                     o.name as option_name,
+                    o.notes as option_notes,
                     t.id as tag_id,
                     t.name as tag_name
                 FROM decisions d
@@ -257,7 +258,8 @@ fun mapDecisionAggregate(rows: List<Map<String, Any>>): DecisionAggregate {
             optionsMap[optionId] = Option(
                 id = optionId,
                 decisionId = decisionId,
-                name = row["option_name"] as String
+                name = row["option_name"] as String,
+                notes = row["option_notes"] as? String
             )
         }
 

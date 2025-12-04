@@ -76,6 +76,7 @@ data class Option(
     val id: Long,
     val decisionId: Long,
     val name: String,
+    val notes: String? = null,
 )
 
 @Serializable

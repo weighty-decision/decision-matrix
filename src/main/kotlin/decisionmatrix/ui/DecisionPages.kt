@@ -27,6 +27,7 @@ import kotlinx.html.style
 import kotlinx.html.table
 import kotlinx.html.tbody
 import kotlinx.html.td
+import kotlinx.html.textArea
 import kotlinx.html.textInput
 import kotlinx.html.th
 import kotlinx.html.thead
@@ -403,6 +404,7 @@ object DecisionPages {
                 thead {
                     tr {
                         th { +"Name" }
+                        th { +"Notes" }
                         th { }
                     }
                 }
@@ -414,6 +416,14 @@ object DecisionPages {
                                     name = "name"
                                     required = true
                                     value = opt.name
+                                }
+                            }
+                            td {
+                                textArea {
+                                    name = "notes"
+                                    placeholder = "Markdown notes (optional)"
+                                    rows = "3"
+                                    opt.notes?.let { +it }
                                 }
                             }
                             td {
@@ -454,6 +464,7 @@ object DecisionPages {
                                 required = true
                             }
                         }
+                        td { }
                         td {
                             form {
                                 // Create option inline

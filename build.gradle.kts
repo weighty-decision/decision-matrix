@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.flyway.postgresql)
     implementation(libs.nimbus.oauth2.sdk)
     implementation(libs.nimbus.jose.jwt)
+    implementation(libs.commonmark)
     testImplementation(libs.bundles.testing)
     testImplementation(libs.bundles.http4k.testing)
 }

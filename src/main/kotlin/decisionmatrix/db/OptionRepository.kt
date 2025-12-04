@@ -8,7 +8,7 @@ import java.sql.ResultSet
 interface OptionRepository {
     fun insert(decisionId: Long, option: OptionInput): Option = throw NotImplementedError()
     fun findById(id: Long): Option? = throw NotImplementedError()
-    fun update(id: Long, name: String): Option? = throw NotImplementedError()
+    fun update(id: Long, name: String, notes: String? = null): Option? = throw NotImplementedError()
     fun delete(id: Long): Boolean = throw NotImplementedError()
 }
 
@@ -33,7 +33,7 @@ class OptionRepositoryImpl(private val jdbi: Jdbi) : OptionRepository {
         return jdbi.withHandle<Option?, Exception> { handle ->
             handle.createQuery(
                 """
-                SELECT id, decision_id, name
+                SELECT id, decision_id, name, notes
                 FROM options
                 WHERE id = :id
                 """.trimIndent()
@@ -46,18 +46,19 @@ class OptionRepositoryImpl(private val jdbi: Jdbi) : OptionRepository {
     }
 
     // todo swap out individual args with an object input
-    override fun update(id: Long, name: String): Option? {
+    override fun update(id: Long, name: String, notes: String?): Option? {
         return jdbi.withHandle<Option?, Exception> { handle ->
             handle.createQuery(
                 """
                 UPDATE options
-                SET name = :name
+                SET name = :name, notes = :notes
                 WHERE id = :id
                 RETURNING *
                 """.trimIndent()
             )
                 .bind("id", id)
                 .bind("name", name)
+                .bind("notes", notes)
                 .map { rs, _ -> mapOption(rs) }
                 .findOne()
                 .orElse(null)
@@ -84,5 +85,6 @@ private fun mapOption(rs: ResultSet): Option {
         id = rs.getLong("id"),
         decisionId = rs.getLong("decision_id"),
         name = rs.getString("name"),
+        notes = rs.getString("notes"),
     )
 }

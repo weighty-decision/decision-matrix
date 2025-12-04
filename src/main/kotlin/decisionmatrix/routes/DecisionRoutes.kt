@@ -17,6 +17,7 @@ import decisionmatrix.db.UserScoreRepository
 import decisionmatrix.ui.DecisionPages
 import decisionmatrix.ui.IndexPage
 import decisionmatrix.ui.MyScoresPages
+import decisionmatrix.ui.OptionNotesPage
 import decisionmatrix.ui.ResultsPage
 import decisionmatrix.auth.AuthorizationService
 import org.http4k.core.Method
@@ -53,6 +54,8 @@ class DecisionRoutes(
         "/decisions/{id}/options" bind Method.POST to ::createOption,
         "/decisions/{id}/options/{optionId}/update" bind Method.POST to ::updateOption,
         "/decisions/{id}/options/{optionId}/delete" bind Method.POST to ::deleteOption,
+        "/decisions/{id}/options/{optionId}/notes" bind Method.GET to ::viewOptionNotes,
+        "/decisions/{id}/options/{optionId}/notes-content" bind Method.GET to ::viewOptionNotesContent,
 
         "/decisions/{id}/criteria" bind Method.POST to ::createCriteria,
         "/decisions/{id}/criteria/{criteriaId}/update" bind Method.POST to ::updateCriteria,
@@ -236,15 +239,16 @@ class DecisionRoutes(
         val currentUser = UserContext.requireCurrent(request)
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
         val optionId = request.path("optionId")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing optionId")
-        
+
         if (!authorizationService.canModifyOption(decisionId, currentUser.id)) {
             return Response(Status.FORBIDDEN).body("You don't have permission to modify options for this decision")
         }
-        
+
         val form = parseForm(request)
         val name = form["name"]?.trim().orEmpty()
+        val notes = form["notes"]?.trim()?.takeIf { it.isNotBlank() }
         if (name.isBlank()) return Response(Status.BAD_REQUEST).body("Option name is required")
-        optionRepository.update(optionId, name) ?: return Response(Status.NOT_FOUND).body("Option not found")
+        optionRepository.update(optionId, name, notes) ?: return Response(Status.NOT_FOUND).body("Option not found")
 
         auditLog.atInfo()
             .setMessage("Option updated")
@@ -268,7 +272,7 @@ class DecisionRoutes(
         val currentUser = UserContext.requireCurrent(request)
         val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
         val optionId = request.path("optionId")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing optionId")
-        
+
         if (!authorizationService.canModifyOption(decisionId, currentUser.id)) {
             return Response(Status.FORBIDDEN).body("You don't have permission to modify options for this decision")
         }
@@ -290,6 +294,36 @@ class DecisionRoutes(
         } else {
             Response(Status.SEE_OTHER).header("Location", "/decisions/$decisionId/edit")
         }
+    }
+
+    private fun viewOptionNotes(request: Request): Response {
+        val currentUser = UserContext.requireCurrent(request)
+        val decisionId = request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
+        val optionId = request.path("optionId")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing optionId")
+
+        val decision = decisionRepository.getDecision(decisionId) ?: return Response(Status.NOT_FOUND).body("Decision not found")
+        val option = optionRepository.findById(optionId) ?: return Response(Status.NOT_FOUND).body("Option not found")
+
+        return htmlResponse(OptionNotesPage.viewNotesPage(option, decision.name, currentUser))
+    }
+
+    private fun viewOptionNotesContent(request: Request): Response {
+        UserContext.requireCurrent(request)
+        request.path("id")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing id")
+        val optionId = request.path("optionId")?.toLongOrNull() ?: return Response(Status.BAD_REQUEST).body("Missing optionId")
+
+        val option = optionRepository.findById(optionId) ?: return Response(Status.NOT_FOUND).body("Option not found")
+
+        val renderedNotes = if (!option.notes.isNullOrBlank()) {
+            val parser = org.commonmark.parser.Parser.builder().build()
+            val document = parser.parse(option.notes)
+            val renderer = org.commonmark.renderer.html.HtmlRenderer.builder().build()
+            renderer.render(document)
+        } else {
+            "<p>No notes available for this option.</p>"
+        }
+
+        return htmlResponse(renderedNotes)
     }
 
     private fun createCriteria(request: Request): Response {
