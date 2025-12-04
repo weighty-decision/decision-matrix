@@ -22,6 +22,8 @@ fun loadJdbi(
     Flyway.configure()
         .dataSource(jdbcUrl, username, password)
         .locations("classpath:db/migration")
+        .baselineOnMigrate(true)
+        .baselineVersion("0")
         .load()
         .migrate()
 
