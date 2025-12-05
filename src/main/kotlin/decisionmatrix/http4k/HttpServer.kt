@@ -6,6 +6,8 @@ import decisionmatrix.auth.UserContext
 import decisionmatrix.auth.requireAuth
 import decisionmatrix.routes.DecisionRoutes
 import decisionmatrix.routes.TagRoutes
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Response
@@ -25,6 +27,11 @@ import org.http4k.server.Undertow
 import org.http4k.server.asServer
 import org.slf4j.LoggerFactory
 
+@Serializable
+data class HealthResponse(
+    val status: String
+)
+
 class HttpServer(
     private val authRoutes: AuthRoutes,
     private val decisionRoutes: DecisionRoutes,
@@ -38,6 +45,11 @@ class HttpServer(
     private fun appRoutes(): RoutingHttpHandler = routes(
         "/ping" bind GET to {
             Response(OK).body("pong")
+        },
+        "/health" bind GET to {
+            Response(OK)
+                .header("Content-Type", "application/json")
+                .body(Json.encodeToString(HealthResponse(status = "healthy")))
         },
         "/assets" bind static(ResourceLoader.Classpath("public")),
         authRoutes.routes,

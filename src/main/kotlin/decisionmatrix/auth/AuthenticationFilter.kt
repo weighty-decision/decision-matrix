@@ -30,7 +30,8 @@ class AuthenticationFilter(
         val path = request.uri.path
         return path.startsWith("/auth/") ||
                 path.startsWith("/assets/") ||
-                path == "/ping"
+                path == "/ping" ||
+                path == "/health"
     }
 
     private fun handleDevMode(request: Request, next: HttpHandler): Response {

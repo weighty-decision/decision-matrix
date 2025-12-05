@@ -11,6 +11,9 @@ import decisionmatrix.db.getTestJdbi
 import decisionmatrix.routes.DecisionRoutes
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
@@ -47,6 +50,11 @@ class AppTest {
         "/ping" bind GET to {
             Response(OK).body("pong")
         },
+        "/health" bind GET to {
+            Response(OK)
+                .header("Content-Type", "application/json")
+                .body(kotlinx.serialization.json.Json.encodeToString(decisionmatrix.http4k.HealthResponse(status = "healthy")))
+        },
         "/assets" bind static(ResourceLoader.Classpath("public")),
         decisionRoutes.routes
     ).withMockAuth()
@@ -54,6 +62,16 @@ class AppTest {
     @Test
     fun `Ping test`() {
         testApp(Request(GET, "/ping")) shouldBe Response(OK).body("pong")
+    }
+
+    @Test fun `Health endpoint returns 200 with healthy status`() {
+        val response = testApp(Request(GET, "/health"))
+
+        response.status shouldBe OK
+        response.header("Content-Type") shouldBe "application/json"
+
+        val jsonResponse = Json.parseToJsonElement(response.bodyString()).jsonObject
+        jsonResponse["status"]?.jsonPrimitive?.content shouldBe "healthy"
     }
 
     @Test
