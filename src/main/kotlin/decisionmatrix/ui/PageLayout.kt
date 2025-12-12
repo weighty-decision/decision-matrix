@@ -42,6 +42,7 @@ object PageLayout {
                     content = "width=device-width, initial-scale=1"
                 }
                 title { +titleText }
+                link(rel = "icon", href = "/assets/favicon.svg", type = "image/svg+xml")
                 link(rel = "stylesheet", href = "/assets/style.css")
                 script {
                     src = "https://unpkg.com/htmx.org@2.0.2"

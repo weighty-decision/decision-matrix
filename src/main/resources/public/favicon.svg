@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="#2563eb" stroke="#1e40af" stroke-width="2"/>
+
+  <!-- Balance scale stand -->
+  <rect x="47" y="30" width="6" height="45" fill="#ffffff" rx="1"/>
+
+  <!-- Base -->
+  <rect x="35" y="72" width="30" height="4" fill="#ffffff" rx="2"/>
+
+  <!-- Horizontal beam -->
+  <rect x="25" y="37" width="50" height="3" fill="#ffffff" rx="1"/>
+
+  <!-- Left scale pan -->
+  <path d="M 30 40 L 25 50 L 35 50 Z" fill="#ffffff"/>
+  <rect x="22" y="50" width="16" height="2" fill="#ffffff" rx="1"/>
+
+  <!-- Right scale pan -->
+  <path d="M 70 40 L 65 50 L 75 50 Z" fill="#ffffff"/>
+  <rect x="62" y="50" width="16" height="2" fill="#ffffff" rx="1"/>
+
+  <!-- Center pivot point -->
+  <circle cx="50" cy="38.5" r="3" fill="#fbbf24"/>
+</svg>
