@@ -80,7 +80,6 @@ h1, h2 {
 .row {
     display: flex;
     gap: var(--gap);
-    align-items: center;
 }
 
 .row.grow > *:first-child {
