@@ -128,6 +128,7 @@ label > span {
     display: flex;
     gap: var(--gap);
     justify-content: flex-end;
+    align-items: center;
     min-width: 180px;
 }
 

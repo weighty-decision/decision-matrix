@@ -347,7 +347,7 @@ object IndexPage {
                         th { +"Decision" }
                         th { +"Created" }
                         th { +"Author" }
-                        th(classes = "actions") { +"Actions" }
+                        th { +"Actions" }
                     }
                 }
                 tbody {
@@ -376,27 +376,29 @@ object IndexPage {
                             td {
                                 +decision.createdBy
                             }
-                            td(classes = "actions") {
-                                if (decision.createdBy == currentUser.id) {
+                            td {
+                                div(classes = "actions") {
+                                    if (decision.createdBy == currentUser.id) {
+                                        a(classes = "btn small") {
+                                            href = "/decisions/${decision.id}/edit"
+                                            +"Edit"
+                                        }
+                                    }
+                                    if (decision.locked) {
+                                        span(classes = "btn small disabled") {
+                                            attributes["title"] = "Scoring for this decision has been locked by the creator"
+                                            +"Locked"
+                                        }
+                                    } else {
+                                        a(classes = "btn small") {
+                                            href = "/decisions/${decision.id}/my-scores"
+                                            +"Score"
+                                        }
+                                    }
                                     a(classes = "btn small") {
-                                        href = "/decisions/${decision.id}/edit"
-                                        +"Edit"
+                                        href = "/decisions/${decision.id}/results"
+                                        +"Results"
                                     }
-                                }
-                                if (decision.locked) {
-                                    span(classes = "btn small disabled") {
-                                        attributes["title"] = "Scoring for this decision has been locked by the creator"
-                                        +"Locked"
-                                    }
-                                } else {
-                                    a(classes = "btn small") {
-                                        href = "/decisions/${decision.id}/my-scores"
-                                        +"Score"
-                                    }
-                                }
-                                a(classes = "btn small") {
-                                    href = "/decisions/${decision.id}/results"
-                                    +"Results"
                                 }
                             }
                         }
