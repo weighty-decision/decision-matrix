@@ -553,8 +553,13 @@ class DecisionUiRoutesTest {
 
         htmlContent shouldContain "Cost"
         htmlContent shouldContain "Quality"
-        // Should not contain percentage indicators
-        htmlContent.contains("0%") shouldBe false
+
+        // Extract just the criteria section to check for percentage indicators
+        val criteriaSection = htmlContent.substringAfter("<h2>Criteria</h2>").substringBefore("</section>")
+
+        // Should not contain percentage indicators in criteria section
+        // (Note: "100%" may appear in CSS width styles elsewhere in the page)
+        criteriaSection.contains("0%") shouldBe false
     }
 
     @Test

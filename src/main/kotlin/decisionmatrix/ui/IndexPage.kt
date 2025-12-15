@@ -124,26 +124,22 @@ object IndexPage {
                             }
                         }
 
-                        button(classes = if (involvedFilter) "btn filter-btn active" else "btn filter-btn") {
-                            type = ButtonType.button
-                            id = "involved-toggle"
-                            attributes["title"] = "Only show decisions I've created or scored"
-                            attributes["hx-get"] = "/search"
-                            attributes["hx-trigger"] = "click"
-                            attributes["hx-target"] = "#decisions-table"
-                            attributes["hx-vals"] =
-                                "js:{involved: document.querySelector('input[name=\"involved\"]').value === 'true' ? 'false' : 'true', " +
-                                        "timeRange: document.getElementById('time-range-select').value, " +
-                                        "search: document.getElementById('search-input').value}"
-                            attributes["hx-push-url"] = "true"
-                            +"I'm involved in"
-                        }
-
-                        // Hidden input to track involved filter state
-                        input(type = InputType.hidden) {
-                            id = "involved-input"
-                            name = "involved"
-                            value = if (involvedFilter) "true" else "false"
+                        label(classes = "filter-checkbox-label") {
+                            input(type = InputType.checkBox) {
+                                id = "involved-checkbox"
+                                name = "involved"
+                                value = "true"
+                                if (involvedFilter) {
+                                    checked = true
+                                }
+                                attributes["title"] = "Only show decisions I've created or scored"
+                                attributes["hx-get"] = "/search"
+                                attributes["hx-trigger"] = "change"
+                                attributes["hx-target"] = "#decisions-table"
+                                attributes["hx-include"] = "#search-input,#time-range-select,#involved-checkbox"
+                                attributes["hx-push-url"] = "true"
+                            }
+                            +"Show only decisions I'm involved in"
                         }
                     }
                 }
@@ -177,26 +173,8 @@ object IndexPage {
                     // Format after htmx swaps content
                     document.body.addEventListener('htmx:afterSwap', formatLocalDates);
 
-                    // Toggle button behavior - update local hidden inputs and button appearance
+                    // Tag autocomplete functionality
                     document.addEventListener('DOMContentLoaded', function() {
-                        document.getElementById('involved-toggle').addEventListener('click', function() {
-                            const button = this;
-                            const hiddenInput = document.querySelector('input[name="involved"]');
-                            const currentValue = hiddenInput.value === 'true';
-                            const newValue = !currentValue;
-
-                            // Update local state
-                            hiddenInput.value = newValue.toString();
-
-                            // Update button appearance immediately
-                            if (newValue) {
-                                button.classList.add('active');
-                            } else {
-                                button.classList.remove('active');
-                            }
-                        });
-
-                        // Tag autocomplete functionality
                         const searchInput = document.getElementById('search-input');
                         const autocompleteDiv = document.getElementById('tag-autocomplete');
 
