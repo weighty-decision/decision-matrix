@@ -255,6 +255,7 @@ object DecisionPages {
                         attributes["maxlength"] = "150"
                     }
                     small(classes = "muted") {
+                        style = "padding: 4px;"
                         +"Use lowercase letters, numbers, and hyphens. Maximum 5 tags, 25 characters each."
                     }
                 }

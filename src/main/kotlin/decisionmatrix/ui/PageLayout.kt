@@ -19,7 +19,9 @@ import kotlinx.html.lang
 import kotlinx.html.link
 import kotlinx.html.main
 import kotlinx.html.meta
+import kotlinx.html.option
 import kotlinx.html.script
+import kotlinx.html.select
 import kotlinx.html.span
 import kotlinx.html.stream.appendHTML
 import kotlinx.html.title
@@ -50,7 +52,46 @@ object PageLayout {
                 script {
                     unsafe {
                         +"""
+                        // Theme management
+                        (function() {
+                            function getPreferredTheme() {
+                                const savedTheme = localStorage.getItem('theme');
+                                if (savedTheme) {
+                                    return savedTheme;
+                                }
+                                // Default based on browser preference
+                                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                                    return 'scream';
+                                }
+                                return 'seurat';
+                            }
+
+                            function setTheme(theme) {
+                                document.documentElement.setAttribute('data-theme', theme);
+                                localStorage.setItem('theme', theme);
+                            }
+
+                            // Apply theme immediately to prevent flash
+                            setTheme(getPreferredTheme());
+
+                            // Make setTheme available globally
+                            window.setTheme = setTheme;
+                        })();
+
                         document.addEventListener('DOMContentLoaded', function() {
+                            // Theme dropdown handler
+                            const themeSelect = document.getElementById('theme-select');
+                            if (themeSelect) {
+                                // Set initial value
+                                const currentTheme = document.documentElement.getAttribute('data-theme') || 'seurat';
+                                themeSelect.value = currentTheme;
+
+                                // Handle theme changes
+                                themeSelect.addEventListener('change', function(e) {
+                                    window.setTheme(e.target.value);
+                                });
+                            }
+
                             const accountButton = document.getElementById('account-button');
                             const accountMenu = document.getElementById('account-menu');
                             
@@ -192,6 +233,20 @@ object PageLayout {
                                 id = "account-menu"
                                 attributes["role"] = "menu"
                                 attributes["style"] = "display: none;"
+
+                                select {
+                                    id = "theme-select"
+                                    attributes["style"] = "width: 100%; margin-bottom: 4px;"
+
+                                    option {
+                                        value = "seurat"
+                                        +"Light"
+                                    }
+                                    option {
+                                        value = "scream"
+                                        +"Dark"
+                                    }
+                                }
 
                                 form {
                                     method = FormMethod.post
